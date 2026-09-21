@@ -3,7 +3,7 @@
 # Update source when running on a different machine.
 # Examples use ports 8000/8100: stop one before starting another, or change ports.
 metadata:
-  name: libero-pi05-vvla
+  name: libero-pi05-embodiinfer
   deploy-commit: c3f939a4f2dda25b76560f65f1bd9a2d468fb4f8
 
 nodes:
@@ -25,12 +25,12 @@ simulators:
 
 models:
   pi05-01:
-    backend: vvla
+    backend: embodiinfer
     transport: http
     type: pi05
     node: workstation
     gpu: cuda:0
-    environment: .venv-vvla-pi05
+    environment: .venv-embodiinfer-pi05
     # LeRobot Pi0.5 LIBERO fine-tune, revision 8e174154 (8D state / 7D actions).
     source: /models/pi05_libero_finetuned
     image_keys:

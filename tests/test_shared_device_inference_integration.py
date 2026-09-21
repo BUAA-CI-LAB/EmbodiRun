@@ -1,7 +1,7 @@
 """Live local integration coverage for the software-only inference walkthrough.
 
 The control HTTP server, service, simulated adapter, mapper, camera replay, and
-recorder are real objects.  Only the VVLA HTTP client is replaced with a
+recorder are real objects.  Only the EmbodiInfer HTTP client is replaced with a
 deterministic transport endpoint, so this test does not need a model process,
 GPU, network device, or physical robot.
 """
@@ -65,8 +65,8 @@ def _write_record(tmp_path):
     return manifest, front, wrist
 
 
-class _DeterministicVvlaClient:
-    """Small in-process VVLA endpoint used through the normal client seam."""
+class _DeterministicEmbodiInferClient:
+    """Small in-process EmbodiInfer endpoint used through the normal client seam."""
 
     _lock = threading.Lock()
     states: list[tuple[float, ...]] = []
@@ -157,13 +157,13 @@ def test_run_experiment_uses_present_then_shared_readback_and_records_actions(
     monkeypatch: pytest.MonkeyPatch,
 ):
     manifest, front, wrist = _write_record(tmp_path)
-    _DeterministicVvlaClient.reset_calls()
-    monkeypatch.setattr(experiment, "VvlaHttpClient", _DeterministicVvlaClient)
+    _DeterministicEmbodiInferClient.reset_calls()
+    monkeypatch.setattr(experiment, "EmbodiInferHttpClient", _DeterministicEmbodiInferClient)
 
     output_dir = tmp_path / "output"
     state_dir = tmp_path / "state"
     report = experiment.run_experiment(
-        "http://vvla.test.invalid:1",
+        "http://embodiinfer.test.invalid:1",
         manifest,
         output_dir=output_dir,
         state_dir=state_dir,
@@ -176,12 +176,12 @@ def test_run_experiment_uses_present_then_shared_readback_and_records_actions(
     # The first policy request saw measured ``present``.  The second saw the
     # readback after the first three actions, proving shared owner reuse rather
     # than reopening a fresh adapter for each task/session.
-    assert _DeterministicVvlaClient.states == [
+    assert _DeterministicEmbodiInferClient.states == [
         (1.0, 2.0, 3.0, 4.0, 5.0, 6.0),
         (10.0, 11.0, 12.0, 13.0, 14.0, 15.0),
     ]
-    assert len(_DeterministicVvlaClient.sessions) == 2
-    assert len(set(_DeterministicVvlaClient.sessions)) == 2
+    assert len(_DeterministicEmbodiInferClient.sessions) == 2
+    assert len(set(_DeterministicEmbodiInferClient.sessions)) == 2
 
     assert report["status"] == "software_complete"
     assert report["owners"]["robot_owner_reused"] is True

@@ -43,7 +43,7 @@ uv run embodirun --config "$CONFIG" down
 复制示例，填入设备、节点和模型信息，再校验配置：
 
 ```bash
-cp configs/pi05/bi-so101-vvla.yaml my-deployment.yaml
+cp configs/pi05/bi-so101-embodiinfer.yaml my-deployment.yaml
 $EDITOR my-deployment.yaml
 
 uv run embodirun --config my-deployment.yaml validate

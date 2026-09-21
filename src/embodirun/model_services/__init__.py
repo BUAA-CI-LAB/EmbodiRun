@@ -1,12 +1,12 @@
 """Inference service contracts and clients organized by backend and protocol."""
 
-from .backends.sglang import SglangHttpClient, SglangHttpError
-from .backends.vvla import (
-    VvlaHttpClient,
-    VvlaHttpError,
-    VvlaWirelessClient,
-    VvlaWirelessError,
+from .backends.embodiinfer import (
+    EmbodiInferHttpClient,
+    EmbodiInferHttpError,
+    EmbodiInferWirelessClient,
+    EmbodiInferWirelessError,
 )
+from .backends.sglang import SglangHttpClient, SglangHttpError
 from .client import InferenceClient, PolicyClient
 from .contracts import (
     ImagePayload,
@@ -50,10 +50,10 @@ __all__ = [
     "SglangHttpClient",
     "SglangHttpError",
     "UrllibHttpTransport",
-    "VvlaHttpClient",
-    "VvlaHttpError",
-    "VvlaWirelessClient",
-    "VvlaWirelessError",
+    "EmbodiInferHttpClient",
+    "EmbodiInferHttpError",
+    "EmbodiInferWirelessClient",
+    "EmbodiInferWirelessError",
     "WirelessProtocolError",
     "WirelessRpcTransport",
     "WirelessTransport",

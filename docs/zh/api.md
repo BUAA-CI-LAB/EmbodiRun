@@ -11,8 +11,8 @@
       members:
         - PolicyClient
         - SglangHttpClient
-        - VvlaHttpClient
-        - VvlaWirelessClient
+        - EmbodiInferHttpClient
+        - EmbodiInferWirelessClient
 
 ## 推理数据类型
 

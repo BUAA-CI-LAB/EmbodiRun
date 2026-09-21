@@ -27,7 +27,7 @@ def asset_files(roots: dict[str, Path]) -> dict[str, Path]:
             project / "data/train/eval_val2_40_valid.jsonl",
             project / "data/demo_microduck_vln.jsonl",
         ],
-        "vvla": [roots["vvla"] / "vvla"],
+        "embodiinfer": [roots["embodiinfer"] / "embodiinfer"],
         "checkpoint": [p for p in roots["checkpoint"].iterdir() if p.is_file()],
     }
     for label, paths in groups.items():

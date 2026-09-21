@@ -218,7 +218,7 @@ class EpisodeVideo:
         canvas.paste(Image.fromarray(third), (480, 30))
         draw = ImageDraw.Draw(canvas)
         draw.text((10, 6), "MICRODUCK / first person", font=self.font, fill="white")
-        draw.text((490, 6), "Third person / ActiveVLN SFT-v3 / vvla EngineCore", font=self.font, fill="white")
+        draw.text((490, 6), "Third person / ActiveVLN SFT-v3 / embodiinfer EngineCore", font=self.font, fill="white")
         for index, line in enumerate(textwrap.wrap(instruction, width=108)[:2]):
             draw.text((10, 306 + 18 * index), line, font=self.font, fill="#fef08a")
         draw.text(

@@ -4,9 +4,9 @@ from collections.abc import Mapping
 from typing import Any
 
 from embodirun.services.inference import (
+    EmbodiInferWirelessClient,
     ImagePayload,
     PolicyObservation,
-    VvlaWirelessClient,
 )
 
 
@@ -37,7 +37,7 @@ class FakeWirelessTransport:
 
 def test_wireless_client_builds_structured_step_payload() -> None:
     transport = FakeWirelessTransport()
-    client = VvlaWirelessClient(transport, timeout_s=2.5)
+    client = EmbodiInferWirelessClient(transport, timeout_s=2.5)
     session = client.open_session(robot_id="fr3", action_space="pi05.action_chunk.v1")
     result = client.step(
         PolicyObservation(
@@ -52,7 +52,7 @@ def test_wireless_client_builds_structured_step_payload() -> None:
 
     method, payload, timeout_s = transport.calls[1]
     assert method == "step"
-    assert payload["schema"] == "vvla.policy.step.v1"
+    assert payload["schema"] == "embodiinfer.policy.step.v1"
     assert payload["images"] == [{"name": "wrist", "mime_type": "image/jpeg", "data": b"jpeg-bytes"}]
     assert timeout_s == 2.5
     assert result.request_id == "request-1"
@@ -60,7 +60,7 @@ def test_wireless_client_builds_structured_step_payload() -> None:
 
 def test_wireless_client_timeout_view_does_not_close_shared_transport() -> None:
     transport = FakeWirelessTransport()
-    owner = VvlaWirelessClient(transport, timeout_s=2.0)
+    owner = EmbodiInferWirelessClient(transport, timeout_s=2.0)
     request_client = owner.with_timeout(60.0)
 
     request_client.open_session(robot_id="fr3", action_space="pi05.action_chunk.v1")

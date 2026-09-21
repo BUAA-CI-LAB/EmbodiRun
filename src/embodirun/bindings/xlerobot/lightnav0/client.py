@@ -14,10 +14,10 @@ from dataclasses import dataclass
 from typing import Any
 
 from embodirun.services.inference import (
+    EmbodiInferHttpClient,
     ImagePayload,
     InferenceClient,
     PolicyObservation,
-    VvlaHttpClient,
 )
 
 ACTION_SPACE = "lightnav0.waypoints.v1"
@@ -153,4 +153,4 @@ def create_client(args: argparse.Namespace) -> LightNav0Client:
         token = os.environ.get(args.inference_token_env)
         if not token:
             raise ValueError(f"missing inference token environment variable {args.inference_token_env!r}")
-    return LightNav0Client(VvlaHttpClient(args.inference_url, token=token, timeout_s=args.inference_timeout_s))
+    return LightNav0Client(EmbodiInferHttpClient(args.inference_url, token=token, timeout_s=args.inference_timeout_s))

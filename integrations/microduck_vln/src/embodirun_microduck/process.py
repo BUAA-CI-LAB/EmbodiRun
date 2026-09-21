@@ -8,7 +8,7 @@ import sys
 import time
 from contextlib import contextmanager
 
-from embodirun.model_services.backends.vvla.http import VvlaHttpClient, VvlaHttpError
+from embodirun.model_services.backends.embodiinfer.http import EmbodiInferHttpClient, EmbodiInferHttpError
 
 from .protocol import ACTION_SPACE, IMAGE_FIELD
 
@@ -61,7 +61,7 @@ def managed_service(args, output):
                     address = json.loads(ready.read_text(encoding="utf-8"))
                     if address["pid"] != process.pid:
                         raise RuntimeError("Readiness file belongs to a different process")
-                    client = VvlaHttpClient(
+                    client = EmbodiInferHttpClient(
                         f"http://127.0.0.1:{address['port']}", token=token, timeout_s=args.request_timeout
                     )
                 if client is not None:
@@ -78,7 +78,7 @@ def managed_service(args, output):
                             client.timeout_s = args.request_timeout
                             break
                         last_error = RuntimeError("Inference health check failed")
-                    except VvlaHttpError as error:
+                    except EmbodiInferHttpError as error:
                         last_error = error
                 time.sleep(min(0.2, remaining()))
             yield client

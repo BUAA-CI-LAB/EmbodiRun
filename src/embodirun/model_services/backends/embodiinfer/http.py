@@ -1,4 +1,4 @@
-"""VVLA inference service integration over HTTP."""
+"""EmbodiInfer inference service integration over HTTP."""
 
 from __future__ import annotations
 
@@ -17,11 +17,11 @@ from ...protocols.http import (
 )
 
 
-class VvlaHttpError(HttpTransportError):
+class EmbodiInferHttpError(HttpTransportError):
     pass
 
 
-class VvlaHttpClient:
+class EmbodiInferHttpClient:
     """Session-oriented client; it has no model or framework dependencies."""
 
     def __init__(
@@ -58,7 +58,7 @@ class VvlaHttpClient:
             "POST",
             "/v1/sessions",
             {
-                "schema": "vvla.policy.session.v1",
+                "schema": "embodiinfer.policy.session.v1",
                 "robot_id": robot_id,
                 "action_space": action_space,
                 "metadata": dict(metadata or {}),
@@ -82,11 +82,11 @@ class VvlaHttpClient:
         )
         result = PolicyResult.from_payload(payload)
         if result.request_id != observation.request_id:
-            raise VvlaHttpError("step response request_id does not match the request")
+            raise EmbodiInferHttpError("step response request_id does not match the request")
         if result.session_id != observation.session_id:
-            raise VvlaHttpError("step response session_id does not match the request")
+            raise EmbodiInferHttpError("step response session_id does not match the request")
         if result.step_id != observation.step_id:
-            raise VvlaHttpError("step response step_id does not match the request")
+            raise EmbodiInferHttpError("step response step_id does not match the request")
         return result
 
     def reset(self, session_id: str, *, request_id: str) -> Session:
@@ -123,7 +123,7 @@ class VvlaHttpClient:
                     separators=(",", ":"),
                 ).encode("utf-8")
             except (TypeError, ValueError) as error:
-                raise VvlaHttpError("request payload is not valid JSON") from error
+                raise EmbodiInferHttpError("request payload is not valid JSON") from error
         return self._request_json_bytes(
             method,
             path,
@@ -156,13 +156,13 @@ class VvlaHttpClient:
                 maximum_bytes=MAX_RESPONSE_BYTES,
             )
         except HttpTransportError as error:
-            raise VvlaHttpError(str(error)) from error
+            raise EmbodiInferHttpError(str(error)) from error
         try:
             payload = json.loads(response.body.decode("utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
-            raise VvlaHttpError(f"{method} {path} returned invalid JSON") from error
+            raise EmbodiInferHttpError(f"{method} {path} returned invalid JSON") from error
         if not isinstance(payload, dict):
-            raise VvlaHttpError(f"{method} {path} must return a JSON object")
+            raise EmbodiInferHttpError(f"{method} {path} must return a JSON object")
         return payload
 
 
@@ -171,7 +171,7 @@ def _multipart(observation: PolicyObservation) -> tuple[bytes, str]:
     image_metadata = [{"name": image.name, "mime_type": image.mime_type} for image in observation.images]
     metadata = json.dumps(
         {
-            "schema": "vvla.policy.step.v1",
+            "schema": "embodiinfer.policy.step.v1",
             "session_id": observation.session_id,
             "request_id": observation.request_id,
             "step_id": observation.step_id,
@@ -206,7 +206,7 @@ def _part(boundary: str, name: str, body: bytes, mime: str, filename: str) -> by
     )
 
 
-def vvla_http_server_command(
+def embodiinfer_http_server_command(
     *,
     policy: str,
     checkpoint: str,
@@ -215,10 +215,10 @@ def vvla_http_server_command(
     device: str | None = None,
     adapter_config: str | None = None,
 ) -> tuple[str, ...]:
-    """Build the documented ``vvla-http-serve`` command-line contract."""
+    """Build the documented ``embodiinfer-http-serve`` command-line contract."""
 
     argv = [
-        "vvla-http-serve",
+        "embodiinfer-http-serve",
         "--policy",
         policy,
         "--checkpoint",
@@ -233,7 +233,7 @@ def vvla_http_server_command(
 
 
 __all__ = [
-    "VvlaHttpClient",
-    "VvlaHttpError",
-    "vvla_http_server_command",
+    "EmbodiInferHttpClient",
+    "EmbodiInferHttpError",
+    "embodiinfer_http_server_command",
 ]

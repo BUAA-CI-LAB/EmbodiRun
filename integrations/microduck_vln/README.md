@@ -17,10 +17,10 @@ ActiveVLN `build_serving_adapter` factory.
 The upper-level episode loop and success metrics live in
 `examples/microduck_vln/run_demo.py`. EmbodiRun's installed core and default
 dependency lock remain unchanged. The example uses
-`embodirun.model_services.backends.vvla.http.VvlaHttpClient` directly;
+`embodirun.model_services.backends.embodiinfer.http.EmbodiInferHttpClient` directly;
 it is a standalone simulation example, not a registered Host/Control device.
 
-The service uses `vvla.policy.*.v1` sessions/steps/reset/close. Its adapter-specific
+The service uses `embodiinfer.policy.*.v1` sessions/steps/reset/close. Its adapter-specific
 action space is `activevln.r2r.discrete.v1`, with one `discrete_chunk` action:
 
 ```json
@@ -45,4 +45,4 @@ contains the CPU test dependencies.
 The distribution is named `embodirun-microduck`, the Python package is
 `embodirun_microduck`, and its service entrypoint is `embodirun-microduck-serve`.
 EmbodiInfer is the upstream distribution name; its public Python namespace and
-wire schema remain `vvla`. Those identifiers are intentionally retained.
+wire schema remain `embodiinfer`. Those identifiers are intentionally retained.

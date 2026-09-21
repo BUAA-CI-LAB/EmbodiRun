@@ -63,11 +63,11 @@
 
     | 环境 | 策略 / 后端 | 配置入口 |
     |---|---|---|
-    | LIBERO | π0.5 / EmbodiInfer | [配置](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/libero-pi05-vvla.yaml) |
+    | LIBERO | π0.5 / EmbodiInfer | [配置](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/libero-pi05-embodiinfer.yaml) |
     | LIBERO | π0.5 / SGLang | [配置](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/libero-pi05-sglang.yaml) |
-    | VLABench | π0.5 / EmbodiInfer | [配置](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/vlabench-pi05-vvla.yaml) |
-    | Habitat | StreamVLN / EmbodiInfer | [配置](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/habitat-streamvln-vvla.yaml) |
-    | Isaac Sim | StreamVLN / EmbodiInfer | [配置](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/isaac-streamvln-vvla.yaml) |
+    | VLABench | π0.5 / EmbodiInfer | [配置](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/vlabench-pi05-embodiinfer.yaml) |
+    | Habitat | StreamVLN / EmbodiInfer | [配置](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/habitat-streamvln-embodiinfer.yaml) |
+    | Isaac Sim | StreamVLN / EmbodiInfer | [配置](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/isaac-streamvln-embodiinfer.yaml) |
 
     在启动闭环之前，准备仿真器资产、模型检查点和环境依赖。
     Isaac Sim 使用 NVIDIA 的 Isaac Sim EULA。

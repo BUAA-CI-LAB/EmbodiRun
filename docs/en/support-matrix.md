@@ -63,11 +63,11 @@ The roadmap tracks the next integrations separately from the current catalog.
 
     | Environment | Policy / backend | Setup |
     |---|---|---|
-    | LIBERO | π0.5 / EmbodiInfer | [Configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/libero-pi05-vvla.yaml) |
+    | LIBERO | π0.5 / EmbodiInfer | [Configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/libero-pi05-embodiinfer.yaml) |
     | LIBERO | π0.5 / SGLang | [Configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/libero-pi05-sglang.yaml) |
-    | VLABench | π0.5 / EmbodiInfer | [Configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/vlabench-pi05-vvla.yaml) |
-    | Habitat | StreamVLN / EmbodiInfer | [Configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/habitat-streamvln-vvla.yaml) |
-    | Isaac Sim | StreamVLN / EmbodiInfer | [Configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/isaac-streamvln-vvla.yaml) |
+    | VLABench | π0.5 / EmbodiInfer | [Configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/vlabench-pi05-embodiinfer.yaml) |
+    | Habitat | StreamVLN / EmbodiInfer | [Configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/habitat-streamvln-embodiinfer.yaml) |
+    | Isaac Sim | StreamVLN / EmbodiInfer | [Configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/simulation/isaac-streamvln-embodiinfer.yaml) |
 
     Prepare the simulator assets, model checkpoint, and environment dependencies
     before starting a closed loop. Isaac Sim uses NVIDIA's Isaac Sim EULA.

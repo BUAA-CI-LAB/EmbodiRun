@@ -1,4 +1,4 @@
-"""VVLA inference service integration over WirelessComm RPC."""
+"""EmbodiInfer inference service integration over WirelessComm RPC."""
 
 from __future__ import annotations
 
@@ -13,13 +13,13 @@ from ...protocols.wireless import (
     WirelessTransport,
 )
 
-RPC_SCHEMA = "vvla.policy.rpc.v1"
-REQUEST_TAG = 0x56564C41
-RESPONSE_TAG = 0x56564C42
+RPC_SCHEMA = "embodiinfer.policy.rpc.v1"
+REQUEST_TAG = 0x454D4249  # b"EMBI"
+RESPONSE_TAG = 0x454D424A  # b"EMBJ"
 
 
-class VvlaWirelessError(RuntimeError):
-    """A VVLA WirelessComm request failed locally or remotely."""
+class EmbodiInferWirelessError(RuntimeError):
+    """A EmbodiInfer WirelessComm request failed locally or remotely."""
 
     def __init__(self, message: str, *, status: int | None = None, code: str | None = None) -> None:
         super().__init__(message)
@@ -27,8 +27,8 @@ class VvlaWirelessError(RuntimeError):
         self.code = code
 
 
-class VvlaWirelessClient:
-    """Session-oriented VVLA client over the WirelessComm protocol."""
+class EmbodiInferWirelessClient:
+    """Session-oriented EmbodiInfer client over the WirelessComm protocol."""
 
     def __init__(
         self,
@@ -51,7 +51,7 @@ class VvlaWirelessClient:
         server_node_id: str,
         token: str | None = None,
         timeout_s: float = 5.0,
-    ) -> VvlaWirelessClient:
+    ) -> EmbodiInferWirelessClient:
         """Create a client backed by a process-owned WirelessComm runtime."""
 
         transport = WirelessRpcTransport.from_config(
@@ -80,7 +80,7 @@ class VvlaWirelessClient:
         result = self._request(
             "open_session",
             {
-                "schema": "vvla.policy.session.v1",
+                "schema": "embodiinfer.policy.session.v1",
                 "robot_id": robot_id,
                 "action_space": action_space,
                 "metadata": dict(metadata or {}),
@@ -96,7 +96,7 @@ class VvlaWirelessClient:
             self._request(
                 "step",
                 {
-                    "schema": "vvla.policy.step.v1",
+                    "schema": "embodiinfer.policy.step.v1",
                     "session_id": observation.session_id,
                     "request_id": observation.request_id,
                     "step_id": observation.step_id,
@@ -116,11 +116,11 @@ class VvlaWirelessClient:
             )
         )
         if result.request_id != observation.request_id:
-            raise VvlaWirelessError("step response request_id does not match the request")
+            raise EmbodiInferWirelessError("step response request_id does not match the request")
         if result.session_id != observation.session_id:
-            raise VvlaWirelessError("step response session_id does not match the request")
+            raise EmbodiInferWirelessError("step response session_id does not match the request")
         if result.step_id != observation.step_id:
-            raise VvlaWirelessError("step response step_id does not match the request")
+            raise EmbodiInferWirelessError("step response step_id does not match the request")
         return result
 
     def reset(self, session_id: str, *, request_id: str) -> Session:
@@ -142,10 +142,10 @@ class VvlaWirelessClient:
         if self.owns_transport:
             self.transport.shutdown()
 
-    def with_timeout(self, timeout_s: float) -> VvlaWirelessClient:
+    def with_timeout(self, timeout_s: float) -> EmbodiInferWirelessClient:
         """Share this connection through a client with a request-local timeout."""
 
-        return VvlaWirelessClient(
+        return EmbodiInferWirelessClient(
             self.transport,
             timeout_s=timeout_s,
             owns_transport=False,
@@ -159,14 +159,14 @@ class VvlaWirelessClient:
         try:
             return self.transport.request(method, payload, timeout_s=self.timeout_s)
         except WirelessProtocolError as error:
-            raise VvlaWirelessError(
+            raise EmbodiInferWirelessError(
                 str(error),
                 status=error.status,
                 code=error.code,
             ) from error
 
 
-def vvla_wireless_server_command(
+def embodiinfer_wireless_server_command(
     *,
     policy: str,
     checkpoint: str,
@@ -174,10 +174,10 @@ def vvla_wireless_server_command(
     device: str | None = None,
     adapter_config: str | None = None,
 ) -> tuple[str, ...]:
-    """Build the documented ``vvla-wireless-serve`` command-line contract."""
+    """Build the documented ``embodiinfer-wireless-serve`` command-line contract."""
 
     argv = [
-        "vvla-wireless-serve",
+        "embodiinfer-wireless-serve",
         "--policy",
         policy,
         "--checkpoint",
@@ -192,7 +192,7 @@ def vvla_wireless_server_command(
 
 
 __all__ = [
-    "VvlaWirelessClient",
-    "VvlaWirelessError",
-    "vvla_wireless_server_command",
+    "EmbodiInferWirelessClient",
+    "EmbodiInferWirelessError",
+    "embodiinfer_wireless_server_command",
 ]

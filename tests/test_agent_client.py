@@ -334,7 +334,7 @@ def test_real_http_propose_consumes_exact_snapshot_and_closes_only_session() -> 
         app.close()
 
 
-def test_proposal_rejects_mismatched_non_vvla_result_identity() -> None:
+def test_proposal_rejects_mismatched_non_embodiinfer_result_identity() -> None:
     class Mapper:
         policy_action_space = "sglang.action.v1"
 
@@ -458,7 +458,7 @@ class _TwoFrameSource:
         return None
 
 
-def test_real_http_control_and_non_vvla_sglang_proposal_execute_reobserve(
+def test_real_http_control_and_non_embodiinfer_sglang_proposal_execute_reobserve(
     tmp_path,
 ) -> None:
     """Exercise config-built SGLang client through the public Control HTTP API."""

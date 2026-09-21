@@ -92,12 +92,12 @@ sensors:
 ```yaml
 models:
   pi05:
-    backend: vvla            # provider：vvla 或 sglang
+    backend: embodiinfer            # provider：embodiinfer 或 sglang
     transport: http          # http 或 wireless
     type: pi05
     node: compute
     gpu: cuda:0
-    environment: .venv-vvla-pi05
+    environment: .venv-embodiinfer-pi05
     source: /models/pi05-checkpoint
     server:
       bind: 0.0.0.0          # 在可信网络中可从机器人节点访问
@@ -111,7 +111,7 @@ models:
 
 | 字段 | 含义 |
 |---|---|
-| `backend` / `provider` | 推理后端：`vvla`（EmbodiInfer）或 `sglang`。 |
+| `backend` / `provider` | 推理后端：`embodiinfer`（EmbodiInfer）或 `sglang`。 |
 | `transport` | `http` 或 `wireless`。 |
 | `lifecycle` / `service` | `managed`（由 Host 启动）或 `external`（由你运行）。 |
 | `endpoint` | 外部服务必填。 |
@@ -149,7 +149,7 @@ runtimes:
 ## 扩展推理后端：provider {#provider}
 
 每个推理后端通过 provider 注册，声明支持的传输协议、启动命令、依赖组和模型参数。
-内置后端为 `vvla` 和 `sglang`。接入新后端时，注册 provider 并提供对应客户端即可复用现有部署和执行流程。
+内置后端为 `embodiinfer` 和 `sglang`。接入新后端时，注册 provider 并提供对应客户端即可复用现有部署和执行流程。
 
 ## 应用到实际部署
 

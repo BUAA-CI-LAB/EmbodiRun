@@ -1,7 +1,7 @@
 # Portable dual SO-101 / three-camera example. Replace device and model paths.
 # Validate this file before connecting any hardware.
 metadata:
-  name: pi05-bi-so101-vvla
+  name: pi05-bi-so101-embodiinfer
   deploy-commit: replace-with-deploy-revision
 nodes:
   robot-compute:
@@ -46,12 +46,12 @@ sensors:
     fps: 30
 models:
   pi05:
-    backend: vvla
+    backend: embodiinfer
     transport: http
     type: pi05
     node: robot-compute
     gpu: cuda:0
-    environment: .venv-vvla-pi05
+    environment: .venv-embodiinfer-pi05
     source: /models/pi05-checkpoint
     server:
       bind: 127.0.0.1

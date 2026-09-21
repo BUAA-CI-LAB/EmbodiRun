@@ -39,8 +39,8 @@ class ActiveVLNAdapter:
         import numpy as np
         import torch
         from PIL import Image
-        from vvla.engine.serve.contracts import ModelAction, ModelResult
-        from vvla.types import Observation, SessionKey
+        from embodiinfer.engine.serve.contracts import ModelAction, ModelResult
+        from embodiinfer.types import Observation, SessionKey
 
         if len(request.images) != 1 or request.images[0].name != IMAGE_FIELD:
             raise ValueError(f"Expected exactly one image named {IMAGE_FIELD}")
@@ -80,7 +80,7 @@ class ActiveVLNAdapter:
         )
 
     def reset(self, session_id):
-        from vvla.types import SessionKey
+        from embodiinfer.types import SessionKey
 
         with self.lock:
             self.core.reset_sessions([SessionKey(session_id, "http")])
@@ -97,10 +97,10 @@ def main():
     args = parser.parse_args()
     import numpy as np
     import torch
-    from vvla import make_policy
-    from vvla.engine.config import EngineConfig
-    from vvla.engine.core import EngineCore
-    from vvla.engine.serve.http_server import PolicyHttpService, create_http_server
+    from embodiinfer import make_policy
+    from embodiinfer.engine.config import EngineConfig
+    from embodiinfer.engine.core import EngineCore
+    from embodiinfer.engine.serve.http_server import PolicyHttpService, create_http_server
 
     random.seed(args.seed)
     np.random.seed(args.seed)

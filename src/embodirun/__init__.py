@@ -1,6 +1,8 @@
 """Robot and simulator clients for supported inference services."""
 
 from .model_services import (
+    EmbodiInferHttpClient,
+    EmbodiInferWirelessClient,
     ImagePayload,
     PolicyAction,
     PolicyClient,
@@ -8,8 +10,6 @@ from .model_services import (
     PolicyResult,
     Session,
     SglangHttpClient,
-    VvlaHttpClient,
-    VvlaWirelessClient,
 )
 from .robots import RobotAction, RobotAdapter, RobotObservation
 
@@ -24,6 +24,6 @@ __all__ = [
     "RobotObservation",
     "Session",
     "SglangHttpClient",
-    "VvlaHttpClient",
-    "VvlaWirelessClient",
+    "EmbodiInferHttpClient",
+    "EmbodiInferWirelessClient",
 ]

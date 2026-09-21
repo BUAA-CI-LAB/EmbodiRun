@@ -30,7 +30,7 @@ class SimulationServiceConfig:
     simulator_id: str
     simulator_kind: str
     simulator_options: Mapping[str, Any]
-    inference_backend: str = "vvla"
+    inference_backend: str = "embodiinfer"
 
     def __post_init__(self) -> None:
         for name in (
@@ -54,8 +54,8 @@ class SimulationServiceConfig:
             raise SimulationContractError("port must be between 1 and 65535")
         if self.inference_transport not in {"http", "wireless"}:
             raise SimulationContractError("inference transport must be http or wireless")
-        if self.inference_backend not in {"vvla", "sglang"}:
-            raise SimulationContractError("inference backend must be vvla or sglang")
+        if self.inference_backend not in {"embodiinfer", "sglang"}:
+            raise SimulationContractError("inference backend must be embodiinfer or sglang")
         for name in ("inference_options", "simulator_options"):
             object.__setattr__(self, name, _mapping(getattr(self, name), name))
 
@@ -103,7 +103,7 @@ class SimulationServiceConfig:
                 inference.get("backend"),
                 "simulation config.inference.backend",
             )
-            or "vvla",
+            or "embodiinfer",
             inference_transport=_string(inference, "transport", "simulation config.inference"),
             inference_endpoint=_string(inference, "endpoint", "simulation config.inference"),
             inference_options=_mapping(inference.get("options", {}), "simulation config.inference.options"),

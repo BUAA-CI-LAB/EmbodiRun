@@ -18,7 +18,7 @@ from unittest.mock import Mock, patch
 import numpy as np
 from PIL import Image
 
-from embodirun.model_services.backends.vvla.http import VvlaHttpClient, VvlaHttpError
+from embodirun.model_services.backends.embodiinfer.http import EmbodiInferHttpClient, EmbodiInferHttpError
 from embodirun.model_services.contracts import ImagePayload, PolicyObservation, Session
 
 # Optional integration sources are not installed with EmbodiRun's core.
@@ -63,9 +63,9 @@ class FakeCore:
 
 class HttpBoundaryTests(unittest.TestCase):
     def setUp(self):
-        if importlib.util.find_spec("torch") is None or importlib.util.find_spec("vvla") is None:
+        if importlib.util.find_spec("torch") is None or importlib.util.find_spec("embodiinfer") is None:
             self.skipTest("Optional EmbodiInfer/Torch dependencies unavailable")
-        from vvla.engine.serve.http_server import PolicyHttpService, create_http_server
+        from embodiinfer.engine.serve.http_server import PolicyHttpService, create_http_server
 
         self.core = FakeCore()
         service = PolicyHttpService(ActiveVLNAdapter(self.core), token="test-token", max_body_bytes=100000)
@@ -73,7 +73,7 @@ class HttpBoundaryTests(unittest.TestCase):
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
         self.url = f"http://127.0.0.1:{self.server.server_address[1]}"
-        self.client = VvlaHttpClient(self.url, token="test-token")
+        self.client = EmbodiInferHttpClient(self.url, token="test-token")
 
     def tearDown(self):
         self.server.shutdown()
@@ -108,7 +108,7 @@ class HttpBoundaryTests(unittest.TestCase):
         self.assertGreater(reset.revision, session.revision)
         self.client.step(self.observation(reset, "request-3"))
         self.client.close(session.session_id)
-        with self.assertRaises(VvlaHttpError):
+        with self.assertRaises(EmbodiInferHttpError):
             self.client.step(self.observation(session, "request-4", 1))
         second = self.client.open_session(robot_id="microduck-sim", action_space=ACTION_SPACE)
         self.client.step(self.observation(second, "request-5"))
@@ -117,10 +117,10 @@ class HttpBoundaryTests(unittest.TestCase):
         self.assertGreaterEqual(len(self.core.resets), 3)
 
     def test_unauthorized_request_and_step_gap_never_infer(self):
-        with self.assertRaises(VvlaHttpError):
-            VvlaHttpClient(self.url).capabilities()
+        with self.assertRaises(EmbodiInferHttpError):
+            EmbodiInferHttpClient(self.url).capabilities()
         session = self.client.open_session(robot_id="microduck-sim", action_space=ACTION_SPACE)
-        with self.assertRaises(VvlaHttpError):
+        with self.assertRaises(EmbodiInferHttpError):
             self.client.step(self.observation(session, step=3))
         self.assertEqual(self.core.calls, [])
         self.client.close(session.session_id)
@@ -178,27 +178,27 @@ class AssetInventoryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             project = root / "project"
-            vvla = root / "inference"
+            embodiinfer = root / "inference"
             checkpoint = root / "checkpoint"
             (project / "src/robots_assets/mjcf_assets").mkdir(parents=True)
             (project / "data/train").mkdir(parents=True)
             (project / "data").mkdir(exist_ok=True)
-            (vvla / "vvla").mkdir(parents=True)
+            (embodiinfer / "embodiinfer").mkdir(parents=True)
             checkpoint.mkdir()
             (project / "src/robots_assets/alpha_walking.onnx").write_bytes(b"onnx")
             (project / "src/robots_assets/mjcf_assets/robot_allcollisions.xml").write_text("<mujoco/>")
             (project / "data/train/eval_val2_40_valid.jsonl").write_text("{}\n")
             (project / "data/demo_microduck_vln.jsonl").write_text("{}\n")
-            (vvla / "vvla/model_config.json").write_text("{}")
+            (embodiinfer / "embodiinfer/model_config.json").write_text("{}")
             (checkpoint / "config.json").write_text("{}")
             (checkpoint / "model.safetensors.index.json").write_text(
                 json.dumps({"weight_map": {"layer.safetensors": "layer.safetensors"}})
             )
             (checkpoint / "layer.safetensors").write_bytes(b"weights")
 
-            files = asset_files({"project": project, "vvla": vvla, "checkpoint": checkpoint})
+            files = asset_files({"project": project, "embodiinfer": embodiinfer, "checkpoint": checkpoint})
 
-            self.assertIn("vvla/vvla/model_config.json", files)
+            self.assertIn("embodiinfer/embodiinfer/model_config.json", files)
 
 
 class ExecutionTests(unittest.TestCase):
@@ -377,18 +377,18 @@ class ProcessLifecycleTests(unittest.TestCase):
                 children.append(child)
                 return child
 
-            class ProbeClient(VvlaHttpClient):
+            class ProbeClient(EmbodiInferHttpClient):
                 def health(self):
                     try:
                         return super().health()
-                    except VvlaHttpError as error:
+                    except EmbodiInferHttpError as error:
                         failed_probes.append(error)
                         (output / "service.ready.allow").touch()
                         raise
 
             with (
                 patch("embodirun_microduck.process.subprocess.Popen", side_effect=launch),
-                patch("embodirun_microduck.process.VvlaHttpClient", ProbeClient),
+                patch("embodirun_microduck.process.EmbodiInferHttpClient", ProbeClient),
                 managed_service(self.service_args(timeout=10.0, request_timeout=0.1), output) as client,
             ):
                 self.assertTrue(failed_probes)
@@ -414,7 +414,7 @@ class ProcessLifecycleTests(unittest.TestCase):
             ready.write_text(json.dumps({"pid": process.pid, "port": 8000}))
             with (
                 patch("embodirun_microduck.process.subprocess.Popen", return_value=process),
-                patch("embodirun_microduck.process.VvlaHttpClient", return_value=client),
+                patch("embodirun_microduck.process.EmbodiInferHttpClient", return_value=client),
                 patch("embodirun_microduck.process.time.monotonic", side_effect=lambda: clock.now),
                 patch(
                     "embodirun_microduck.process.time.sleep",
@@ -429,7 +429,7 @@ class ProcessLifecycleTests(unittest.TestCase):
         with self.startup_probes() as (output, client, process, clock):
             client.health.side_effect = [{"status": "starting"}, {"status": "ok"}, {"status": "ok"}]
             client.capabilities.side_effect = [
-                VvlaHttpError("temporarily unavailable"),
+                EmbodiInferHttpError("temporarily unavailable"),
                 client.capabilities.return_value,
             ]
             with managed_service(self.service_args(request_timeout=120.0), output) as result:
@@ -448,7 +448,7 @@ class ProcessLifecycleTests(unittest.TestCase):
                 def fail_probe(timeouts=timeouts, client=client, clock=clock):
                     timeouts.append(client.timeout_s)
                     clock.now += client.timeout_s
-                    raise VvlaHttpError("probe timed out")
+                    raise EmbodiInferHttpError("probe timed out")
 
                 getattr(client, endpoint).side_effect = fail_probe
                 with (
@@ -459,7 +459,7 @@ class ProcessLifecycleTests(unittest.TestCase):
                 self.assertEqual(timeouts[0], 1.0)
                 self.assertAlmostEqual(timeouts[1], 0.3)
                 self.assertAlmostEqual(clock.now, 1.5)
-                self.assertIsInstance(caught.exception.__cause__, VvlaHttpError)
+                self.assertIsInstance(caught.exception.__cause__, EmbodiInferHttpError)
                 process.terminate.assert_called_once()
 
     def test_child_exit_during_health_probe_fails_without_waiting_for_deadline(self):
@@ -467,7 +467,7 @@ class ProcessLifecycleTests(unittest.TestCase):
 
             def exit_during_probe():
                 process.returncode = 3
-                raise VvlaHttpError("connection reset")
+                raise EmbodiInferHttpError("connection reset")
 
             client.health.side_effect = exit_during_probe
             with (
@@ -508,7 +508,9 @@ class PublicEntrypointTests(unittest.TestCase):
                 self.assertIn("--checkpoint", result.stdout)
 
     def test_inference_path_is_explicit_and_ignores_old_environment_overrides(self):
-        with patch.dict(os.environ, {"MICRODUCK_INFERENCE_ROOT": "public-checkout", "MICRODUCK_VVLA_ROOT": "legacy"}):
+        with patch.dict(
+            os.environ, {"MICRODUCK_INFERENCE_ROOT": "public-checkout", "MICRODUCK_EMBODIINFER_ROOT": "legacy"}
+        ):
             with patch.object(sys, "argv", ["run_demo.py", "--project-root", "/tmp/assets"]):
                 self.assertEqual(runner.parse_args().inference_root, REPO / "third_party/embodiinfer")
             with patch.object(

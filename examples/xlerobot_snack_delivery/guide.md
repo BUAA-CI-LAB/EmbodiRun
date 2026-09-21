@@ -7,7 +7,7 @@
 1. 按 [XLeRobot 官方装配资料](https://github.com/Vector-Wangel/XLeRobot) 搭建双轮底盘、双 SO-101 机械臂、供电和急停，安装前视、左右腕相机。硬件选择和预算见 [清单](hardware.md)。
 2. 复制 [hardware.example.json](hardware.example.json)，填写稳定串口名、相机路径、SDK 路径、标定文件、轮向、轮径和轮距。保持 `allow_motion: false` 完成读数检查。确认相机角色、关节单位、限位和停止反馈后再开启运动；不要直接照搬示例轮向和递交姿态。
 3. 在机器人 Linux 主机运行 `bash examples/run.sh examples/xlerobot_snack_delivery/example.yaml setup`。安装器用项目 `uv.lock` 安装核心和 Host 依赖；硬件 SDK、相机和录制 extras 由独立 owner 包安装。仅做离线演练时，使用 Host 环境即可。
-4. 在 GPU 主机启动与该机器人训练配置匹配的 π0.5 服务，参考 [模型部署示例](../../configs/pi05/bi-so101-vvla.yaml)。这里复用的是服务启动方式；本 recipe 的 binding 是 `lerobot.xlerobot.pi05`。模型须输出带 feature names 的本机标定绝对位置：关节 degrees、夹爪 range_0_100，左右各六维。通用权重或匿名 50×12 数组不能自动视为适配完成。
+4. 在 GPU 主机启动与该机器人训练配置匹配的 π0.5 服务，参考 [模型部署示例](../../configs/pi05/bi-so101-embodiinfer.yaml)。这里复用的是服务启动方式；本 recipe 的 binding 是 `lerobot.xlerobot.pi05`。模型须输出带 feature names 的本机标定绝对位置：关节 degrees、夹爪 range_0_100，左右各六维。通用权重或匿名 50×12 数组不能自动视为适配完成。
 5. 复制 [deployment.example.yaml](deployment.example.yaml)，填写硬件配置路径、模型服务 endpoint 和 owner 相机角色。模型 endpoint 可经 SSH 转发到机器人主机。底盘和双臂 Control 默认分别使用 `127.0.0.1:8100`、`127.0.0.1:8101`；owner 使用 `8766`，提供不同的 `/robot/*` API。
 
 先生成并校验配置，不启动硬件：

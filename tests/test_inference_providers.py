@@ -37,7 +37,7 @@ from embodirun.services.inference.providers import (
 )
 
 
-def _config(tmp_path: Path, model: str, provider: str = "vvla") -> Path:
+def _config(tmp_path: Path, model: str, provider: str = "embodiinfer") -> Path:
     path = tmp_path / "deployment.yaml"
     path.write_text(
         f"""metadata:\n  name: external\n  deploy-commit: test\nnodes:\n  host:\n    type: workstation\n    connection: {{type: local}}\nrobots:\n  robot:\n    type: lerobot.so101\n    node: host\n    port: /dev/null\nsensors:\n  state:\n    type: state\n    node: host\nmodels:\n  {model}:\n    provider: {provider}\n    transport: http\n    service: external\n    endpoint: http://127.0.0.1:9999\n    type: pi05\nruntimes:\n  runtime:\n    robot: robot\n    model: {model}\n    binding: lerobot.so101.pi05\n    inputs: {{state: state}}\n    server: {{bind: 127.0.0.1, port: 8101}}\n""",
@@ -111,7 +111,7 @@ def _run_lifecycle(config: Path, tmp_path: Path):
 def test_legacy_and_canonical_model_service_imports_share_registry_and_types() -> None:
     assert LegacyProvider is CanonicalProvider
     assert LegacySglangHttpClient is CanonicalSglangHttpClient
-    assert canonical_provider("vvla") is not None
+    assert canonical_provider("embodiinfer") is not None
 
 
 @pytest.mark.parametrize("order", ["legacy-first", "canonical-first"])
@@ -376,7 +376,7 @@ def test_registered_managed_provider_builds_host_plan_without_host_enum(
         )
     )
     path = _config(tmp_path, "policy").read_text()
-    path = path.replace("provider: vvla", f"provider: {provider_name}")
+    path = path.replace("provider: embodiinfer", f"provider: {provider_name}")
     path = path.replace("service: external", "service: managed")
     path = path.replace(
         "endpoint: http://127.0.0.1:9999",

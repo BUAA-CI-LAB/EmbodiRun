@@ -1,7 +1,7 @@
-# Shared-device VVLA replay experiment
+# Shared-device EmbodiInfer replay experiment
 
 `run_shared_device_inference.py` is a bounded software-only experiment. It
-uses the public loopback `ControlHttpServer` and the real `VvlaHttpClient`,
+uses the public loopback `ControlHttpServer` and the real `EmbodiInferHttpClient`,
 while the robot is the explicit `simulated.policy_vector` adapter and the
 camera source reads recorded front/wrist files. It does not open a serial,
 USB, CAN, or vendor SDK resource.
@@ -50,7 +50,7 @@ fake robot/camera owner. Each request uses the configured task goal “pick up
 the blue cube and place it in the bowl” and asks for one policy step, while
 the policy may return a 50-step proposal and Deploy executes only a three-step
 prefix. The helper starts recording before the requests, keeps a bounded
-observation subscription active as a second consumer, writes the raw VVLA
+observation subscription active as a second consumer, writes the raw EmbodiInfer
 results and timing to `raw-model-results.json`, and writes a concise
 `report.json`.
 

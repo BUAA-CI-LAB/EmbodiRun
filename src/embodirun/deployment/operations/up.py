@@ -330,7 +330,7 @@ def _materialize_service(
         argv[adapter_index] = _configured_path(argv[adapter_index], deploy_project)
     # The provider descriptor chooses the owning source project.  A managed
     # model may therefore run from Deploy (for a local optional integration)
-    # or from the separate Inference checkout (for the VVLA service).
+    # or from the separate Inference checkout (for the EmbodiInfer service).
     project = deploy_project if environment.project == "deploy" else node.inference_project
     if service.wireless_config_json is not None:
         wireless_path = posixpath.join(node.root, "generated", f"{service.service_id}.wireless.json")

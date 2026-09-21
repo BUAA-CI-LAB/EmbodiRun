@@ -32,7 +32,7 @@ class ControlRuntimeProfile:
     inference_options: Mapping[str, Any]
     inputs: tuple[SensorInput, ...]
     runtime_options: Mapping[str, Any]
-    inference_backend: str = "vvla"
+    inference_backend: str = "embodiinfer"
 
     def __post_init__(self) -> None:
         for name in (
@@ -112,7 +112,7 @@ class ControlRuntimeProfile:
             runtime_id=runtime_id,
             binding_kind=_string(item, "binding", context),
             inference_backend=(
-                _string(inference, "backend", f"{context}.inference") if "backend" in inference else "vvla"
+                _string(inference, "backend", f"{context}.inference") if "backend" in inference else "embodiinfer"
             ),
             inference_transport=_string(inference, "transport", f"{context}.inference"),
             inference_endpoint=_string(inference, "endpoint", f"{context}.inference"),
@@ -138,7 +138,7 @@ class ControlServiceConfig:
     robot_options: Mapping[str, Any]
     inputs: tuple[SensorInput, ...]
     runtime_options: Mapping[str, Any]
-    inference_backend: str = "vvla"
+    inference_backend: str = "embodiinfer"
     # Optional extensions are emitted only when a Host plan needs them, which
     # keeps legacy single-runtime YAML and generated config byte-compatible in
     # shape.  ``runtime_profiles`` is the per-runtime binding map for a shared
@@ -245,7 +245,7 @@ class ControlServiceConfig:
             binding_kind="device-only",
             bind=bind,
             port=port,
-            inference_backend="vvla",
+            inference_backend="embodiinfer",
             inference_transport="disabled",
             inference_endpoint="",
             inference_options={},
@@ -365,13 +365,13 @@ class ControlServiceConfig:
         }
         if inference_enabled:
             inference_backend = (
-                _string(inference, "backend", "control config.inference") if "backend" in inference else "vvla"
+                _string(inference, "backend", "control config.inference") if "backend" in inference else "embodiinfer"
             )
             inference_transport = _string(inference, "transport", "control config.inference")
             inference_endpoint = _string(inference, "endpoint", "control config.inference")
         else:
             inference_backend = (
-                _string(inference, "backend", "control config.inference") if "backend" in inference else "vvla"
+                _string(inference, "backend", "control config.inference") if "backend" in inference else "embodiinfer"
             )
             inference_transport = "disabled"
             inference_endpoint = ""
