@@ -1,0 +1,53 @@
+# Uses this workstation's StreamVLN weights and Habitat test-scene demo episode.
+# This is a local navigation demo, not an R2R benchmark evaluation.
+# Install the current workspace's StreamVLN branch as an explicit local overlay.
+# Update model and dataset paths when running on another machine.
+# Examples use ports 8000/8100: stop one before starting another, or change ports.
+metadata:
+  name: habitat-streamvln-vvla
+  deploy-commit: c3f939a4f2dda25b76560f65f1bd9a2d468fb4f8
+
+nodes:
+  workstation:
+    type: workstation
+    connection:
+      type: local
+
+simulators:
+  habitat-01:
+    type: habitat
+    node: workstation
+    dataset: /data/habitat-test-scenes/streamvln-demo.json.gz
+    scenes_dir: /data/habitat-test-scenes
+    episode_id: streamvln-gui-demo
+    max_episode_steps: 500
+    success_distance_m: 0.5
+    width: 640
+    height: 480
+    # WSLg on this workstation uses Mesa EGL, not a CUDA-mapped EGL device.
+    gpu_device_id: -1
+    viewer: true # Requires a working display on the simulator node.
+
+models:
+  streamvln-01:
+    backend: vvla
+    transport: http
+    type: streamvln
+    node: workstation
+    gpu: cuda:0
+    environment: ./.venv-vvla-streamvln
+    environment_packages:
+      - ./third_party/embodiinfer
+    source: /models/streamvln
+    server:
+      bind: 127.0.0.1
+      port: 8000
+
+runtimes:
+  habitat-streamvln-runtime:
+    simulator: habitat-01
+    model: streamvln-01
+    binding: unitree.go2.streamvln
+    server:
+      bind: 127.0.0.1
+      port: 8100

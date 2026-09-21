@@ -1,0 +1,4 @@
+[submodule "third_party/embodiinfer"]
+	path = third_party/embodiinfer
+	url = https://github.com/BUAA-CI-LAB/EmbodiInfer.git
+	branch = main

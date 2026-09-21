@@ -1,0 +1,124 @@
+site_name: EmbodiRun
+site_description: An Efficient Deployment & Execution Runtime for Embodied AI
+site_url: https://embodirun.readthedocs.io/
+repo_url: https://github.com/BUAA-CI-LAB/EmbodiRun
+repo_name: BUAA-CI-LAB/EmbodiRun
+# English and Simplified Chinese are parallel trees. `docs/zh/` and
+# `mkdocs.zh.yml` belong to the Chinese build; the shared assets, stylesheet,
+# and `requirements.txt` stay at the `docs/` root.
+docs_dir: docs/en
+
+theme:
+  name: material
+  language: en
+  logo: https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/mark.png
+  favicon: https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/favicon.png
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - navigation.instant.progress
+    - content.code.copy
+    - content.tabs.link
+    - search.suggest
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Installation: installation.md
+      - Quick start: quickstart.md
+      - Reproduce the demos: examples.md
+      - Configuration: configuration.md
+  - Operating:
+      - Control: control.md
+      - Safety: safety.md
+      - Platforms and roadmap: support-matrix.md
+  - Integrating:
+      - Inference API v1: http_api.md
+      - Agent execution workflow: agent-workflow.md
+      - RPent integration: rpent-integration.md
+      - π0.5 with two SO-101: pi05-bi-so101.md
+  - Concepts:
+      - Architecture: architecture.md
+  - Experiments:
+      - Overview: experiments.md
+      - Inference transport: inference-transport.md
+      - Camera-only capture: camera-only-experiments.md
+      - Transport candidates: transport-experiments.md
+      - LightNav-0 with XLeRobot: lightnav0_xlerobot.md
+      - MicroDuck VLN in MuJoCo: microduck-vln.md
+      - XLeRobot snack delivery: xlerobot-snack-delivery.md
+  - Reference:
+      - Python API: api.md
+  - Demos:
+      - Three robots, one service: demos/multi-robot-serving.md
+      - Inference engines on SO-101: demos/engine-e2e-contrast.md
+      - XLeRobot snack delivery: demos/xlerobot-snack-delivery.md
+      - Language-guided MicroDuck navigation: demos/microduck-vln.md
+  - Project:
+      - Contributing: contributing.md
+      - Code of Conduct: code-of-conduct.md
+      - License: license.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      # Material bundles the Mermaid runtime and initialises it for any page
+      # that contains a `mermaid` block, so no extra_javascript is needed.
+      # Diagrams then follow the palette and the light/dark toggle.
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: false
+            show_root_heading: false
+            heading_level: 3
+            members_order: source
+            merge_init_into_class: true
+            separate_signature: true
+            show_signature_annotations: true
+            filters: ["!^_"]

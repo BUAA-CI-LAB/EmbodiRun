@@ -1,0 +1,74 @@
+# Copy alongside your example.local.yaml and replace every REPLACE_* value.
+metadata:
+  name: example-engine-embodiinfer-wireless
+  deploy-commit: main
+nodes:
+  gpu:
+    type: workstation
+    connection:
+      type: ssh
+      host: REPLACE_GPU_HOST
+      username: REPLACE_SSH_USER
+      accept_new_host_key: false
+  robot-1:
+    type: workstation
+    connection:
+      type: ssh
+      host: REPLACE_ROBOT_1_HOST
+      username: REPLACE_SSH_USER
+      accept_new_host_key: false
+robots:
+  arm-1:
+    type: lerobot.so101
+    node: robot-1
+    port: /dev/serial/by-id/REPLACE_ARM_1
+    calibration_dir: /REPLACE_CALIBRATION_DIRECTORY
+    calibration_id: REPLACE_ARM_1_CALIBRATION_ID
+    disable_torque_on_disconnect: true
+    max_joint_step_deg: 5.0
+    max_gripper_step: 10.0
+    step_limit_mode: reject
+sensors:
+  front-1:
+    type: v4l2
+    node: robot-1
+    device: /dev/v4l/by-id/REPLACE_ARM_1_FRONT
+    width: 640
+    height: 480
+    fps: 20
+    input_format: mjpeg
+  wrist-1:
+    type: v4l2
+    node: robot-1
+    device: /dev/v4l/by-id/REPLACE_ARM_1_WRIST
+    width: 640
+    height: 480
+    fps: 20
+    input_format: mjpeg
+models:
+  policy:
+    backend: vvla
+    transport: wireless
+    type: pi05
+    node: gpu
+    gpu: cuda:0
+    environment: .venv-vvla-pi05
+    source: /REPLACE_SO101_CHECKPOINT
+    server:
+      bind: 0.0.0.0
+      port: 9300
+    server_args: [--dtype, bfloat16, --num-steps, '10', --max-batch, '1', --capture-full-loop]
+runtimes:
+  arm-1:
+    robot: arm-1
+    model: policy
+    binding: lerobot.so101.pi05
+    server:
+      bind: 127.0.0.1
+      port: 8100
+    inputs:
+      observation.images.front: front-1
+      observation.images.wrist: wrist-1
+    inference_client:
+      bind: 0.0.0.0
+      port: 9300

@@ -1,0 +1,136 @@
+# Simplified Chinese site. Read the Docs builds this as a translation of the
+# `embodirun` project, from the same repository and branch. The root
+# `.readthedocs.yaml` selects this file when READTHEDOCS_LANGUAGE is `zh-cn`.
+#
+# Keep this file in step with mkdocs.yml: only the language, the docs_dir, the
+# navigation and the page set differ.
+site_name: EmbodiRun
+site_description: 面向具身智能的高效部署与执行运行时
+site_url: https://embodirun.readthedocs.io/zh-cn/latest/
+repo_url: https://github.com/BUAA-CI-LAB/EmbodiRun
+repo_name: BUAA-CI-LAB/EmbodiRun
+
+# The Chinese pages are their own documentation root, so that the landing page
+# is the version root rather than /zh/ underneath it. `docs/zh/stylesheets` is a
+# symlink to `docs/stylesheets`, which is how both builds share one brand
+# stylesheet: `extra_css` may not point outside `docs_dir`, and MkDocs silently
+# emits a <link> without copying the file when it does. Check out with symlinks
+# enabled (`git config core.symlinks true`) to build this site locally.
+docs_dir: docs/zh
+site_dir: site-zh
+
+theme:
+  name: material
+  language: zh
+  logo: https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/mark.png
+  favicon: https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/favicon.png
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - navigation.instant.progress
+    - content.code.copy
+    - content.tabs.link
+    - search.suggest
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: 切换到深色模式
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: 切换到浅色模式
+
+# The navigation mirrors mkdocs.yml. Keep the two in step: a page entry here
+# without a matching docs/zh/<page>.md fails the strict build on purpose.
+nav:
+  - 首页: index.md
+  - 快速开始:
+      - 安装: installation.md
+      - 快速开始: quickstart.md
+      - 复现演示: examples.md
+      - 部署配置: configuration.md
+  - 机器人操作:
+      - 手动控制: control.md
+      - 操作安全: safety.md
+      - 支持的平台与路线图: support-matrix.md
+  - 集成:
+      - 推理 API v1: http_api.md
+      - Agent 执行流程: agent-workflow.md
+      - RPent 集成: rpent-integration.md
+      - π0.5 双臂控制: pi05-bi-so101.md
+  - 系统设计:
+      - 系统架构: architecture.md
+  - 实验:
+      - 概览: experiments.md
+      - HTTP 与 WirelessComm 对比: inference-transport.md
+      - 相机采集与断连恢复: camera-only-experiments.md
+      - 传输与采集优化: transport-experiments.md
+      - LightNav-0 底盘导航: lightnav0_xlerobot.md
+      - MicroDuck 导航仿真: microduck-vln.md
+      - XLeRobot 零食递送: xlerobot-snack-delivery.md
+  - 参考:
+      - Python API: api.md
+  - 演示:
+      - 多机器人共享推理: demos/multi-robot-serving.md
+      - SO-101 推理引擎对比: demos/engine-e2e-contrast.md
+      - XLeRobot 零食递送: demos/xlerobot-snack-delivery.md
+      - MicroDuck 语言导航: demos/microduck-vln.md
+  - 项目:
+      - 参与贡献（英文）: https://embodirun.readthedocs.io/en/latest/contributing/
+      - 行为准则（英文）: https://embodirun.readthedocs.io/en/latest/code-of-conduct/
+      - 许可证（英文）: https://embodirun.readthedocs.io/en/latest/license/
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      # Material bundles the Mermaid runtime and initialises it for any page
+      # that contains a `mermaid` block, so no extra_javascript is needed.
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: false
+            show_root_heading: false
+            heading_level: 3
+            members_order: source
+            merge_init_into_class: true
+            separate_signature: true
+            show_signature_annotations: true
+            filters: ["!^_"]

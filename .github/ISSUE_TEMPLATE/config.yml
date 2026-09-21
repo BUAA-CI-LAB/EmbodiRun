@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://embodirun.readthedocs.io/
+    about: Installation, configuration, the Control API, and the safety checklist.
+  - name: Security report
+    url: https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/SECURITY.md
+    about: Report vulnerabilities privately. Do not open a public issue.
+  - name: Contributing guide
+    url: https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/CONTRIBUTING.md
+    about: Development setup, pull request expectations, and the support matrix rule.

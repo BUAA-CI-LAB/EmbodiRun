@@ -1,0 +1,19 @@
+{
+  "name": "outbound",
+  "description": "fixture only; replace with a route recorded from the handover point to the pickup point",
+  "fixture": true,
+  "chunks": [
+    {
+      "action": {
+        "timestamp_s": 0.0,
+        "values": {"x.vel": 0.0, "theta.vel": 0.0},
+        "metadata": {
+          "action_space": "lerobot.xlerobot.external_owner.v1",
+          "units": {"x.vel": "metres-per-sec", "theta.vel": "angular-degrees-per-sec"},
+          "source": "xlerobot.snack_delivery.fixture",
+          "fixture": true
+        }
+      }
+    }
+  ]
+}

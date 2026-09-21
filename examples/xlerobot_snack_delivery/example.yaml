@@ -1,0 +1,9 @@
+version: 1
+name: xlerobot-snack-delivery
+kind: snack
+# Omit python to use the Host interpreter for software-only dry-runs.
+# Set this for hardware: python: ../../.venv-xlerobot-snack/bin/python
+output_dir: ../../artifacts/examples/xlerobot-snack-delivery
+parameters:
+  config: config.example.json
+  deployment: deployment.example.yaml

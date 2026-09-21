@@ -1,0 +1,51 @@
+# Run this example on a Linux GPU workstation; replace the checkpoint path.
+# Examples use ports 8000/8100: stop one before starting another, or change ports.
+metadata:
+  name: isaac-streamvln-vvla
+  deploy-commit: 7c96609060e6da34fd5ba885e08aa47cd8d67427
+
+nodes:
+  workstation:
+    type: workstation
+    connection:
+      type: local
+
+simulators:
+  isaac-01:
+    type: isaac
+    node: workstation
+    task: warehouse-navigation
+    instruction: "Walk forward along the aisle and stop at the target."
+    # Requires Isaac assets; adjust start/goal to reachable positions in the scene.
+    scene: /Isaac/Environments/Simple_Warehouse/warehouse.usd
+    start_position: [0.0, 0.0, 0.5]
+    start_orientation_wxyz: [1.0, 0.0, 0.0, 0.0]
+    goal_position: [5.0, 0.0, 0.5]
+    success_distance_m: 0.5
+    max_episode_steps: 500
+    width: 640
+    height: 480
+    device: cuda
+    viewer: false # Set true only when the simulator node has a working display.
+
+models:
+  streamvln-01:
+    backend: vvla
+    transport: http
+    type: streamvln
+    node: workstation
+    gpu: cuda:0
+    environment: .venv-vvla-streamvln
+    source: /data/models/streamvln
+    server:
+      bind: 127.0.0.1
+      port: 8000
+
+runtimes:
+  isaac-streamvln-runtime:
+    simulator: isaac-01
+    model: streamvln-01
+    binding: unitree.go2.streamvln
+    server:
+      bind: 127.0.0.1
+      port: 8100

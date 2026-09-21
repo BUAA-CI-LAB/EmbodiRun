@@ -1,0 +1,100 @@
+name: Bug report
+description: Something in EmbodiRun does not behave as documented
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste tokens, credentials, addresses, or personal data.
+        For a security problem, follow
+        [SECURITY.md](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/SECURITY.md)
+        instead of opening an issue.
+  - type: input
+    id: revision
+    attributes:
+      label: EmbodiRun revision
+      description: The release version, or the output of `git rev-parse HEAD`.
+      placeholder: 0.1.0 or e1fb255
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - client (Agent HTTP client)
+        - deployment (config, planning, lifecycle)
+        - application (sessions, jobs, control service)
+        - devices (observation, arbitration, recording)
+        - model_services (inference contract and clients)
+        - robots / bindings / simulators
+        - HTTP or WirelessComm transport
+        - install, packaging, or CI
+        - documentation
+        - not sure
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: What happened
+      description: The actual behaviour, including error messages.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: What the documentation or the API contract says should happen.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: >
+        The exact command, the deployment YAML shape with addresses and
+        secrets redacted, and the observed output. Say whether the run was
+        repeatable.
+      render: text
+    validations:
+      required: true
+  - type: dropdown
+    id: hardware
+    attributes:
+      label: Hardware involved
+      options:
+        - No hardware (device-free or CPU only)
+        - Simulated device
+        - Real robot
+        - Unknown
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: >
+        Operating system, Python version, uv version, the install command, and
+        which capability groups were installed.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Redacted excerpts only. Attach full logs as a file if needed.
+      render: text
+    validations:
+      required: false
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I redacted tokens, credentials, addresses, and personal data.
+          required: true
+        - label: This is not a security vulnerability, or I have already reported it privately.
+          required: true

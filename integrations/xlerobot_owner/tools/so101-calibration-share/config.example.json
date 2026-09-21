@@ -1,0 +1,10 @@
+{
+  "mode": "ssh", "host": "192.168.1.100", "user": "robot", "ssh_port": 22, "identity_file": "",
+  "python": "/home/robot/.venv/bin/python", "sdk_src": "", "calibration_dir": "/home/robot/so101-calibrations",
+  "arms": {
+    "arm1": {"id": "arm1", "port": "/dev/serial/by-id/REPLACE_ARM1", "type": "so101_follower"},
+    "arm2": {"id": "arm2", "port": "/dev/serial/by-id/REPLACE_ARM2", "type": "so101_follower"},
+    "arm3": {"id": "arm3", "port": "/dev/serial/by-id/REPLACE_ARM3", "type": "so101_follower"},
+    "arm4": {"id": "arm4", "port": "/dev/serial/by-id/REPLACE_ARM4", "type": "so101_follower"}
+  }
+}

@@ -1,0 +1,69 @@
+name: Feature request
+description: Propose a capability, robot, simulator, model, or backend
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        EmbodiRun accepts reproducible support for a combination only when it is
+        recorded with versions, configuration, hardware, checkpoint, the exact
+        command, and the observed result. See
+        [CONTRIBUTING.md](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/CONTRIBUTING.md)
+        and
+        [docs/en/support-matrix.md](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/docs/en/support-matrix.md).
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: The capability in one sentence.
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Problem and motivation
+      description: >
+        What you cannot do today, who needs it, and why the existing domains or
+        compatibility layer cannot already satisfy it.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - runtime or deployment capability
+        - new robot or simulator adapter
+        - new policy-to-robot binding
+        - inference service or model backend
+        - transport (HTTP or WirelessComm)
+        - documentation and examples
+        - developer experience, packaging, or CI
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+      description: >
+        Include the hardware, model checkpoint, versions, and configuration you
+        would use to demonstrate it, if you know them.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds you tried, and why they are not enough.
+    validations:
+      required: false
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I searched existing issues and the support matrix.
+          required: true
+        - label: I can contribute an implementation, hardware access, or a test run.
+          required: false

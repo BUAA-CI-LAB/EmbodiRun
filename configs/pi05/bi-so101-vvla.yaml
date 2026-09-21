@@ -1,0 +1,83 @@
+# Portable dual SO-101 / three-camera example. Replace device and model paths.
+# Validate this file before connecting any hardware.
+metadata:
+  name: pi05-bi-so101-vvla
+  deploy-commit: replace-with-deploy-revision
+nodes:
+  robot-compute:
+    type: workstation
+    connection:
+      type: local
+robots:
+  bi-so101:
+    type: lerobot.bi_so101
+    node: robot-compute
+    resource: bi-so101-hardware
+    left_port: /dev/serial/by-id/REPLACE_LEFT_ARM
+    right_port: /dev/serial/by-id/REPLACE_RIGHT_ARM
+    calibration_dir: /models/so101-calibration
+    left_calibration_id: left_follower
+    right_calibration_id: right_follower
+    disable_torque_on_disconnect: true
+    max_joint_step_deg: 5.0
+    max_gripper_step: 10.0
+    step_limit_mode: reject
+sensors:
+  front:
+    type: v4l2
+    node: robot-compute
+    device: /dev/v4l/by-id/REPLACE_FRONT_CAMERA
+    width: 640
+    height: 480
+    fps: 30
+  left-wrist:
+    type: v4l2
+    node: robot-compute
+    device: /dev/v4l/by-id/REPLACE_LEFT_WRIST_CAMERA
+    width: 640
+    height: 480
+    fps: 30
+  right-wrist:
+    type: v4l2
+    node: robot-compute
+    device: /dev/v4l/by-id/REPLACE_RIGHT_WRIST_CAMERA
+    width: 640
+    height: 480
+    fps: 30
+models:
+  pi05:
+    backend: vvla
+    transport: http
+    type: pi05
+    node: robot-compute
+    gpu: cuda:0
+    environment: .venv-vvla-pi05
+    source: /models/pi05-checkpoint
+    server:
+      bind: 127.0.0.1
+      port: 8000
+    policy_kwargs:
+      attention: eager
+      vision_attention: sdpa
+      native_embeddings: true
+      low_cpu_mem_usage: true
+    server_args:
+      - --dtype
+      - auto
+      - --num-steps
+      - '10'
+      - --max-batch
+      - '1'
+      - --capture-full-loop
+runtimes:
+  bi-so101-pi05:
+    robot: bi-so101
+    model: pi05
+    binding: lerobot.bi_so101.pi05
+    server:
+      bind: 127.0.0.1
+      port: 8100
+    inputs:
+      observation.images.front: front
+      observation.images.left_wrist: left-wrist
+      observation.images.right_wrist: right-wrist

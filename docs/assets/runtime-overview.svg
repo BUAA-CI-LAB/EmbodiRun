@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="410" viewBox="0 0 840 410" role="img" aria-labelledby="title desc">
+  <title id="title">EmbodiRun deployment and execution</title>
+  <desc id="desc">Host deploys runtime and inference services. Applications use the client API. Control owns robot connections; Simulation owns simulator environments. Both exchange observations and actions with inference.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10Z" fill="#52667e"/></marker>
+  </defs>
+  <rect width="840" height="410" rx="18" fill="#f5f8fc"/>
+  <g font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#182c45">
+    <rect x="28" y="28" width="250" height="82" rx="12" fill="#fff" stroke="#ccd7e5"/>
+    <text x="153" y="61" font-size="22" font-weight="700">Application / Agent</text>
+    <text x="153" y="88" font-size="16" fill="#52667e">Your planning loop</text>
+    <rect x="478" y="28" width="334" height="82" rx="12" fill="#fff" stroke="#ccd7e5"/>
+    <text x="645" y="61" font-size="22" font-weight="700">Host CLI + YAML</text>
+    <text x="645" y="88" font-size="16" fill="#52667e">Prepare · deploy · manage services</text>
+    <path d="M153 110V180" fill="none" stroke="#52667e" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="157" y="145" text-anchor="start" font-size="15" fill="#52667e">Client API</text>
+    <path d="M545 110V137H369V180M685 110V180" fill="none" stroke="#52667e" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#arrow)"/>
+    <rect x="28" y="182" width="360" height="116" rx="12" fill="#e3f1ff" stroke="#2583dc"/>
+    <text x="208" y="216" font-size="23" font-weight="700">Control / Simulation</text>
+    <text x="208" y="244" font-size="17">Observations · action execution</text>
+    <text x="208" y="272" font-size="17">Robot bindings / simulator adapters</text>
+    <rect x="548" y="182" width="264" height="116" rx="12" fill="#e1f5eb" stroke="#269d71"/>
+    <text x="680" y="216" font-size="23" font-weight="700">Inference service</text>
+    <text x="680" y="244" font-size="17">EmbodiInfer</text>
+    <text x="680" y="272" font-size="17">or an external provider</text>
+    <path d="M388 242H548" fill="none" stroke="#52667e" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <text x="468" y="215" font-size="15" fill="#52667e">HTTP /</text>
+    <text x="468" y="232" font-size="15" fill="#52667e">WirelessComm</text>
+    <path d="M208 299V337" fill="none" stroke="#52667e" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <rect x="28" y="339" width="360" height="45" rx="10" fill="#fff" stroke="#ccd7e5"/>
+    <text x="208" y="368" font-size="20" font-weight="700">Robot / Simulator</text>
+    <text x="680" y="359" font-size="17" fill="#52667e">Control near the device.</text>
+    <text x="680" y="383" font-size="17" fill="#52667e">Inference on the GPU host.</text>
+  </g>
+</svg>

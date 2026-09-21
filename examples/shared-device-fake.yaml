@@ -1,0 +1,41 @@
+# A local, no-model deployment for exercising Host and Control lifecycle APIs.
+# The robot and camera are in-memory implementations; this file never opens
+# serial, CAN, USB, or network robot resources.
+metadata:
+  name: shared-device-fake
+  deploy-commit: main
+
+nodes:
+  local:
+    type: workstation
+    connection:
+      type: local
+
+robots:
+  fake-arm:
+    type: simulated.joints
+    node: local
+    resource: fake-arm
+    initial_joint_positions_deg: [0, 0, 0, 0, 0]
+    initial_gripper_position: 25
+    max_joint_step_deg: 12
+    max_gripper_step: 20
+    step_limit_mode: clip
+
+sensors:
+  fake-front:
+    type: fake
+    node: local
+    resource: fake-front
+    width: 64
+    height: 48
+    color: [32, 96, 160]
+
+runtimes:
+  fake-device:
+    robot: fake-arm
+    server:
+      bind: 127.0.0.1
+      port: 8100
+    inputs:
+      observation.images.front: fake-front

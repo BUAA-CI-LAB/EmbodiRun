@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "embodirun-sglang-pi05"
+version = "0.1.0"
+description = "Optional SGLang LeRobot Pi0.5 serving integration for EmbodiRun"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+dependencies = [
+  # Managed Host installs the local checkout with ``-e ../..``; this
+  # requirement also keeps standalone package metadata honest for consumers.
+  "embodirun>=0.1.0",
+  "sglang[diffusion]==0.5.18; python_version >= '3.12' and sys_platform == 'linux'",
+  "numpy>=1.24",
+  "safetensors>=0.4",
+  "torch>=2.0",
+]
+
+[project.scripts]
+embodirun-sglang-pi05-serve = "embodirun_sglang_pi05.pi05:main"
+# Compatibility alias for existing deployments.
+rlinf-sglang-pi05-serve = "embodirun_sglang_pi05.pi05:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

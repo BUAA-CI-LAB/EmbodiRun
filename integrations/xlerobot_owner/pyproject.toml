@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "embodirun-xlerobot-owner"
+version = "0.1.0"
+description = "Optional XLeRobot teleoperation owner and episode tools"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+dependencies = [
+  "embodirun>=0.1.0",
+  "aiohttp>=3.10,<4",
+]
+
+[project.optional-dependencies]
+# The owner tests exercise the HTTP boundary and recorder with fakes. Keep
+# these dependencies separate from the core deployment package so installing
+# EmbodiRun itself does not pull in a test runner or data-processing stack.
+test = ["pytest>=8,<9", "pytest-asyncio>=0.23,<1", "numpy>=1.26,<2", "Pillow>=10,<13"]
+web = ["cryptography>=43"]
+hardware = ["lerobot>=0.6,<0.7"]
+hid = ["hidapi>=0.14,<1"]
+camera = ["opencv-python-headless>=4.10,<5"]
+recording = ["lerobot>=0.6,<0.7", "numpy>=1.26,<2", "Pillow>=10,<13"]
+video = ["aiortc>=1.14,<2"]
+
+[project.scripts]
+embodirun-xlerobot-owner = "embodirun_xlerobot_owner.__main__:main"
+embodirun-xlerobot-joycon = "embodirun_xlerobot_owner.joycon_teleop:main"
+embodirun-xlerobot-dualsense = "embodirun_xlerobot_owner.dualsense_drive:main"
+# Compatibility aliases for existing deployments.
+rlinf-xlerobot-owner = "embodirun_xlerobot_owner.__main__:main"
+rlinf-xlerobot-joycon = "embodirun_xlerobot_owner.joycon_teleop:main"
+rlinf-xlerobot-dualsense = "embodirun_xlerobot_owner.dualsense_drive:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+embodirun_xlerobot_owner = ["web/*.html", "web/*.js", "web/*.css"]

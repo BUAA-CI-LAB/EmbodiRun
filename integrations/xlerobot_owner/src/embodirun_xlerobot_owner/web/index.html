@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111719" />
+    <meta
+      name="description"
+      content="XLeRobot Quest Pro WebXR 遥操作控制台，提供三路相机监视和安全控制状态。"
+    />
+    <title>XLeRobot Quest Pro 遥操作控制台</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+<body>
+  <p><a href="/static/xr-input-check.html">手柄原始输入对照（只读，不控制机器人）</a></p>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="XLeRobot 遥操作首页">
+          <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span class="brand-copy">
+            <strong>XLeRobot</strong>
+            <span>Quest Pro Teleop</span>
+          </span>
+        </a>
+
+        <div class="topbar-status" aria-label="平台状态">
+          <span id="modeBadge" class="status-chip status-chip-muted">等待状态</span>
+          <span id="connectionBadge" class="status-chip status-chip-muted">
+            <span class="status-indicator" aria-hidden="true"></span>
+            <span id="connectionText">未连接</span>
+          </span>
+          <button id="themeToggle" class="button button-quiet" type="button" aria-label="切换颜色主题">
+            浅色界面
+          </button>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <section class="intro-row" aria-labelledby="pageTitle">
+          <div>
+            <p class="eyebrow">空间操作控制台</p>
+            <h1 id="pageTitle">把现场画面带进 Quest Pro</h1>
+            <p class="intro-copy">
+              AGX 画面经 Mac 中继到浏览器，控制输入保持在同一条受控 WebSocket 链路。
+            </p>
+          </div>
+          <div class="transport-summary" aria-label="传输路径">
+            <span class="summary-label">视频路径</span>
+            <strong>AGX <i>→</i> Mac <i>→</i> Quest</strong>
+            <span>WebRTC coded video / same-origin session</span>
+          </div>
+        </section>
+
+        <section class="workspace-grid" aria-label="实时监视与控制">
+          <section class="panel camera-panel" aria-labelledby="cameraTitle">
+            <div class="panel-heading camera-heading">
+              <div>
+                <div class="heading-line">
+                  <h2 id="cameraTitle">相机监视</h2>
+                  <span class="view-chip">单目画面</span>
+                </div>
+                <p>三路 WebRTC 视频保持在固定节点。点击任意画面设为 VR 主画面。</p>
+              </div>
+              <span id="cameraHealth" class="heading-meta">0 / 3 在线</span>
+            </div>
+
+            <div id="cameraGrid" class="camera-grid" aria-label="三路相机画面">
+              <article
+                class="camera-tile camera-tile-front is-main"
+                data-camera="front"
+                tabindex="0"
+                role="button"
+                aria-label="前视相机，点击设为 VR 主画面"
+              >
+                <div class="camera-frame">
+                  <video id="camera-front" autoplay muted playsinline aria-label="前视相机实时视频"></video>
+                  <div class="camera-placeholder" aria-hidden="true">
+                    <span class="placeholder-cross"></span>
+                    <span id="placeholder-front">等待前视视频</span>
+                  </div>
+                  <div class="camera-overlay">
+                    <span class="camera-name">FRONT / 前视</span>
+                    <span id="camera-state-front" class="camera-state">等待连接</span>
+                  </div>
+                  <span class="main-camera-mark">VR 主画面</span>
+                </div>
+              </article>
+
+              <article
+                class="camera-tile"
+                data-camera="left_wrist"
+                tabindex="0"
+                role="button"
+                aria-label="左腕相机，点击设为 VR 主画面"
+              >
+                <div class="camera-frame">
+                  <video id="camera-left_wrist" autoplay muted playsinline aria-label="左腕相机实时视频"></video>
+                  <div class="camera-placeholder" aria-hidden="true">
+                    <span class="placeholder-cross"></span>
+                    <span id="placeholder-left_wrist">等待左腕视频</span>
+                  </div>
+                  <div class="camera-overlay">
+                    <span class="camera-name">LEFT WRIST / 左腕</span>
+                    <span id="camera-state-left_wrist" class="camera-state">等待连接</span>
+                  </div>
+                  <span class="main-camera-mark">设为主画面</span>
+                </div>
+              </article>
+
+              <article
+                class="camera-tile"
+                data-camera="right_wrist"
+                tabindex="0"
+                role="button"
+                aria-label="右腕相机，点击设为 VR 主画面"
+              >
+                <div class="camera-frame">
+                  <video id="camera-right_wrist" autoplay muted playsinline aria-label="右腕相机实时视频"></video>
+                  <div class="camera-placeholder" aria-hidden="true">
+                    <span class="placeholder-cross"></span>
+                    <span id="placeholder-right_wrist">等待右腕视频</span>
+                  </div>
+                  <div class="camera-overlay">
+                    <span class="camera-name">RIGHT WRIST / 右腕</span>
+                    <span id="camera-state-right_wrist" class="camera-state">等待连接</span>
+                  </div>
+                  <span class="main-camera-mark">设为主画面</span>
+                </div>
+              </article>
+            </div>
+
+            <div class="camera-toolbar">
+              <label class="field-inline" for="mainCameraSelect">
+                <span>VR 主画面</span>
+                <select id="mainCameraSelect">
+                  <option value="front">前视 FRONT</option>
+                  <option value="left_wrist">左腕 LEFT WRIST</option>
+                  <option value="right_wrist">右腕 RIGHT WRIST</option>
+                </select>
+              </label>
+              <div class="display-note">
+                <span class="display-glyph" aria-hidden="true"><i></i><i></i></span>
+                <span><strong>沉浸式 VR</strong> 双眼共享同一组三路单目视频帧，不代表双目相机。</span>
+              </div>
+            </div>
+            <div class="video-peer-feedback" aria-live="polite">
+              <span id="videoPeerStatus">等待认证后建立 WebRTC 视频</span>
+              <span id="videoPeerStats" class="video-peer-stats">实际解码 FPS - · codec - · 码率 -</span>
+              <span id="videoPeerError" class="video-peer-error" role="alert" hidden></span>
+              <button id="videoPeerRetry" class="button button-secondary" type="button" hidden>
+                重试 WebRTC 视频
+              </button>
+            </div>
+          </section>
+
+          <aside class="side-stack">
+            <section id="authPanel" class="panel auth-panel" aria-labelledby="authTitle">
+              <div class="panel-heading compact-heading">
+                <div>
+                  <h2 id="authTitle">会话认证</h2>
+                  <p>令牌只提交到同源会话接口，后续请求使用浏览器 Cookie。</p>
+                </div>
+                <span id="authState" class="status-chip status-chip-muted">未认证</span>
+              </div>
+              <form id="authForm" class="auth-form">
+                <label for="tokenInput">Token 或 6 位配对码</label>
+                <div class="input-action-row">
+                  <input
+                    id="tokenInput"
+                    name="token"
+                    type="password"
+                    autocomplete="off"
+                    spellcheck="false"
+                    placeholder="输入长 Token 或 6 位配对码"
+                  />
+                  <button id="authButton" class="button button-primary" type="submit">连接会话</button>
+                </div>
+                <p id="authHint" class="form-hint">可粘贴长 Token，也可输入服务器控制台显示的 6 位一次性配对码。地址栏的 #token=... 会自动取用并移除。</p>
+              </form>
+            </section>
+
+            <section class="panel control-panel" aria-labelledby="controlTitle">
+              <div class="panel-heading compact-heading">
+                <div>
+                  <h2 id="controlTitle">控制权</h2>
+                <p>Arm 只提交控制请求，是否启用以服务端状态回读为准。</p>
+              </div>
+                <span id="armBadge" class="status-chip status-chip-muted">未启用</span>
+              </div>
+
+              <div class="lease-row">
+                <span class="metric-label">当前控制权</span>
+                <strong id="leaseValue">等待服务端控制权</strong>
+              </div>
+              <div class="control-actions">
+                <button id="armButton" class="button button-primary button-large" type="button" disabled>
+                  Arm
+                </button>
+                <button id="stopButton" class="button button-danger button-large" type="button" disabled>
+                  Stop
+                </button>
+                <button id="immersiveButton" class="button button-secondary button-large" type="button" disabled>
+                  进入沉浸式 VR
+                </button>
+              </div>
+              <label class="field-inline" for="controlModeSelect">
+                <span>控制模式</span>
+                <select id="controlModeSelect" disabled>
+                  <option value="arms">双臂抓取</option>
+                  <option value="drive" disabled>底盘行驶</option>
+                </select>
+              </label>
+              <p id="controlModeHint" class="control-hint">先 Stop 再切换模式；切换不会自动启用。</p>
+              <p id="controlHint" class="control-hint">
+                  握住 Grip 接管并跟手；左右推对应摇杆转动底部旋转轴。默认扣扳机合爪；左 Y / 右 B 切换对应爪子开合，松开扳机保持；X / A 停止。首次接管请松开扳机、摇杆归中。
+              </p>
+              <div id="xrStatus" class="inline-status" role="status">正在检查 WebXR 支持</div>
+            </section>
+          </aside>
+        </section>
+
+        <section class="lower-grid" aria-label="运行状态与任务记录">
+          <section class="panel status-panel" aria-labelledby="statusTitle">
+            <div class="panel-heading compact-heading">
+              <div>
+                <h2 id="statusTitle">运行状态</h2>
+                <p>状态由 REST 轮询和 WebSocket 事件共同更新。</p>
+              </div>
+              <span id="statusAge" class="heading-meta">尚未回读</span>
+            </div>
+            <dl class="status-list">
+              <div>
+                <dt>模式</dt>
+                <dd id="statusMode">等待状态</dd>
+              </div>
+              <div>
+                <dt>服务连接</dt>
+                <dd id="statusConnected">未确认</dd>
+              </div>
+              <div>
+                <dt>录制</dt>
+                <dd id="statusRecording">未录制</dd>
+              </div>
+              <div>
+                <dt>输入链路</dt>
+                <dd id="statusInput">未启动</dd>
+              </div>
+            </dl>
+            <div id="statusError" class="error-box" role="alert" hidden></div>
+            <div class="stats-strip" aria-label="传输统计">
+              <div><span>FPS</span><strong id="statFps">-</strong></div>
+              <div><span>观测年龄</span><strong id="statLatency">-</strong></div>
+              <div><span>输入端</span><strong id="statDropped">-</strong></div>
+            </div>
+          </section>
+
+          <section class="panel joint-panel" aria-labelledby="jointTitle">
+            <div class="panel-heading compact-heading">
+              <div>
+                <h2 id="jointTitle">机器人状态</h2>
+                <p>只读显示服务端回传的关节或底盘状态。</p>
+              </div>
+              <span class="heading-meta">read-only</span>
+            </div>
+            <div id="jointState" class="joint-state" aria-live="polite">
+              <div class="empty-inline">等待 /api/status 的 state</div>
+            </div>
+          </section>
+
+          <section class="panel recording-panel" aria-labelledby="recordingTitle">
+            <div class="panel-heading compact-heading">
+              <div>
+                <h2 id="recordingTitle">数据记录</h2>
+                <p>记录由服务端管理，不提供浏览器删除或上传操作。</p>
+              </div>
+              <span id="recordingBadge" class="status-chip status-chip-muted">未录制</span>
+            </div>
+            <form id="recordForm" class="record-form">
+              <label for="taskInput">任务名称</label>
+              <div class="input-action-row">
+                <input id="taskInput" name="task" type="text" maxlength="120" placeholder="例如：桌面取放" />
+                <button id="recordStart" class="button button-primary" type="submit">开始记录</button>
+              </div>
+            </form>
+            <div class="input-action-row">
+              <label class="field-inline" for="recordOutcome">
+                <span>记录结果</span>
+                <select id="recordOutcome" name="outcome">
+                  <option value="null" selected>未知</option>
+                  <option value="true">成功</option>
+                  <option value="false">失败</option>
+                </select>
+              </label>
+              <button id="recordStop" class="button button-secondary" type="button" disabled>停止记录</button>
+            </div>
+            <p id="recordingMessage" class="form-hint" role="status">等待任务名称。</p>
+            <p id="recordingPath" class="recording-path" hidden></p>
+          </section>
+
+          <section class="panel guide-panel" aria-labelledby="guideTitle">
+            <div class="panel-heading compact-heading">
+              <div>
+                <h2 id="guideTitle">操作前确认</h2>
+                <p>短流程，任何异常优先 Stop。</p>
+              </div>
+              <span class="heading-meta">operator</span>
+            </div>
+            <ol class="operator-steps">
+              <li><span>验证</span> 连接会话，确认控制权不在其他操作者手中。</li>
+              <li><span>观察</span> 三路画面和服务连接都已回读，再进入沉浸式 VR。</li>
+              <li><span>接管</span> 双手追踪且没有握住 grip 时点击 Arm，移动时持续握住对应 grip，扳机控制对应夹爪。</li>
+              <li><span>释放</span> 松开某侧 grip 只释放该侧 clutch；页面隐藏、追踪丢失或网络拥塞才会触发全局 Stop。</li>
+            </ol>
+          </section>
+        </section>
+
+        <section class="event-row" aria-label="事件反馈">
+          <div id="eventLog" class="event-log" role="log" aria-live="polite" aria-relevant="additions">
+            <span class="event-time">--:--:--</span>
+            <span>等待浏览器连接到遥操作服务。</span>
+          </div>
+          <span id="observerNote" class="observer-note">Mac 观察端与 Quest 浏览器可同时打开。</span>
+        </section>
+      </main>
+    </div>
+
+    <canvas id="xrCanvas" width="1600" height="1000" aria-hidden="true"></canvas>
+    <div id="toastRegion" class="toast-region" role="status" aria-live="polite"></div>
+
+    <noscript>
+      <div class="noscript-message">此控制台需要启用 JavaScript 才能建立会话和 WebXR 连接。</div>
+    </noscript>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,3 @@
+# Keep these versions compatible with the LeRobot 0.6 dependency range.
+torch>=2.7,<2.12
+torchvision>=0.22,<0.27

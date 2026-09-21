@@ -1,0 +1,123 @@
+{
+  "control": {
+    "caller_id": "xlerobot-snack-recipe",
+    "session_id": "generated-at-start",
+    "timeout_s": 30,
+    "endpoints": {
+      "base": {
+        "endpoint": "http://127.0.0.1:8100",
+        "runtime_id": "xlerobot-base",
+        "scope": "base"
+      },
+      "manipulation": {
+        "endpoint": "http://127.0.0.1:8101",
+        "runtime_id": "xlerobot-pi05",
+        "scope": "arms"
+      }
+    }
+  },
+  "planning": {
+    "mode": "recorded_route",
+    "route_diagram": "/path/to/route-diagram.png"
+  },
+  "navigation": {
+    "control_hz": 15,
+    "require_zero_velocity": true,
+    "arrival_evidence": [
+      "route_arrived",
+      "stopped",
+      "stop_confirmed"
+    ],
+    "routes": {
+      "outbound": "routes/outbound.json",
+      "return": "routes/return.json"
+    }
+  },
+  "grasp": {
+    "instruction": "Grasp the bag of chips on the table, lift it clear of the table, and keep it in the right gripper.",
+    "timeout_s": 120,
+    "control_hz": 15,
+    "max_steps": 8,
+    "max_rounds": 10
+  },
+  "handover": {
+    "control_hz": 15,
+    "forward_pose": {
+      "right_arm_shoulder_pan.pos": -28.7,
+      "right_arm_shoulder_lift.pos": 10.8,
+      "right_arm_elbow_flex.pos": -13.2,
+      "right_arm_wrist_flex.pos": 18.4,
+      "right_arm_wrist_roll.pos": 1.1
+    },
+    "gripper_opening": {
+      "right_arm_gripper.pos": 21.6
+    }
+  },
+  "evidence": {
+    "paths": {
+      "base_control_ready": [
+        "robot",
+        "metadata",
+        "safety",
+        "base_control_ready"
+      ],
+      "stopped": [
+        "robot",
+        "metadata",
+        "safety",
+        "stopped"
+      ],
+      "stop_confirmed": [
+        "robot",
+        "metadata",
+        "safety",
+        "stop_confirmed"
+      ],
+      "grasp_confirmed": [
+        "robot",
+        "metadata",
+        "task_evidence",
+        "grasp_confirmed"
+      ],
+      "route_arrived": [
+        "robot",
+        "metadata",
+        "navigation",
+        "arrived"
+      ],
+      "zero_velocity": [
+        "robot",
+        "metadata",
+        "navigation",
+        "zero_velocity"
+      ],
+      "arms_stop_confirmed": [
+        "robot",
+        "metadata",
+        "safety",
+        "arms_stop_confirmed"
+      ]
+    },
+    "manual_confirmation": [
+      "grasp_confirmed",
+      "route_arrived"
+    ],
+    "completion": {
+      "task_success": [
+        "task_evidence",
+        "delivery_confirmed"
+      ],
+      "physical_success": [
+        "task_evidence",
+        "handover_sensor_confirmed"
+      ]
+    }
+  },
+  "agent": {
+    "factory": "agents.rpent.snack_agent:create_agent",
+    "options": {
+      "codex_bin": "codex",
+      "timeout_s": 90
+    }
+  }
+}

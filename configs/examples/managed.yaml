@@ -1,0 +1,49 @@
+# Managed optional SGLang example.  Replace the placeholder checkpoint before
+# init; the plan remains local and parseable without a GPU or downloaded model.
+metadata:
+  name: example-managed
+  deploy-commit: main
+nodes:
+  local:
+    type: workstation
+    connection:
+      type: local
+robots:
+  simulated-arm:
+    type: simulated.policy_vector
+    node: local
+    resource: simulated-arm
+sensors:
+  front:
+    type: fake
+    node: local
+    resource: simulated-front
+    width: 64
+    height: 48
+    color: [32, 96, 160]
+models:
+  policy:
+    provider: sglang
+    transport: http
+    type: pi05
+    service: managed
+    node: local
+    environment: .venv-sglang-pi05
+    environment_packages:
+      - sglang[diffusion]==0.5.18
+    source: /models/pi05-placeholder
+    server_executable: embodirun-sglang-pi05-serve
+    pipeline: LeRobotPi05Pipeline
+    server:
+      bind: 127.0.0.1
+      port: 30000
+runtimes:
+  device:
+    robot: simulated-arm
+    model: policy
+    binding: simulated.policy_vector.pi05
+    server:
+      bind: 127.0.0.1
+      port: 8100
+    inputs:
+      observation.images.front: front

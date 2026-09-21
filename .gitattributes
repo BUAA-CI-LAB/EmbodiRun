@@ -1,0 +1,3 @@
+# Launchers and checksum inventories must survive checkout on different platforms.
+examples/microduck_vln/** text eol=lf
+integrations/microduck_vln/** text eol=lf

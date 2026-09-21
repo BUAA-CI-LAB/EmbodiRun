@@ -1,0 +1,20 @@
+version: 1
+name: microduck-vln
+kind: microduck
+python: ../../.venv-microduck/bin/python
+output_dir: ../../artifacts/examples/microduck-vln
+parameters:
+  project_root: /REPLACE_MICRODUCK_ASSETS
+  inference_root: ../../third_party/embodiinfer
+  checkpoint: /REPLACE_MICRODUCK_ASSETS/lightnav_sft_v3/merged
+  episodes: /REPLACE_MICRODUCK_ASSETS/data/demo_microduck_vln.jsonl
+  manifest: assets.md5.json
+  num_episodes: 2
+  episode_offset: 0
+  max_steps: 60
+  seed: 20260914
+  fps: 10
+  slurm: "off"
+  cpus: 4
+  time: "01:00:00"
+  # partition: your_gpu_partition

@@ -1,0 +1,15 @@
+# Local services on the robot computer. Owner is the only serial/camera reader.
+owner:
+  port: 8766
+  hardware_config: hardware.example.json
+control:
+  base_port: 8100
+  manipulation_port: 8101
+model:
+  # Start the model service separately on a GPU host or forward its port.
+  endpoint: http://127.0.0.1:8000
+  backend: vvla
+cameras:
+  observation.images.front: front
+  observation.images.left_wrist: left_wrist
+  observation.images.right_wrist: right_wrist

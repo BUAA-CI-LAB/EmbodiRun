@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "embodirun-microduck"
+version = "0.1.0"
+description = "Optional MicroDuck MuJoCo execution and ActiveVLN HTTP serving integration"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+dependencies = [
+  "embodirun>=0.1.0",
+]
+
+[project.optional-dependencies]
+simulation = [
+  "numpy>=1.26,<2",
+  "Pillow>=10,<13",
+  "mujoco==3.8.1",
+  "onnxruntime>=1.20,<2",
+  "casadi==3.7.2",
+  "imageio-ffmpeg>=0.6,<0.7",
+]
+service = [
+  "numpy>=1.26,<2",
+  "Pillow>=10,<13",
+  "torch>=2.5,<2.12",
+  "torchvision>=0.20,<0.27",
+  "transformers==4.51.3",
+  "tokenizers==0.21.4",
+  "huggingface-hub==0.36.0",
+  "safetensors>=0.4,<1",
+  "einops>=0.8,<1",
+  "accelerate>=1,<2",
+]
+test = [
+  "pytest>=8,<9",
+  "numpy>=1.26,<2",
+  "Pillow>=10,<13",
+]
+full = [
+  "numpy>=1.26,<2",
+  "Pillow>=10,<13",
+  "mujoco==3.8.1",
+  "onnxruntime>=1.20,<2",
+  "casadi==3.7.2",
+  "imageio-ffmpeg>=0.6,<0.7",
+  "torch>=2.5,<2.12",
+  "torchvision>=0.20,<0.27",
+  "transformers==4.51.3",
+  "tokenizers==0.21.4",
+  "huggingface-hub==0.36.0",
+  "safetensors>=0.4,<1",
+  "einops>=0.8,<1",
+  "accelerate>=1,<2",
+]
+
+[project.scripts]
+embodirun-microduck-serve = "embodirun_microduck.service:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

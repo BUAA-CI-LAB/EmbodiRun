@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quest 原始输入对照</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script defer src="/static/xr-input-check.js"></script>
+</head>
+<body>
+  <main class="app-shell">
+    <h1>Quest 原始手柄输入对照</h1>
+    <p>仅检测：不加载相机、不启用机械臂、不发送机器人动作。</p>
+    <p>使用之前已能接收输入的原始 WebXR 会话参数与手柄读取方式。</p>
+    <button id="start-check" type="button">进入原始输入检测</button>
+    <button id="native-check" type="button" disabled>浏览器原生 VR 入口对照</button>
+    <p>原生入口：点击上面的原生入口按钮后，再点浏览器工具栏的 VR 图标；仅在浏览器支持时可用。</p>
+    <p><a href="/">返回遥操作</a></p>
+    <pre id="check-status">等待开始</pre>
+    <canvas id="check-canvas" width="800" height="480"></canvas>
+  </main>
+</body>
+</html>

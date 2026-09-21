@@ -1,0 +1,12 @@
+version: 1
+name: engine-embodiinfer-wireless
+kind: rollout
+output_dir: ../../artifacts/examples/engine-embodiinfer-wireless
+parameters:
+  deployment: embodiinfer-wireless.deployment.yaml
+  runtimes: [arm-1]
+  prompt: Pick up the cube and place it in the bowl.
+  chunks: 15
+  chunk_steps: 50
+  control_hz: 20
+  request_timeout: 120

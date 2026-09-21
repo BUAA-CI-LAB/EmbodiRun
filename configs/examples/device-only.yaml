@@ -1,0 +1,33 @@
+# Local software-only lifecycle: no model, robot SDK, or physical device.
+# This is a safe first Host/Control example for the in-memory simulated arm.
+metadata:
+  name: example-device-only
+  deploy-commit: main
+nodes:
+  local:
+    type: workstation
+    connection:
+      type: local
+robots:
+  simulated-arm:
+    type: simulated.joints
+    node: local
+    resource: simulated-arm
+    initial_joint_positions_deg: [0, 0, 0, 0, 0]
+    initial_gripper_position: 25
+sensors:
+  front:
+    type: fake
+    node: local
+    resource: simulated-front
+    width: 64
+    height: 48
+    color: [32, 96, 160]
+runtimes:
+  device:
+    robot: simulated-arm
+    server:
+      bind: 127.0.0.1
+      port: 8100
+    inputs:
+      observation.images.front: front

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1584" height="951" viewBox="0 0 1584 951" role="img" aria-labelledby="title desc">
+<title id="title">XLeRobot 薯片递送 Demo：系统组成与 Model / Agent 分工</title>
+<desc id="desc">用户提供任务与录制路线或示意图。RPent 编排任务和工具，可选 Astra 模型只读判断场景并选择抓取指令。EmbodiRun 管理部署、观测、模型调用、动作执行与停止。EmbodiInfer 承载 π0.5 抓取策略。XLeRobot owner 访问双 SO-101 臂、差速底盘、前视和双腕相机，管理限位、反馈和停止确认。递送流程包含去取物点、抓取、确认持物、返回和伸臂交付。</desc>
+<metadata>{"purpose":"snack-delivery-demo-system-and-model-roles","editable_text":true,"layout":"agent above local runtime and model compute","astra":"optional read-only reviewer"}</metadata>
+<defs>
+<style>
+text{font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#234664;stroke:none}
+.h1{font-size:40px;font-weight:650;fill:#193E63}.subtitle{font-size:22px;fill:#607D97}
+.name{font-size:32px;font-weight:650}.section{font-size:25px;font-weight:650}
+.body{font-size:20px}.small{font-size:18px}.tiny{font-size:16px}
+.blue{fill:#275E9B}.green{fill:#28785D}.muted{fill:#607D97}.violet{fill:#716091}
+.bline{fill:none;stroke:#347FC6;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.gline{fill:none;stroke:#339774;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.vline{fill:none;stroke:#8A78AF;stroke-width:2;stroke-dasharray:6 5;stroke-linecap:round}
+</style>
+<marker id="blue-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10Z" fill="#347FC6"/></marker>
+<marker id="green-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10Z" fill="#339774"/></marker>
+<marker id="violet-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10Z" fill="#8A78AF"/></marker>
+<marker id="blue-arrow-small" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10Z" fill="#347FC6"/></marker>
+<marker id="green-arrow-small" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10Z" fill="#339774"/></marker>
+</defs><rect width="1584" height="951" fill="#FFFFFF"/>
+<g id="header" data-role="demo-title">
+<text x="64" y="67" class="h1">XLeRobot 薯片递送 Demo</text>
+<text x="66" y="111" class="subtitle">系统组成与 Model / Agent 分工 · 移动取物、视觉抓取、携物返回、伸臂交付</text>
+</g>
+<g id="task-input" data-role="user-task-and-route">
+<rect x="64" y="151" width="314" height="185" rx="20" fill="#F7FAFC" stroke="#D7E2EB" stroke-width="2"/>
+<text x="86" y="188" class="section">任务与路线输入</text>
+<text x="86" y="226" class="body">“帮我拿一包薯片”</text>
+<path d="M87 247H354" stroke="#DFE7EF"/>
+<text x="86" y="276" class="small muted">录制往返路径</text>
+<text x="86" y="307" class="small muted">或：路线示意图 → RPent</text>
+</g>
+<path d="M380 222H441" class="bline" marker-end="url(#blue-arrow)"/>
+<g id="rpent" data-role="agent-framework">
+<rect x="446" y="151" width="586" height="185" rx="24" fill="#EFF5FD" stroke="#B5D1F6" stroke-width="2"/>
+<g id="agent-icon" fill="none" stroke="#347FC6" stroke-width="2.5" stroke-linecap="round"><rect x="470" y="175" width="36" height="28" rx="4"/><path d="M478 184H489M478 192H498M488 204V212M479 212H498"/></g>
+<text x="522" y="203" class="name blue">RPent</text>
+<text x="664" y="201" class="body blue">Agent 框架 · 任务编排</text>
+<text x="470" y="241" class="body muted">任务理解 · 路线选择 / 规划 · 工具调用</text>
+<text x="470" y="276" class="body blue">Recipe：去程 → 抓取 → 返程 → 交付</text>
+<text x="470" y="311" class="small muted">读取反馈，判断到达、持物与任务完成</text>
+</g>
+<g id="astra-review" data-role="optional-read-only-reviewer">
+<rect x="1128" y="151" width="392" height="185" rx="22" fill="#F8F6FC" stroke="#BEAFD5" stroke-width="2" stroke-dasharray="7 6"/>
+<text x="1153" y="200" class="name violet">Astra</text>
+<rect x="1404" y="173" width="89" height="31" rx="15" fill="#ECE6F4" stroke="none" stroke-width="2"/>
+<text x="1448" y="195" class="tiny violet" text-anchor="middle">可选模型</text>
+<text x="1153" y="239" class="body violet">只读场景判断</text>
+<text x="1153" y="274" class="small muted">输入：相机观测 + 抓取任务</text>
+<text x="1153" y="309" class="small muted">输出：抓取指令 + 短段上限</text>
+<path d="M1036 231H1122" class="vline" marker-end="url(#violet-arrow)" marker-start="url(#violet-arrow)"/>
+<text x="1079" y="214" class="tiny violet" text-anchor="middle">评审</text>
+</g>
+<g id="execution-regions" data-role="deployment-locations">
+<rect x="64" y="474" width="906" height="318" rx="28" fill="#EDF7F2" stroke="none" stroke-width="2"/>
+<circle cx="90" cy="508" r="5" fill="#339774"/>
+<text x="105" y="517" class="section green">机器人与本地运行</text>
+<text x="599" y="515" class="tiny green" text-anchor="end">车载主机：AGX Orin / Linux</text>
+<rect x="1040" y="474" width="480" height="318" rx="28" fill="#EFF5FD" stroke="none" stroke-width="2"/>
+<circle cx="1066" cy="508" r="5" fill="#347FC6"/>
+<text x="1081" y="517" class="section blue">模型计算</text>
+<text x="1494" y="515" class="small muted" text-anchor="end">本机或远端</text>
+</g>
+<g id="agent-runtime-interface" data-role="tool-calls-and-feedback">
+<path d="M739 338V358" class="bline" marker-end="url(#blue-arrow)"/>
+<rect x="475" y="366" width="395" height="51" rx="14" fill="#FFFFFF" stroke="#B1C8E1" stroke-width="2"/>
+<text x="673" y="399" class="body blue" text-anchor="middle">RPent 工具接口 → EmbodiRun</text>
+<path d="M739 419V535" class="bline" marker-end="url(#blue-arrow)"/>
+<text x="758" y="448" class="small blue">观测 / 推理 / 执行调用</text>
+<path d="M635 541V449H415V310H441" class="gline" marker-end="url(#green-arrow)"/>
+<text x="79" y="389" class="small green">新观测 · 候选动作 · 执行反馈</text>
+<text x="79" y="420" class="small muted">回到 RPent 继续判断</text>
+</g>
+<g id="xlerobot" data-role="physical-robot-and-sensors">
+<rect x="83" y="542" width="266" height="220" rx="18" fill="#FFFFFF" stroke="#B2DDC9" stroke-width="2"/>
+<text x="104" y="578" class="section green">XLeRobot</text>
+<g id="dual-arm-mobile-cart-icon" fill="none" stroke="#3B9272" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<rect x="106" y="681" width="90" height="20" rx="4" fill="#E4F3EB"/><rect x="109" y="659" width="84" height="8" rx="3"/>
+<path d="M117 669V680M185 669V680M148 658V615"/><rect x="137" y="596" width="24" height="18" rx="4" fill="#EDF7F2"/><circle cx="149" cy="605" r="4"/>
+<path d="M127 658L112 635L124 615M170 658L188 635L176 615"/>
+<circle cx="127" cy="656" r="5" fill="#FFFFFF"/><circle cx="112" cy="635" r="5" fill="#FFFFFF"/>
+<circle cx="170" cy="656" r="5" fill="#FFFFFF"/><circle cx="188" cy="635" r="5" fill="#FFFFFF"/>
+<path d="M124 615L116 605M124 615L133 606M176 615L167 606M176 615L185 605"/>
+<circle cx="119" cy="714" r="9" fill="#E4F3EB"/><circle cx="183" cy="714" r="9" fill="#E4F3EB"/></g>
+<text x="210" y="617" class="tiny green">双 SO-101 臂</text>
+<text x="210" y="647" class="tiny green">双轮差速底盘</text>
+<text x="210" y="677" class="tiny green">前视 + 双腕</text>
+<text x="210" y="701" class="tiny green">三路相机</text>
+<text x="105" y="743" class="tiny muted">电池供电 · 物理急停</text>
+</g>
+<g id="hardware-owner" data-role="exclusive-hardware-access">
+<rect x="369" y="542" width="221" height="220" rx="18" fill="#FFFFFF" stroke="#B2DDC9" stroke-width="2"/>
+<text x="386" y="577" class="body green" font-weight="650">XLeRobot owner</text>
+<text x="388" y="617" class="small green">电机 / 相机访问</text>
+<text x="388" y="650" class="small green">关节 / 轮速反馈</text>
+<text x="388" y="683" class="small green">限位 / 停止确认</text>
+<text x="388" y="727" class="tiny muted">统一管理硬件连接</text>
+<path d="M351 644H366" class="gline" marker-end="url(#green-arrow-small)" marker-start="url(#green-arrow-small)"/>
+</g>
+<g id="embodirun" data-role="deployment-and-execution-runtime">
+<rect x="612" y="542" width="329" height="220" rx="20" fill="#FFFFFF" stroke="#9CD9BC" stroke-width="2"/>
+<text x="635" y="581" class="name green">EmbodiRun</text>
+<text x="636" y="620" class="body green">部署 · 服务管理</text>
+<text x="636" y="653" class="body green">共享观测 · 模型调用</text>
+<text x="636" y="686" class="body green">动作校验 · 执行 · 停止</text>
+<text x="636" y="727" class="small muted">底盘与双臂分别控制</text>
+<path d="M592 630H609" class="bline" marker-end="url(#blue-arrow-small)"/>
+<path d="M610 696H593" class="gline" marker-end="url(#green-arrow-small)"/>
+</g>
+<g id="embodiinfer" data-role="inference-engine-and-vla-policy">
+<rect x="1148" y="542" width="346" height="220" rx="20" fill="#FFFFFF" stroke="#B5D1F6" stroke-width="2"/>
+<text x="1171" y="581" class="name blue">EmbodiInfer</text>
+<rect x="1170" y="602" width="302" height="82" rx="12" fill="#EFF5FD" stroke="none" stroke-width="2"/>
+<text x="1184" y="634" class="body blue" font-weight="650">π0.5 · VLA 抓取策略</text>
+<text x="1184" y="663" class="tiny muted">视觉 + 关节状态 → 候选动作</text>
+<text x="1171" y="727" class="body blue">模型加载 · 推理 · 优化</text>
+</g>
+<g id="vla-request-response" data-role="observation-to-proposal">
+<path d="M945 615H1143" class="bline" marker-end="url(#blue-arrow)"/>
+<text x="1045" y="599" class="small blue" text-anchor="middle">图像 / 状态</text>
+<path d="M1144 688H946" class="gline" marker-end="url(#green-arrow)"/>
+<text x="1045" y="673" class="small green" text-anchor="middle">候选动作</text>
+</g>
+<g id="snack-delivery-flow" data-role="recipe-task-flow">
+<rect x="64" y="816" width="1456" height="106" rx="20" fill="#F6F9FC" stroke="none" stroke-width="2"/>
+<text x="87" y="855" class="body" font-weight="650">任务流程</text>
+<text x="226" y="855" class="body blue">去取物点</text>
+<text x="386" y="855" class="body blue">π0.5 抓薯片</text>
+<text x="586" y="855" class="body green">确认持物</text>
+<text x="753" y="855" class="body green">沿返程路线返回</text>
+<text x="988" y="855" class="body green">右臂伸展 · 松爪递给人</text>
+<path d="M334 848H367" class="bline" marker-end="url(#blue-arrow)"/>
+<path d="M534 848H567" class="bline" marker-end="url(#blue-arrow)"/>
+<path d="M699 848H732" class="gline" marker-end="url(#green-arrow)"/>
+<path d="M933 848H966" class="gline" marker-end="url(#green-arrow)"/>
+<text x="226" y="893" class="small muted">路线由用户录制，或交给 RPent 处理示意图；交付动作使用本机标定姿态。</text>
+</g>
+</svg>

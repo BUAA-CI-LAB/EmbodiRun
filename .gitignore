@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+.go2-nav-runtime/
+.navila-navigation-runtime/
+.vvla-activevln-runtime/
+build/
+dist/
+artifacts/
+benchmarks/snapshots/
+benchmarks/inference-transport/reports/
+checkpoints/
+.venv-microduck/
+examples/microduck_vln/config.env
+examples/microduck_vln/*.local.json
+examples/**/*.local.yaml
+examples/**/*.local.json
+
+# Local scratch and documentation build output
+site/
+site-zh/
+.tools/
+.os-review/

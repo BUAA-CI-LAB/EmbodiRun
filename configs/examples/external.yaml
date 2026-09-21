@@ -1,0 +1,40 @@
+# Connect to an already running action service.  Host will start only the
+# local Control service and `down` will never stop this endpoint.
+metadata:
+  name: example-external
+  deploy-commit: main
+nodes:
+  local:
+    type: workstation
+    connection:
+      type: local
+robots:
+  simulated-arm:
+    type: simulated.policy_vector
+    node: local
+    resource: simulated-arm
+sensors:
+  front:
+    type: fake
+    node: local
+    resource: simulated-front
+    width: 64
+    height: 48
+    color: [32, 96, 160]
+models:
+  policy:
+    provider: sglang
+    transport: http
+    type: pi05
+    service: external
+    endpoint: http://127.0.0.1:30000
+runtimes:
+  device:
+    robot: simulated-arm
+    model: policy
+    binding: simulated.policy_vector.pi05
+    server:
+      bind: 127.0.0.1
+      port: 8100
+    inputs:
+      observation.images.front: front

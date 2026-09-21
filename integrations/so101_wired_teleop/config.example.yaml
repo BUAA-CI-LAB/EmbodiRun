@@ -1,0 +1,88 @@
+# Wired SO-101 teleoperation layout.
+#
+# Every value below is a placeholder on purpose: hosts, adapters and calibration
+# paths differ per site and must not be committed. Copy this file outside the
+# repository, substitute the real values, and pass it with --config.
+#
+# The mapping between leaders and followers lives in the `leader` field of each
+# follower. The port belongs to the leader and is the group key:
+#
+#   one leader driving every follower   point every follower at that leader
+#   two leaders, two followers each     point two followers at each
+#   any leader driving any follower     edit one `leader` field
+#   a leader driving nothing            do not reference it
+#
+# Each leader needs its own port, because a follower chooses its leader by the
+# port it listens on.
+
+leaders:
+  - id: leader_a
+    # Read-only: the leader arm is never commanded.
+    serial: /dev/serial/by-id/usb-1a86_USB_Single_Serial_<LEADER_A_SERIAL>-if00
+    arm_id: <LEADER_A_ARM_ID>
+    calibration_dir: <CALIBRATION_DIR>
+    # Source address this leader binds and broadcasts from. Followers filter on
+    # it, so it must be the address of the interface on the teleoperation link.
+    advertise: <LEADER_A_HOST>
+    port: 55101
+    fps: 20
+
+  - id: leader_b
+    serial: /dev/serial/by-id/usb-1a86_USB_Single_Serial_<LEADER_B_SERIAL>-if00
+    arm_id: <LEADER_B_ARM_ID>
+    calibration_dir: <CALIBRATION_DIR>
+    advertise: <LEADER_B_HOST>
+    port: 55102
+    fps: 20
+
+followers:
+  - id: follower_1
+    leader: leader_a
+    # Address this follower binds; must be reachable by the leader above.
+    bind: <FOLLOWER_1_HOST>
+    # SSH alias used by the operator console. Omit to run locally.
+    ssh_host: <FOLLOWER_1_SSH_ALIAS>
+    serial: /dev/serial/by-id/usb-1a86_USB_Single_Serial_<FOLLOWER_1_SERIAL>-if00
+    arm_id: <FOLLOWER_1_ARM_ID>
+    calibration_dir: <CALIBRATION_DIR>
+    cameras: [0, 2]
+    camera_roles: [main, wrist]
+    camera_fps: 20
+    record_dir: <FOLLOWER_1_RECORD_DIR>
+    # Safety limits enforced on the follower, never on the sender.
+    max_step: 3.0
+    max_lead: 15.0
+    watchdog_s: 0.30
+
+  - id: follower_2
+    leader: leader_a
+    bind: <FOLLOWER_2_HOST>
+    ssh_host: <FOLLOWER_2_SSH_ALIAS>
+    serial: /dev/serial/by-id/usb-1a86_USB_Single_Serial_<FOLLOWER_2_SERIAL>-if00
+    arm_id: <FOLLOWER_2_ARM_ID>
+    calibration_dir: <CALIBRATION_DIR>
+    cameras: [0, 2]
+    camera_roles: [main, wrist]
+    camera_fps: 20
+    record_dir: <FOLLOWER_2_RECORD_DIR>
+    max_step: 3.0
+    max_lead: 15.0
+    watchdog_s: 0.30
+
+  - id: follower_3
+    leader: leader_b
+    bind: <FOLLOWER_3_HOST>
+    ssh_host: <FOLLOWER_3_SSH_ALIAS>
+    serial: /dev/serial/by-id/usb-1a86_USB_Single_Serial_<FOLLOWER_3_SERIAL>-if00
+    arm_id: <FOLLOWER_3_ARM_ID>
+    calibration_dir: <CALIBRATION_DIR>
+    cameras: [0, 2]
+    camera_roles: [main, wrist]
+    camera_fps: 20
+    record_dir: <FOLLOWER_3_RECORD_DIR>
+    max_step: 3.0
+    max_lead: 15.0
+    watchdog_s: 0.30
+
+# The layout above is the two-leaders-two-each case. For one leader driving all
+# three, set `leader: leader_a` on follower_3 and drop the leader_b entry.

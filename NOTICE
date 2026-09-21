@@ -1,0 +1,16 @@
+EmbodiRun
+Copyright 2026 EmbodiRun contributors
+
+This product includes software developed by the EmbodiRun project
+(https://github.com/BUAA-CI-LAB/EmbodiRun).
+
+EmbodiRun is licensed under the Apache License, Version 2.0. See LICENSE for
+the full terms.
+
+The project was previously distributed under the MIT License and is now
+distributed under the Apache License, Version 2.0; the copyright holders retain
+their copyright. The rationale for the change and the contributor-consent
+process are documented in docs/en/license.md.
+
+Third-party dependencies and their licenses are listed in
+THIRD_PARTY_NOTICES.md.

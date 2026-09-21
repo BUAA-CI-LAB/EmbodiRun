@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XLeRobot · 共享画面与遥操作</title>
+  <link rel="stylesheet" href="/static/drive.css">
+  <script src="/static/drive.js" defer></script>
+</head>
+<body>
+  <header><div><span class="eyebrow">XLeRobot / AGX SHARED CAMERA SERVICE</span><h1>共享画面与遥操作</h1></div>
+    <span id="connection" class="pill">连接中</span></header>
+  <main>
+    <section class="views" aria-label="机器人相机">
+      <figure class="front"><video id="front" autoplay muted playsinline></video><figcaption>主视角 · 前方 <span id="front-health">等待视频</span></figcaption></figure>
+      <figure><video id="left_wrist" autoplay muted playsinline></video><figcaption>左腕 <span id="left_wrist-health">等待视频</span></figcaption></figure>
+      <figure><video id="right_wrist" autoplay muted playsinline></video><figcaption>右腕 <span id="right_wrist-health">等待视频</span></figcaption></figure>
+    </section>
+    <aside>
+      <section aria-label="DualSense 操作说明">
+        <span class="eyebrow">DUALSENSE / BLUETOOTH → AGX</span>
+        <h2>手柄操作</h2>
+        <p class="hint">运行 AGX 手柄程序后：左杆前后行驶，右杆左右转向、上下调相机。按住 R1 操作，松开停车并保持镜头；×/○ 释放控制。</p>
+        <p class="hint">三路画面可多端同时观看。打开本页不会接管机器人；导航或手柄占用底盘时，键盘等待对方释放。</p>
+      </section>
+      <div class="divider"></div>
+      <section class="leader-card" aria-labelledby="leader-title">
+        <span class="eyebrow">DUAL SO101 / USB</span><h2 id="leader-title">双主臂跟随</h2>
+        <p id="leader-message" role="status">正在检查本机主臂与 AGX 双臂通道。</p>
+        <button id="leader-start" disabled>启动双臂跟随</button>
+        <button id="leader-stop" class="secondary" disabled>停止双臂跟随</button>
+        <p class="hint warning">启动前请举起并保持两只主臂不动，确认两只从臂周围无人和障碍物。点击启动即为明确授权，不再要求输入 RUN；初始姿态会先平滑对齐。</p>
+        <pre id="leader-output" aria-label="双主臂运行日志">尚未启动</pre>
+      </section>
+      <div class="divider"></div>
+      <span class="eyebrow">WIRED / WASD</span><h2 id="mode">未启用</h2>
+      <p id="message" role="status">等待 AGX 状态与三路画面。</p>
+      <p id="parallel" class="hint">正在检查双臂 / 底盘独立通道。</p>
+      <button id="enable" disabled>启用键盘驾驶</button>
+      <button id="stop" class="secondary">只停底盘 · Space / Esc</button>
+      <button id="stop-all" class="stop">整车停止 · 双臂 + 底盘</button>
+      <div class="keypad" aria-label="W前进 S后退 A左转 D右转">
+        <kbd data-key="KeyW" class="w">W<small>前进</small></kbd>
+        <kbd data-key="KeyA">A<small>左转</small></kbd>
+        <kbd data-key="KeyS">S<small>后退</small></kbd>
+        <kbd data-key="KeyD">D<small>右转</small></kbd>
+      </div>
+      <p class="hint">按住行驶，松开回零。可组合 W+A / W+D 转弯。A/D 是转向，不是横移。</p>
+      <section class="speed-controls" aria-labelledby="speed-title">
+        <h3 id="speed-title">驾驶速度</h3>
+        <label for="drive-linear">前进 / 后退 <output id="drive-linear-value" for="drive-linear">0.05 m/s</output></label>
+        <input id="drive-linear" type="range" min="0.01" max="0.05" step="0.01" value="0.05" disabled>
+        <label for="drive-angular">左转 / 右转 <output id="drive-angular-value" for="drive-angular">10°/s</output></label>
+        <input id="drive-angular" type="range" min="1" max="10" step="1" value="10" disabled>
+        <button id="speed-apply" class="secondary" disabled>应用速度</button>
+        <p id="speed-message" class="hint" role="status">等待速度配置。</p>
+        <p class="hint">先松开 WASD 再调速，无需退出驾驶。刷新页面恢复低速；调速不会自动启用或移动车辆。</p>
+      </section>
+      <dl><dt>当前按键</dt><dd id="keys">—</dd><dt>前进速度反馈</dt><dd id="linear">—</dd><dt>转向速度反馈</dt><dd id="angular">—</dd><dt>可调上限</dt><dd id="limits">—</dd><dt>观测延迟</dt><dd id="age">—</dd></dl>
+      <p class="hint">本页只控制底盘，可与主臂操作双臂并行。切换窗口、画面停更或断线只停底盘，回来需重新启用；整车停止会同时停止双臂跟随。</p>
+      <button id="reconnect" class="secondary">重新连接画面与控制</button>
+      <form id="auth" hidden><label>已有访问码 <input id="token" type="password" autocomplete="off"></label><button>连接</button></form>
+    </aside>
+  </main>
+  <footer>多端订阅同一相机采集服务 · 页面经 SSH 连接 AGX · 手柄控制在 AGX 本地运行，不经网页或 Mac 转发</footer>
+</body>
+</html>

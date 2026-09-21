@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "embodirun-so101-wired-teleop"
+version = "0.1.0"
+description = "Optional wired multi-leader SO-101 teleoperation and episode collection"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+# Deliberately no `embodirun` requirement: this package imports nothing from the
+# runtime. It talks to the arms and to its peers over UDP, so a follower node on
+# a Pi needs the arm stack and a camera, not the deployment runtime.
+dependencies = [
+  "PyYAML>=6,<7",
+]
+
+[project.optional-dependencies]
+# Each node installs only what it drives: a leader host needs no camera, and a
+# follower host needs no simulation or inference stack.
+hardware = ["lerobot>=0.6,<0.7"]
+camera = ["opencv-python-headless>=4.10,<5"]
+# The operator console reaches remote followers through the system ssh client,
+# so there is no embedded SSH dependency to install.
+test = ["pytest>=8,<9"]
+
+[project.scripts]
+embodirun-so101-leader = "embodirun_so101_wired_teleop.cli:leader_main"
+embodirun-so101-follower = "embodirun_so101_wired_teleop.cli:follower_main"
+embodirun-so101-collect = "embodirun_so101_wired_teleop.cli:collect_main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

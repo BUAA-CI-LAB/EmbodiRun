@@ -1,0 +1,157 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "embodirun"
+version = "0.1.0"
+description = "EmbodiRun: an efficient deployment and execution runtime for embodied AI"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "EmbodiRun contributors" }]
+keywords = [
+    "embodied-ai",
+    "robotics",
+    "vla",
+    "vln",
+    "inference",
+    "deployment",
+    "runtime",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: System :: Distributed Computing",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/BUAA-CI-LAB/EmbodiRun"
+Repository = "https://github.com/BUAA-CI-LAB/EmbodiRun"
+Issues = "https://github.com/BUAA-CI-LAB/EmbodiRun/issues"
+Documentation = "https://embodirun.readthedocs.io/"
+
+[project.optional-dependencies]
+# Compute-service integration only; never needed by Host or robot clients.
+sglang = [
+    "sglang[diffusion]==0.5.18; python_version >= '3.12' and sys_platform == 'linux'",
+]
+# Optional WirelessComm data plane. The transport is installed separately from
+# its own repository and pinned to a tag, never to a branch; see
+# docs/en/installation.md.
+wireless = ["wireless-comm @ git+https://github.com/BUAA-CI-LAB/WirelessComm@v0.1.0"]
+
+[dependency-groups]
+dev = [
+    { include-group = "host" },
+    "numpy>=1.26,<3",
+    "Pillow>=10,<13",
+    "pytest>=8,<9",
+    "ruff>=0.10",
+]
+host = [
+    "paramiko>=3.4,<5",
+    "PyYAML>=6,<7",
+    "rich>=13,<15",
+]
+robot-so101 = ["feetech-servo-sdk>=1,<2", "opencv-python-headless>=4.10,<5"]
+robot-fr3 = ["franky-control>=1.1.4,<2"]
+robot-go2 = []
+robot-xlerobot-external-owner = []
+robot-arx5 = ["Pillow>=10,<13", "pyrealsense2>=2.54,<3", "opencv-python-headless>=4.10,<5"]
+sim-libero = [
+    "lerobot[libero]>=0.6,<0.7",
+    "Pillow>=10,<13",
+]
+sim-habitat = [
+    "habitat-sim @ git+https://github.com/facebookresearch/habitat-sim.git@acbe6f4922e68145e401e55c30f9dfea460a3f24",
+    "opencv-python-headless>=4.10,<5",
+    "Pillow>=10,<13",
+]
+sim-isaac = [
+    "isaacsim[all,extscache]==6.0.1.0",
+    "opencv-python-headless>=4.10,<5",
+    "Pillow>=10,<13",
+]
+sim-vlabench = [
+    "lerobot>=0.6,<0.7",
+    "Pillow>=10,<13",
+    "VLABench @ git+https://github.com/OpenMOSS/VLABench.git@cf588fe60c0c7282174fe979f5913170cfe69017",
+]
+
+[tool.uv]
+required-version = ">=0.12.0,<0.13"
+default-groups = ["dev"]
+conflicts = [
+    [{ extra = "sglang" }, { group = "sim-libero" }],
+    [{ extra = "sglang" }, { group = "sim-vlabench" }],
+    [{ extra = "sglang" }, { group = "sim-isaac" }],
+    [
+        { group = "sim-isaac" },
+        { group = "sim-libero" },
+    ],
+    [
+        { group = "sim-isaac" },
+        { group = "sim-vlabench" },
+    ],
+]
+
+[tool.uv.extra-build-variables]
+egl-probe = { CMAKE_POLICY_VERSION_MINIMUM = "3.5" }
+hf-egl-probe = { CMAKE_POLICY_VERSION_MINIMUM = "3.5" }
+habitat-sim = { CMAKE_POLICY_VERSION_MINIMUM = "3.5", HEADLESS = "True" }
+
+[tool.uv.dependency-groups]
+robot-so101 = { requires-python = ">=3.12" }
+sim-habitat = { requires-python = ">=3.11,<3.12" }
+sim-isaac = { requires-python = ">=3.12,<3.13" }
+sim-libero = { requires-python = ">=3.12" }
+sim-vlabench = { requires-python = ">=3.12" }
+
+[project.scripts]
+embodirun = "embodirun.services.host.cli.cli:main"
+embodirun-control-serve = "embodirun.services.control.server:main"
+embodirun-simulation-serve = "embodirun.services.simulation.server:main"
+embodirun-sglang-serve = "embodirun.services.inference.adapters.sglang.pi05:main"
+embodirun-go2-streamvln = "embodirun.bindings.unitree.go2.streamvln.cli:main"
+# Compatibility aliases for existing deployments.
+rlinf-deploy = "embodirun.services.host.cli.cli:main"
+rlinf-control-serve = "embodirun.services.control.server:main"
+rlinf-simulation-serve = "embodirun.services.simulation.server:main"
+rlinf-sglang-serve = "embodirun.services.inference.adapters.sglang.pi05:main"
+rlinf-go2-streamvln = "embodirun.bindings.unitree.go2.streamvln.cli:main"
+
+[tool.setuptools]
+py-modules = ["rlinf_deploy"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["embodirun*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# E/W pycodestyle, F pyflakes, I isort, UP pyupgrade, B bugbear, C4 comprehensions, SIM simplify.
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+# E501 (line length) is left to the formatter; B905 (zip strict=) is noise for fixed-shape zips;
+# C408 keeps the readable dict(key=value) form for configuration tables.
+ignore = ["E501", "B905", "C408"]
+
+[tool.ruff.lint.isort]
+# The independently installed integration packages are first-party too.
+known-first-party = ["embodirun", "embodirun_*", "rlinf_deploy"]

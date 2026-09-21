@@ -1,0 +1,129 @@
+# Three-node transport comparison over WirelessComm: one compute node serving
+# PI0.5, and two robot nodes each running one SO101 client. Replace every
+# REPLACE_* value before use; validate the file before connecting any hardware.
+# Run one protocol at a time. See benchmarks/inference-transport/README.md.
+# No explicit egress rate cap is set, so this compares against HTTP on the same
+# LAN rather than against a bandwidth-limited link.
+metadata:
+  name: thor-so101-wireless
+  deploy-commit: replace-with-deploy-revision
+nodes:
+  jetson-agx-thor-232:
+    type: jetson.agx-thor-128gb
+    connection:
+      type: ssh
+      host: REPLACE_COMPUTE_HOST
+      port: 22
+      username: REPLACE_SSH_USER
+      accept_new_host_key: false
+  jetson-agx-orin-174:
+    type: jetson.agx-orin-32gb
+    connection:
+      type: ssh
+      host: REPLACE_AGX_ORIN_HOST
+      port: 22
+      username: REPLACE_SSH_USER
+      accept_new_host_key: false
+  jetson-orin-nx:
+    type: jetson.orin-nx
+    connection:
+      type: ssh
+      host: REPLACE_ORIN_NX_HOST
+      port: 22
+      username: REPLACE_SSH_USER
+      accept_new_host_key: false
+robots:
+  so101-1:
+    type: lerobot.so101
+    node: jetson-agx-orin-174
+    port: /dev/serial/by-id/REPLACE_SO101_1
+    calibration_id: so101_1_follower
+    calibration_dir: /models/so101-calibration
+    disable_torque_on_disconnect: true
+    max_joint_step_deg: 5.0
+    max_gripper_step: 10.0
+    step_limit_mode: clip
+  so101-2:
+    type: lerobot.so101
+    node: jetson-orin-nx
+    port: /dev/serial/by-id/REPLACE_SO101_2
+    calibration_id: so101_2_follower
+    calibration_dir: /models/so101-calibration
+    disable_torque_on_disconnect: true
+    max_joint_step_deg: 5.0
+    max_gripper_step: 10.0
+    step_limit_mode: clip
+sensors:
+  front-camera:
+    type: v4l2
+    node: jetson-agx-orin-174
+    device: /dev/v4l/by-id/REPLACE_SO101_1_FRONT_CAMERA
+    width: 640
+    height: 480
+    fps: 30
+  wrist-camera:
+    type: v4l2
+    node: jetson-agx-orin-174
+    device: /dev/v4l/by-id/REPLACE_SO101_1_WRIST_CAMERA
+    width: 640
+    height: 480
+    fps: 30
+  front-camera-2:
+    type: v4l2
+    node: jetson-orin-nx
+    device: /dev/v4l/by-id/REPLACE_SO101_2_FRONT_CAMERA
+    width: 640
+    height: 480
+    fps: 30
+  wrist-camera-2:
+    type: v4l2
+    node: jetson-orin-nx
+    device: /dev/v4l/by-id/REPLACE_SO101_2_WRIST_CAMERA
+    width: 640
+    height: 480
+    fps: 30
+models:
+  pi05-01:
+    backend: vvla
+    transport: wireless
+    type: pi05
+    node: jetson-agx-thor-232
+    gpu: cuda:0
+    environment: .venv-vvla
+    source: /models/pi05_so101
+    server:
+      bind: 0.0.0.0
+      port: 9300
+    server_args:
+    - --dtype
+    - bfloat16
+    - --num-steps
+    - '10'
+    - --capture-full-loop
+runtimes:
+  so101-1-runtime:
+    robot: so101-1
+    model: pi05-01
+    binding: lerobot.so101.pi05
+    server:
+      bind: 127.0.0.1
+      port: 8100
+    inputs:
+      observation.images.front: front-camera
+      observation.images.wrist: wrist-camera
+    inference_client:
+      bind: 0.0.0.0
+      port: 9300
+  so101-2-runtime:
+    robot: so101-2
+    model: pi05-01
+    binding: lerobot.so101.pi05
+    server:
+      bind: 127.0.0.1
+      port: 8100
+    inputs:
+      observation.images.front: front-camera-2
+      observation.images.wrist: wrist-camera-2
+    inference_client:
+      bind: 0.0.0.0
+      port: 9300

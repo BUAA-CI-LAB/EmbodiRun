@@ -1,0 +1,28 @@
+{
+  "sdk_src": "/path/to/lerobot",
+  "ports": {
+    "left": "/dev/xlerobot_left_base",
+    "right": "/dev/xlerobot_right_head"
+  },
+  "cameras": {
+    "front": "/dev/v4l/by-id/REPLACE_FRONT_CAMERA",
+    "left_wrist": "/dev/v4l/by-id/REPLACE_LEFT_WRIST_CAMERA",
+    "right_wrist": "/dev/v4l/by-id/REPLACE_RIGHT_WRIST_CAMERA"
+  },
+  "enabled_arms": ["left", "right"],
+  "enable_base": true,
+  "enable_head_tilt": false,
+  "camera_roles_confirmed": false,
+  "allow_motion": false,
+  "wheel_directions": {
+    "base_left_wheel": 1,
+    "base_right_wheel": 1
+  },
+  "wheel_radius": 0.05,
+  "wheelbase": 0.25,
+  "max_linear_m_s": 0.05,
+  "max_angular_deg_s": 10.0,
+  "arm_velocity_raw": 50,
+  "arm_acceleration_raw": 254,
+  "calibration": "/absolute/path/to/verified-xlerobot-calibration.json"
+}
