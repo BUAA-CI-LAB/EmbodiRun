@@ -37,10 +37,10 @@ from embodirun.services.control.observation_values import ObservationSubscriptio
 from embodirun.services.control.recordings import ObservationRecorder
 from embodirun.services.control.server import ControlHttpServer, ControlService
 from embodirun.services.inference import (
+    EmbodiInferHttpClient,
     PolicyObservation,
     PolicyResult,
     Session,
-    EmbodiInferHttpClient,
 )
 
 RUNTIME_ID = "pi05-policy-vector-replay"

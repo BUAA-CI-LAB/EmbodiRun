@@ -38,9 +38,9 @@ class ActiveVLNAdapter:
     def infer(self, request):
         import numpy as np
         import torch
-        from PIL import Image
         from embodiinfer.engine.serve.contracts import ModelAction, ModelResult
         from embodiinfer.types import Observation, SessionKey
+        from PIL import Image
 
         if len(request.images) != 1 or request.images[0].name != IMAGE_FIELD:
             raise ValueError(f"Expected exactly one image named {IMAGE_FIELD}")
