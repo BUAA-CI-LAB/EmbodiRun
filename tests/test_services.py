@@ -595,7 +595,7 @@ def test_single_node_environment_and_runtime() -> None:
     assert control_service.command.argv == ("embodirun-control-serve",)
     assert control_service.health_endpoint == "http://127.0.0.1:8100/healthz"
     control_config = json.loads(control_service.control_config_json)
-    assert control_config["schema"] == "rlinf.control.config.v1"
+    assert control_config["schema"] == "embodirun.control.config.v1"
     assert control_config["binding"] == "lerobot.so101.pi05"
     assert control_config["inference"] == {
         "backend": "embodiinfer",
@@ -1076,7 +1076,7 @@ def test_uv_environment_manager_uses_only_the_selected_group() -> None:
     executor = RecordingExecutor()
     result = UvEnvironmentManager(executor).prepare(
         profile,
-        project_dir="/opt/rlinf-deploy",
+        project_dir="/opt/embodirun",
     )
 
     command, check = executor.commands[0]
@@ -1092,7 +1092,7 @@ def test_uv_environment_manager_uses_only_the_selected_group() -> None:
         "--group",
         "robot-so101",
     )
-    assert command.cwd == "/opt/rlinf-deploy"
+    assert command.cwd == "/opt/embodirun"
     assert command.environment == {"UV_PROJECT_ENVIRONMENT": ".venv-robot-so101"}
 
 
@@ -1106,7 +1106,7 @@ def test_uv_environment_manager_applies_configured_package_overlay() -> None:
 
     UvEnvironmentManager(executor).prepare(
         profile,
-        project_dir="/opt/rlinf-inference",
+        project_dir="/opt/embodirun-inference",
     )
 
     assert len(executor.commands) == 2
@@ -1117,7 +1117,7 @@ def test_uv_environment_manager_applies_configured_package_overlay() -> None:
         "pip",
         "install",
         "--python",
-        "/opt/rlinf-inference/.venv-embodiinfer/bin/python",
+        "/opt/embodirun-inference/.venv-embodiinfer/bin/python",
         "--index-url",
         "https://download.pytorch.org/whl/cu130",
         "torch==2.10.0+cu130",
@@ -1147,18 +1147,18 @@ def test_uv_environment_manager_creates_standalone_sglang_environment(
 
     UvEnvironmentManager(executor).prepare(
         standalone_environment_profile,
-        project_dir="/opt/rlinf-inference",
+        project_dir="/opt/embodirun-inference",
     )
 
     assert [command.argv for command in executor.commands] == [
-        ("test", "-f", "/opt/rlinf-inference/.venv-sglang/pyvenv.cfg"),
+        ("test", "-f", "/opt/embodirun-inference/.venv-sglang/pyvenv.cfg"),
         ("uv", "venv", "--python", "3.12", ".venv-sglang"),
         (
             "uv",
             "pip",
             "install",
             "--python",
-            "/opt/rlinf-inference/.venv-sglang/bin/python",
+            "/opt/embodirun-inference/.venv-sglang/bin/python",
             "sglang[diffusion]==0.5.18",
         ),
     ]
@@ -1260,7 +1260,7 @@ def test_standalone_environment_rejects_broken_or_incompatible_python(
     with pytest.raises(EnvironmentError, match="environment.*choose a different"):
         UvEnvironmentManager(executor).prepare(
             standalone_environment_profile,
-            project_dir="/opt/rlinf-inference",
+            project_dir="/opt/embodirun-inference",
         )
     assert not executor.results
     assert not any(command.argv[1] in {"venv", "pip"} for command in executor.commands)
@@ -1471,7 +1471,7 @@ def test_ssh_executor_posts_json_through_direct_tcp_channel() -> None:
             while len(body) < content_length:
                 body += server_socket.recv(4096)
             received.append((headers, json.loads(body)))
-            response = b'{"schema":"rlinf.control.result.v1","completed_steps":1}'
+            response = b'{"schema":"embodirun.control.result.v1","completed_steps":1}'
             server_socket.sendall(
                 b"HTTP/1.1 200 OK\r\n"
                 + f"Content-Length: {len(response)}\r\n".encode()
@@ -1658,9 +1658,9 @@ def test_service_supervisor_uses_identity_checked_pid_lifecycle() -> None:
     supervisor = ServiceSupervisor(
         executor,
         python="/usr/bin/python3",
-        agent_path="/opt/rlinf-deploy/src/embodirun/services/host/supervisor.py",
-        run_root=".local/state/rlinf-deploy/run",
-        log_root=".local/state/rlinf-deploy/logs",
+        agent_path="/opt/embodirun/src/embodirun/services/host/supervisor.py",
+        run_root=".local/state/embodirun/run",
+        log_root=".local/state/embodirun/logs",
     )
 
     started = supervisor.start(service)
@@ -1674,12 +1674,12 @@ def test_service_supervisor_uses_identity_checked_pid_lifecycle() -> None:
         command.argv[:2]
         == (
             "/usr/bin/python3",
-            "/opt/rlinf-deploy/src/embodirun/services/host/supervisor.py",
+            "/opt/embodirun/src/embodirun/services/host/supervisor.py",
         )
         for command in executor.commands
     )
     start_request = json.loads(executor.commands[0].stdin)
-    assert start_request["environment"]["RLINF_DEPLOY_SERVICE_ID"] == "pi05-01"
+    assert start_request["environment"]["EMBODIRUN_SERVICE_ID"] == "pi05-01"
     assert start_request["argv"][0] == "embodiinfer-http-serve"
     assert executor.commands[-1].timeout_s == 10.0
 
@@ -1696,7 +1696,7 @@ def test_service_environment_activates_venv_using_the_node_path(monkeypatch) -> 
         "argv": ["/env/sglang/bin/sglang"],
         "cwd": "/project",
         "environment": {
-            "RLINF_DEPLOY_SERVICE_ID": "model",
+            "EMBODIRUN_SERVICE_ID": "model",
             "VIRTUAL_ENV": "/env/sglang",
         },
     }
@@ -1715,7 +1715,7 @@ def test_service_supervisor_rejects_unsafe_service_id() -> None:
     supervisor = ServiceSupervisor(
         ResultExecutor(),
         python="/usr/bin/python3",
-        agent_path="/opt/rlinf-deploy/src/embodirun/services/host/supervisor.py",
+        agent_path="/opt/embodirun/src/embodirun/services/host/supervisor.py",
         run_root="run",
         log_root="logs",
     )
@@ -1930,9 +1930,9 @@ def test_cli_init_then_up_uses_persisted_initialized_state(tmp_path, capsys) -> 
     assert any(argv[-2:] == ("--group", "pi05") for argv in init_argv)
     assert any(argv[-2:] == ("--group", "robot-so101") for argv in init_argv)
     assert executors[0].closed is True
-    active_source = active_deploy_project("/home/operator/.local/share/rlinf-deploy/thor-so101-pi05")
+    active_source = active_deploy_project("/home/operator/.local/share/embodirun/thor-so101-pi05")
     assert executors[0].symlinks == {
-        active_source: ("/home/operator/.local/share/rlinf-deploy/thor-so101-pi05/sources/deploy")
+        active_source: ("/home/operator/.local/share/embodirun/thor-so101-pi05/sources/deploy")
     }
 
     up_exit_code = main((*base_args, "up"), executor_factory=factory)
@@ -1969,7 +1969,7 @@ def test_cli_init_then_up_uses_persisted_initialized_state(tmp_path, capsys) -> 
     start_requests = [json.loads(command.stdin) for command in start_commands]
     model_request = next(request for request in start_requests if request["argv"][0].endswith("embodiinfer-http-serve"))
     assert (
-        model_request["argv"][0] == "/home/operator/.local/share/rlinf-deploy/thor-so101-pi05/"
+        model_request["argv"][0] == "/home/operator/.local/share/embodirun/thor-so101-pi05/"
         "sources/inference/.venv-embodiinfer/bin/embodiinfer-http-serve"
     )
     assert any(value.endswith("/thor-so101-pi05/generated/pi05-01.adapter.json") for value in model_request["argv"])
@@ -2038,7 +2038,7 @@ def test_cli_routes_prompt_to_selected_runtime(tmp_path, capsys) -> None:
     method, url, payload, timeout_s = executor.requests[-1]
     assert method == "POST"
     assert url == "http://127.0.0.1:8100/v1/tasks"
-    assert payload["schema"] == "rlinf.control.task.v1"
+    assert payload["schema"] == "embodirun.control.task.v1"
     assert payload["prompt"] == "把红色积木放进盒子"
     assert payload["max_steps"] == 1
     assert payload["chunk_steps"] == 10
@@ -2118,7 +2118,7 @@ def test_cli_sync_updates_only_deploy_dependencies_when_lock_changes(tmp_path, c
     assert uv_commands[0].argv[-2:] == ("--group", "robot-so101")
     assert uv_commands[0].environment == {
         "UV_PROJECT_ENVIRONMENT": (
-            "/home/operator/.local/share/rlinf-deploy/thor-so101-pi05/sources/deploy/.venv-robot-so101"
+            "/home/operator/.local/share/embodirun/thor-so101-pi05/sources/deploy/.venv-robot-so101"
         )
     }
     assert "dependencies updated" in captured.out
@@ -2691,7 +2691,7 @@ def test_state_store_round_trip_is_atomic_and_secret_free(tmp_path, inference_co
             "node": NodeState(
                 node_id="node",
                 home="/home/user",
-                root="/home/user/.local/share/rlinf-deploy/lab",
+                root="/home/user/.local/share/embodirun/lab",
                 deploy_project="/home/user/project/deploy",
                 inference_project="/home/user/project/inference",
                 platform="Linux",

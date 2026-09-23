@@ -124,9 +124,9 @@ def test_aliases_share_canonical_identity_and_process_lock(tmp_path):
 
 def test_default_lifecycle_state_uses_durable_xdg_path(monkeypatch, tmp_path):
     monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path / "xdg-state"))
-    monkeypatch.setenv("RLINF_DEPLOY_DEVICE_LOCK_DIR", str(tmp_path / "locks"))
+    monkeypatch.setenv("EMBODIRUN_DEVICE_LOCK_DIR", str(tmp_path / "locks"))
     manager = DeviceManager("node-a")
-    assert manager.state_store.path == (tmp_path / "xdg-state" / "rlinf-deploy" / "device-state.json")
+    assert manager.state_store.path == (tmp_path / "xdg-state" / "embodirun" / "device-state.json")
 
 
 def test_process_lock_releases_after_owner_crash(tmp_path):
@@ -817,5 +817,5 @@ def test_passive_robot_upgrades_through_its_observation_scheduler(monkeypatch, t
     service._ensure_robot_arbiter(definition)
     prepare_events = [item for item in events if item[0] == "prepare"]
     assert len(prepare_events) == 1
-    assert prepare_events[0][1].startswith("rlinf-device-io-")
+    assert prepare_events[0][1].startswith("embodirun-device-io-")
     service.close()

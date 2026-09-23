@@ -34,11 +34,11 @@ def default_interval_s() -> float:
     A poll costs roughly 20 ms on a Pi 4B, so 0.03 s yields a ~50 ms period and
     reaches 20 Hz.
 
-    Override with ``RLINF_DEPLOY_OBSERVATION_INTERVAL_S``; invalid values fall
+    Override with ``EMBODIRUN_OBSERVATION_INTERVAL_S``; invalid values fall
     back to the default.
     """
 
-    raw = os.environ.get("RLINF_DEPLOY_OBSERVATION_INTERVAL_S", "0.03")
+    raw = os.environ.get("EMBODIRUN_OBSERVATION_INTERVAL_S", "0.03")
     try:
         value = float(raw)
     except ValueError:
@@ -76,7 +76,7 @@ class _SourceWorker:
         self._stop = False
         self._thread = threading.Thread(
             target=self._run,
-            name=f"rlinf-observation-source-{name}",
+            name=f"embodirun-observation-source-{name}",
             daemon=True,
         )
         self._thread.start()
@@ -362,7 +362,7 @@ class ObservationProducer:
             self._stop_event.clear()
             self._thread = threading.Thread(
                 target=self._run,
-                name="rlinf-observation-producer",
+                name="embodirun-observation-producer",
                 daemon=True,
             )
             self._thread.start()
@@ -932,7 +932,7 @@ def _bounded_close(close: Callable[[], None], timeout_s: float) -> tuple[bool, B
         except BaseException as error:  # pragma: no cover - defensive cleanup path
             result[0] = error
 
-    thread = threading.Thread(target=run, name="rlinf-observation-close", daemon=True)
+    thread = threading.Thread(target=run, name="embodirun-observation-close", daemon=True)
     thread.start()
     thread.join(max(0.0, timeout_s))
     return (not thread.is_alive(), result[0])
