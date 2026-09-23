@@ -337,8 +337,8 @@ def run(args):
     if len({r.model for r in runtimes}) != 1:
         raise ValueError("clients must share one Thor inference service")
     model = config.models[runtimes[0].model]
-    if model.backend != "vvla":
-        raise ValueError("this comparison requires the VVLA backend")
+    if model.backend != "embodiinfer":
+        raise ValueError("this comparison requires the EmbodiInfer backend")
     if state.services[model.model_id].status != "running":
         raise ValueError("start the model service with embodirun up first")
     rows = load_observations(args.observations)

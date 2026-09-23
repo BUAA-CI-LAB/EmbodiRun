@@ -79,7 +79,7 @@ def prepare(config: dict[str, Any], directory: Path, *, base_dir: Path) -> list[
         port=ports[2],
         inference_transport="http",
         inference_endpoint=config["model"]["endpoint"],
-        inference_backend=config["model"].get("backend", "vvla"),
+        inference_backend=config["model"].get("backend", "embodiinfer"),
         inference_options={},
         robot_id="xlerobot-arms",
         robot_kind="lerobot.xlerobot",

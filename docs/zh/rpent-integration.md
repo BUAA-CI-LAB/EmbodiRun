@@ -41,7 +41,7 @@ RPent 侧适配器位于 **`BUAA-CI-LAB/RPent` 分支仓库**的
 
 | 组件 | 配置 |
 |---|---|
-| 推理主机 | 2×A100 80GB，服务位于 GPU0，`vvla-http`（`π0.5`） |
+| 推理主机 | 2×A100 80GB，服务位于 GPU0，`embodiinfer-http`（`π0.5`） |
 | 模型适配器 | `state_native`；摄像头 `observation.images.front` + `wrist`；`return_steps=50`；6 个动作特征 |
 | Control | 来自部署 YAML 的本地 `ControlService`；通过 SSH 隧道访问外部推理端点 |
 | 机器人 | `simulated.policy_vector` 绑定 `simulated.policy_vector.pi05` |

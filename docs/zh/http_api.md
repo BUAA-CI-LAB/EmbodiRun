@@ -29,7 +29,7 @@ Control 调用推理服务，将模型结果按绑定转换后返回，但不执
 `Authorization: Bearer <token>`。服务端设置与错误语义记录在
 [EmbodiInfer 服务指南](https://embodiinfer.readthedocs.io/zh-cn/latest/serving/) 中。
 
-使用包含 `schema: vvla.policy.session.v1`、
+使用包含 `schema: embodiinfer.policy.session.v1`、
 `robot_id`、适配器的 `action_space` 以及可选 `metadata` 的 JSON 打开会话。使用
 返回的 `session_id` 进行后续操作。
 
@@ -42,7 +42,7 @@ Control 调用推理服务，将模型结果按绑定转换后返回，但不执
 
 `POST /v1/sessions/{session_id}/steps` 使用 multipart 表单数据。
 
-- `metadata`：`application/json`，schema `vvla.policy.step.v1`
+- `metadata`：`application/json`，schema `embodiinfer.policy.step.v1`
 - `image_0..N`：编码后的 JPEG/PNG 字节
 
 发送与元数据中 `request_id` 相等的 `Idempotency-Key`。元数据
@@ -95,8 +95,8 @@ EmbodiRun 按绑定逐步映射并校验 `pi05.action_chunk.v1` 中的动作，
 
 ## 使用 WirelessComm 传输
 
-WirelessComm 使用相同的 `vvla.policy.session.v1`、`vvla.policy.step.v1` 与
-结果 schema。RPC 元数据使用 schema `vvla.policy.rpc.v1`、每次尝试的
+WirelessComm 使用相同的 `embodiinfer.policy.session.v1`、`embodiinfer.policy.step.v1` 与
+结果 schema。RPC 元数据使用 schema `embodiinfer.policy.rpc.v1`、每次尝试的
 `rpc_id`，以及 `health`、`capabilities`、`open_session`、
 `step`、`reset` 或 `close` 方法之一。
 

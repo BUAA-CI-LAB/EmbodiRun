@@ -15,8 +15,8 @@ custom simulator, a hardware adapter, or a test harness.
       members:
         - PolicyClient
         - SglangHttpClient
-        - VvlaHttpClient
-        - VvlaWirelessClient
+        - EmbodiInferHttpClient
+        - EmbodiInferWirelessClient
 
 ## Inference contracts
 

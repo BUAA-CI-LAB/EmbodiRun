@@ -107,10 +107,10 @@ def event(kind, **values):
 def serve(args):
     import os
 
-    from vvla.engine.serve.factory import build_serving_adapter
-    from vvla.engine.serve.http_server import PolicyHttpService, create_http_server
-    from vvla.engine.serve.service import PolicyService
-    from vvla.engine.serve.wireless_server import _run
+    from embodiinfer.engine.serve.factory import build_serving_adapter
+    from embodiinfer.engine.serve.http_server import PolicyHttpService, create_http_server
+    from embodiinfer.engine.serve.service import PolicyService
+    from embodiinfer.engine.serve.wireless_server import _run
 
     adapter = build_serving_adapter(args)
     profiler = AdapterProfile(adapter)

@@ -36,7 +36,7 @@ git submodule update --init third_party/embodiinfer
 ```
 
 The upstream distribution is named **embodiinfer**, but its Python namespace
-is still **vvla**, and its versioned wire schemas remain `vvla.policy.*.v1`.
+is still **embodiinfer**, and its versioned wire schemas remain `embodiinfer.policy.*.v1`.
 Keep those identifiers when using the service. The optional integration package
 here is `embodirun-microduck`, importing as `embodirun_microduck`.
 
@@ -201,7 +201,7 @@ with the dedicated optional environment, without a GPU or checkpoint:
 
 ```bash
 PYTHONPATH="src:third_party/embodiinfer" .venv-microduck/bin/python \
-  -m pytest -q tests/test_microduck_vln.py tests/test_vvla_http.py
+  -m pytest -q tests/test_microduck_vln.py tests/test_embodiinfer_http.py
 ```
 
 CPU checks cover action bounds, STOP, success conditions, failure cleanup,

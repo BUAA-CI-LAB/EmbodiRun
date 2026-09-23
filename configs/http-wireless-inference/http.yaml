@@ -82,12 +82,12 @@ sensors:
     fps: 30
 models:
   pi05-01:
-    backend: vvla
+    backend: embodiinfer
     transport: http
     type: pi05
     node: jetson-agx-thor-232
     gpu: cuda:0
-    environment: .venv-vvla
+    environment: .venv-embodiinfer
     source: /models/pi05_so101
     server:
       bind: 0.0.0.0

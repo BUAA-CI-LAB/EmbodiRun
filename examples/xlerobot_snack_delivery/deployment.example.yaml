@@ -8,7 +8,7 @@ control:
 model:
   # Start the model service separately on a GPU host or forward its port.
   endpoint: http://127.0.0.1:8000
-  backend: vvla
+  backend: embodiinfer
 cameras:
   observation.images.front: front
   observation.images.left_wrist: left_wrist

@@ -26,7 +26,7 @@ def test_model_dependencies_are_isolated_to_the_sglang_service() -> None:
                 continue
             for module in modules:
                 package = module.partition(".")[0]
-                assert package not in {"vvla", "transformers"}, source
+                assert package not in {"embodiinfer", "transformers"}, source
                 if package in {"torch", "sglang", "safetensors"}:
                     # Opt-in integration, never Host/client runtime code.
                     assert source in opt_in, source
@@ -42,7 +42,7 @@ def test_host_and_client_import_without_inference_frameworks() -> None:
                 "import embodirun\n"
                 "import embodirun.services.host.plan\n"
                 "import embodirun.services.inference.adapters.sglang\n"
-                "assert not {'torch', 'sglang', 'vvla'} & sys.modules.keys()\n"
+                "assert not {'torch', 'sglang', 'embodiinfer'} & sys.modules.keys()\n"
             ),
         ],
         capture_output=True,

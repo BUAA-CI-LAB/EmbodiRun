@@ -44,7 +44,7 @@ in [`examples/shared-device-fake.md`](https://github.com/BUAA-CI-LAB/EmbodiRun/b
 Copy an example and replace every placeholder before touching hardware:
 
 ```bash
-cp configs/pi05/bi-so101-vvla.yaml my-deployment.yaml
+cp configs/pi05/bi-so101-embodiinfer.yaml my-deployment.yaml
 $EDITOR my-deployment.yaml
 
 uv run embodirun --config my-deployment.yaml validate

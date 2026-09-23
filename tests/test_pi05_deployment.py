@@ -11,7 +11,7 @@ from embodirun.deployment.operations.init import InitError, _probe_resources
 from embodirun.deployment.plan import ServiceError, _binding_adapter_config, build_plan
 from embodirun.robots.lerobot.bi_so101 import BI_SO101_POSITION_FEATURES
 
-EXAMPLE = Path(__file__).parents[1] / "configs/pi05/bi-so101-vvla.yaml"
+EXAMPLE = Path(__file__).parents[1] / "configs/pi05/bi-so101-embodiinfer.yaml"
 
 
 def write_config(tmp_path, document):
@@ -20,7 +20,7 @@ def write_config(tmp_path, document):
     return load_config(path)
 
 
-def test_dual_so101_plan_generates_mixed_precision_vvla_config():
+def test_dual_so101_plan_generates_mixed_precision_embodiinfer_config():
     config = load_config(EXAMPLE)
     plan = build_plan(config)
     service = next(item for item in plan.services if item.kind == "model")
@@ -69,7 +69,7 @@ def test_model_policy_options_do_not_replace_binding_state_fields(tmp_path):
 def test_policy_options_cannot_be_silently_ignored_by_other_backends():
     config = load_config(EXAMPLE)
     model = replace(config.models["pi05"], backend="sglang")
-    with pytest.raises(ServiceError, match="requires VVLA"):
+    with pytest.raises(ServiceError, match="requires EmbodiInfer"):
         _binding_adapter_config(config, model)
 
 
@@ -120,7 +120,7 @@ def test_init_probes_both_ports_before_using_hardware():
     ]
 
 
-def test_camera_mapping_reaches_vvla_with_policy_options(tmp_path):
+def test_camera_mapping_reaches_embodiinfer_with_policy_options(tmp_path):
     document = yaml.safe_load(EXAMPLE.read_text())
     document["models"]["pi05"]["image_keys"] = {
         "observation.images.front": "observation.images.base_0_rgb",

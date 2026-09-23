@@ -552,8 +552,8 @@ def _binding_adapter_config(
 ) -> str | None:
     policy_kwargs = _option_mapping(model, "policy_kwargs")
     if policy_kwargs is not None:
-        if model.backend != "vvla":
-            raise ServiceError(f"models.{model.model_id}.policy_kwargs requires VVLA")
+        if model.backend != "embodiinfer":
+            raise ServiceError(f"models.{model.model_id}.policy_kwargs requires EmbodiInfer")
         if any(not isinstance(key, str) or not key.strip() for key in policy_kwargs):
             raise ServiceError(f"models.{model.model_id}.policy_kwargs keys must be non-empty strings")
     runtime_ids: list[str] = []

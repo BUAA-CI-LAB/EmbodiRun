@@ -36,7 +36,7 @@ class FakeRobot:
         self.stopped = True
 
 
-class FakeVvlaClient:
+class FakeEmbodiInferClient:
     def __init__(self) -> None:
         self.open_session_called = 0
         self.step_called = 0
@@ -142,7 +142,7 @@ def test_pi05_mapper_extracts_joint_position_chunk() -> None:
 
 def test_pi05_runtime_steps_and_reset_flow() -> None:
     robot = FakeRobot()
-    client = FakeVvlaClient()
+    client = FakeEmbodiInferClient()
     runtime = ControlRuntime(
         robot,
         client,

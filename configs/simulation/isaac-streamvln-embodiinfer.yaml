@@ -1,7 +1,7 @@
 # Run this example on a Linux GPU workstation; replace the checkpoint path.
 # Examples use ports 8000/8100: stop one before starting another, or change ports.
 metadata:
-  name: isaac-streamvln-vvla
+  name: isaac-streamvln-embodiinfer
   deploy-commit: 7c96609060e6da34fd5ba885e08aa47cd8d67427
 
 nodes:
@@ -30,12 +30,12 @@ simulators:
 
 models:
   streamvln-01:
-    backend: vvla
+    backend: embodiinfer
     transport: http
     type: streamvln
     node: workstation
     gpu: cuda:0
-    environment: .venv-vvla-streamvln
+    environment: .venv-embodiinfer-streamvln
     source: /data/models/streamvln
     server:
       bind: 127.0.0.1

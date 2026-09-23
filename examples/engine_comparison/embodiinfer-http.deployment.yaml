@@ -47,12 +47,12 @@ sensors:
     input_format: mjpeg
 models:
   policy:
-    backend: vvla
+    backend: embodiinfer
     transport: http
     type: pi05
     node: gpu
     gpu: cuda:0
-    environment: .venv-vvla-pi05
+    environment: .venv-embodiinfer-pi05
     source: /REPLACE_SO101_CHECKPOINT
     server:
       bind: 0.0.0.0

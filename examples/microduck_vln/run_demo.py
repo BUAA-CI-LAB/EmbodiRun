@@ -393,7 +393,7 @@ def run_episode(args, sim, client, record, index, output, ffmpeg):
 
 def main():
     args = parse_args()
-    roots = {"project": args.project_root, "vvla": args.inference_root, "checkpoint": args.checkpoint}
+    roots = {"project": args.project_root, "embodiinfer": args.inference_root, "checkpoint": args.checkpoint}
     if args.write_manifest:
         print(f"Wrote {write_manifest(args.manifest, roots)} asset checksums to {args.manifest}", flush=True)
         return 0

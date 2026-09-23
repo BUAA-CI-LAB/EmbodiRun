@@ -22,7 +22,7 @@ def test_standard_host_plan_selects_arx5_and_dm05(tmp_path):
     node = config["robots"]["so101-1"]["node"]
     config["robots"] = {"arm": {"type": "arx.x5", "node": node}}
     model = next(iter(config["models"].values()))
-    model.update(type="dm05", environment=".venv-vvla-dm05")
+    model.update(type="dm05", environment=".venv-embodiinfer-dm05")
     model.pop("server_args")
     adapter_config = tmp_path / "dm05.json"
     adapter_config.write_text(
@@ -43,7 +43,7 @@ def test_standard_host_plan_selects_arx5_and_dm05(tmp_path):
         "dm05",
     }
     model_service = next(service for service in plan.services if service.kind == "model")
-    assert model_service.command.argv[:3] == ("vvla-http-serve", "--policy", "dm05")
+    assert model_service.command.argv[:3] == ("embodiinfer-http-serve", "--policy", "dm05")
     args = model_service.command.argv
     assert args[args.index("--adapter-config") + 1] == str(adapter_config)
 

@@ -173,21 +173,21 @@ def providers() -> tuple[InferenceProvider, ...]:
 def _register_builtins() -> None:
     if _PROVIDERS:
         return
+    from .backends.embodiinfer import EmbodiInferHttpClient, EmbodiInferWirelessClient
     from .backends.sglang import SglangHttpClient
-    from .backends.vvla import VvlaHttpClient, VvlaWirelessClient
 
-    def vvla_builder(endpoint: str, options: Mapping[str, Any], timeout_s: float) -> InferenceClient:
+    def embodiinfer_builder(endpoint: str, options: Mapping[str, Any], timeout_s: float) -> InferenceClient:
         token = options.get("token")
         if token is not None and not isinstance(token, str):
             raise ValueError("inference token must be a string")
         if options.get("transport", "http") == "wireless":
-            return VvlaWirelessClient.from_config(
+            return EmbodiInferWirelessClient.from_config(
                 _required_string(options, "comm_config"),
                 server_node_id=_required_string(options, "server_node_id"),
                 token=token,
                 timeout_s=timeout_s,
             )
-        return VvlaHttpClient(endpoint, token=token, timeout_s=timeout_s)
+        return EmbodiInferHttpClient(endpoint, token=token, timeout_s=timeout_s)
 
     def sglang_builder(endpoint: str, options: Mapping[str, Any], timeout_s: float) -> InferenceClient:
         token = options.get("token")
@@ -205,10 +205,10 @@ def _register_builtins() -> None:
             runtime=_mapping(options, "runtime"),
         )
 
-    def vvla_command(options: ManagedCommandOptions) -> tuple[str, ...]:
-        from .backends.vvla import (
-            vvla_http_server_command,
-            vvla_wireless_server_command,
+    def embodiinfer_command(options: ManagedCommandOptions) -> tuple[str, ...]:
+        from .backends.embodiinfer import (
+            embodiinfer_http_server_command,
+            embodiinfer_wireless_server_command,
         )
 
         common = {
@@ -218,8 +218,8 @@ def _register_builtins() -> None:
             "adapter_config": options.adapter_config,
         }
         if options.transport == "http":
-            return vvla_http_server_command(bind=options.bind, port=options.port, **common)
-        return vvla_wireless_server_command(comm_config=options.comm_config, **common)
+            return embodiinfer_http_server_command(bind=options.bind, port=options.port, **common)
+        return embodiinfer_wireless_server_command(comm_config=options.comm_config, **common)
 
     def sglang_command(options: ManagedCommandOptions) -> tuple[str, ...]:
         from .backends.sglang import sglang_server_command
@@ -249,7 +249,7 @@ def _register_builtins() -> None:
         # The SGLang integration imports the Deploy HTTP client and therefore
         # installs this checkout explicitly.  Keeping both paths here makes
         # ``uv pip install`` independent of PyPI's Deploy release and avoids
-        # dragging VVLA or its optional engine into the environment.
+        # dragging EmbodiInfer or its optional engine into the environment.
         # SGLang keeps its isolated environment under ``sources/inference``;
         # these paths deliberately point at the active EmbodiRun checkout beside
         # it, rather than resolving a released ``embodirun`` release from PyPI.
@@ -304,12 +304,12 @@ def _register_builtins() -> None:
 
     register_provider(
         InferenceProvider(
-            "vvla",
+            "embodiinfer",
             frozenset({"http", "wireless"}),
             True,
-            vvla_builder,
+            embodiinfer_builder,
             environment_group=None,
-            managed_command=vvla_command,
+            managed_command=embodiinfer_command,
             health_suffix="/healthz",
             adapter_config_owned=True,
             append_server_args=True,

@@ -7,17 +7,17 @@ from pathlib import Path
 import pytest
 
 from embodirun.services.inference import (
+    EmbodiInferHttpClient,
     ImagePayload,
     PolicyObservation,
-    VvlaHttpClient,
 )
 
-VVLA_ROOT = Path(__file__).parents[1] / "third_party" / "vvla"
-sys.path.insert(0, str(VVLA_ROOT))
-pytest.importorskip("torch", reason="pinned VVLA integration requires Torch")
+EMBODIINFER_ROOT = Path(__file__).parents[1] / "third_party" / "embodiinfer"
+sys.path.insert(0, str(EMBODIINFER_ROOT))
+pytest.importorskip("torch", reason="pinned EmbodiInfer integration requires Torch")
 
-from vvla.engine.serve.contracts import ModelAction, ModelResult  # noqa: E402
-from vvla.engine.serve.http_server import (  # noqa: E402
+from embodiinfer.engine.serve.contracts import ModelAction, ModelResult  # noqa: E402
+from embodiinfer.engine.serve.http_server import (  # noqa: E402
     PolicyHttpService,
     create_http_server,
 )
@@ -59,7 +59,7 @@ class Pi05StubAdapter:
         self.reset_calls.append(session_id)
 
 
-def test_deploy_client_round_trips_against_pinned_vvla_http_server() -> None:
+def test_deploy_client_round_trips_against_pinned_embodiinfer_http_server() -> None:
     adapter = Pi05StubAdapter()
     service = PolicyHttpService(
         adapter,
@@ -70,7 +70,7 @@ def test_deploy_client_round_trips_against_pinned_vvla_http_server() -> None:
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     host, port = server.server_address
-    client = VvlaHttpClient(f"http://{host}:{port}", timeout_s=5.0)
+    client = EmbodiInferHttpClient(f"http://{host}:{port}", timeout_s=5.0)
 
     try:
         assert client.health()["status"] == "ok"

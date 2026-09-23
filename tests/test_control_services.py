@@ -29,7 +29,7 @@ from embodirun.services.control.server import (
 )
 from embodirun.services.host.control import ControlClient
 from embodirun.services.host.executor import LocalExecutor
-from embodirun.services.inference import VvlaWirelessClient
+from embodirun.services.inference import EmbodiInferWirelessClient
 from embodirun.services.simulation.contracts import (
     EpisodeRequest,
     SimulationServiceConfig,
@@ -328,7 +328,7 @@ def test_simulation_keeps_wireless_connection_until_service_close(monkeypatch, e
             events.append("transport.shutdown")
 
     def client_factory(_config, timeout_s):
-        client = VvlaWirelessClient(Transport(), timeout_s=timeout_s)
+        client = EmbodiInferWirelessClient(Transport(), timeout_s=timeout_s)
         created.append(client)
         return client
 

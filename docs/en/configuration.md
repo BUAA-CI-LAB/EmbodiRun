@@ -94,12 +94,12 @@ runtime's `inputs`.
 ```yaml
 models:
   pi05:
-    backend: vvla            # provider: vvla or sglang
+    backend: embodiinfer            # provider: embodiinfer or sglang
     transport: http          # http or wireless
     type: pi05
     node: compute
     gpu: cuda:0
-    environment: .venv-vvla-pi05
+    environment: .venv-embodiinfer-pi05
     source: /models/pi05-checkpoint
     server:
       bind: 0.0.0.0          # reachable from the robot node on a trusted network
@@ -113,7 +113,7 @@ models:
 
 | Field | Meaning |
 |---|---|
-| `backend` / `provider` | Inference provider. `vvla` (EmbodiInfer) or `sglang`. |
+| `backend` / `provider` | Inference provider. `embodiinfer` (EmbodiInfer) or `sglang`. |
 | `transport` | `http` or `wireless`. |
 | `lifecycle` / `service` | `managed` (Host starts it) or `external` (you run it). |
 | `endpoint` | Required for an external service. |
@@ -153,7 +153,7 @@ Wireless runtimes additionally declare `inference_client.bind` and
 
 Inference backends are registered providers. A provider declares which
 transports it supports, its managed launch command, its environment group, and
-which model options it accepts. The built-in providers are `vvla` and `sglang`.
+which model options it accepts. The built-in providers are `embodiinfer` and `sglang`.
 Adding a backend means registering a provider and shipping a client; the
 deployment and execution path does not change.
 

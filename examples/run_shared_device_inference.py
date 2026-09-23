@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the software-only VVLA shared-device experiment.
+"""Run the software-only EmbodiInfer shared-device experiment.
 
 This helper deliberately keeps the recorded camera source in ``examples/``.
 It is a replay source, not a camera driver: original capture metadata is kept
@@ -37,10 +37,10 @@ from embodirun.services.control.observation_values import ObservationSubscriptio
 from embodirun.services.control.recordings import ObservationRecorder
 from embodirun.services.control.server import ControlHttpServer, ControlService
 from embodirun.services.inference import (
+    EmbodiInferHttpClient,
     PolicyObservation,
     PolicyResult,
     Session,
-    VvlaHttpClient,
 )
 
 RUNTIME_ID = "pi05-policy-vector-replay"
@@ -437,13 +437,13 @@ def validate_capabilities(capabilities: Mapping[str, Any]) -> dict[str, Any]:
     feature_names = _nested(capabilities, "action_feature_names", "feature_names")
     return_steps = _nested(capabilities, "return_steps", "horizon")
     if action_space != POLICY_ACTION_SPACE:
-        raise ExperimentError(f"VVLA action_space {action_space!r} does not match {POLICY_ACTION_SPACE!r}")
+        raise ExperimentError(f"EmbodiInfer action_space {action_space!r} does not match {POLICY_ACTION_SPACE!r}")
     if tuple(state_fields or ()) != ("state_native",):
-        raise ExperimentError(f"VVLA state_fields must be ['state_native'], got {state_fields!r}")
+        raise ExperimentError(f"EmbodiInfer state_fields must be ['state_native'], got {state_fields!r}")
     if tuple(feature_names or ()) != POLICY_FEATURE_NAMES:
-        raise ExperimentError("VVLA action_feature_names do not match the six SO feature names")
+        raise ExperimentError("EmbodiInfer action_feature_names do not match the six SO feature names")
     if isinstance(return_steps, bool) or not isinstance(return_steps, int) or return_steps < PROPOSED_STEPS:
-        raise ExperimentError(f"VVLA return_steps must support the {PROPOSED_STEPS}-step proposal")
+        raise ExperimentError(f"EmbodiInfer return_steps must support the {PROPOSED_STEPS}-step proposal")
     return {
         "action_space": action_space,
         "state_fields": list(state_fields),
@@ -469,13 +469,13 @@ def _policy_result_payload(result: PolicyResult) -> dict[str, Any]:
 def _result_prefix_vector(result: Mapping[str, Any]) -> tuple[float, ...]:
     actions = result.get("actions")
     if not isinstance(actions, Sequence) or len(actions) != 1:
-        raise ExperimentError("raw VVLA result must contain one action chunk")
+        raise ExperimentError("raw EmbodiInfer result must contain one action chunk")
     action = actions[0]
     if not isinstance(action, Mapping):
-        raise ExperimentError("raw VVLA action must be an object")
+        raise ExperimentError("raw EmbodiInfer action must be an object")
     values = action.get("values")
     if not isinstance(values, Mapping):
-        raise ExperimentError("raw VVLA action values must be an object")
+        raise ExperimentError("raw EmbodiInfer action values must be an object")
     names = values.get("feature_names")
     data = values.get("data")
     if (
@@ -486,18 +486,18 @@ def _result_prefix_vector(result: Mapping[str, Any]) -> tuple[float, ...]:
         or len(set(names)) != len(names)
         or set(names) != set(POLICY_FEATURE_NAMES)
     ):
-        raise ExperimentError("raw VVLA feature_names do not match the six SO names")
+        raise ExperimentError("raw EmbodiInfer feature_names do not match the six SO names")
     if not isinstance(data, Sequence) or isinstance(data, (str, bytes)):
-        raise ExperimentError("raw VVLA action data must be a sequence")
+        raise ExperimentError("raw EmbodiInfer action data must be a sequence")
     if len(data) != PROPOSED_STEPS:
-        raise ExperimentError(f"raw VVLA proposal must contain {PROPOSED_STEPS} rows, got {len(data)}")
+        raise ExperimentError(f"raw EmbodiInfer proposal must contain {PROPOSED_STEPS} rows, got {len(data)}")
     row = data[PREFIX_STEPS - 1]
     if not isinstance(row, Sequence) or isinstance(row, (str, bytes)) or len(row) != 6:
-        raise ExperimentError("raw VVLA prefix row must contain six values")
+        raise ExperimentError("raw EmbodiInfer prefix row must contain six values")
     output: list[float] = []
     for index, item in enumerate(row):
         if isinstance(item, bool) or not isinstance(item, (int, float)) or not math.isfinite(float(item)):
-            raise ExperimentError(f"raw VVLA prefix value {index} is not finite")
+            raise ExperimentError(f"raw EmbodiInfer prefix value {index} is not finite")
         output.append(float(item))
     by_name = dict(zip(names, output))
     return tuple(by_name[name] for name in POLICY_FEATURE_NAMES)
@@ -604,11 +604,11 @@ class InferenceTrace:
         )
 
 
-class TracedVvlaClient:
-    """Forward real VVLA calls while retaining their raw responses."""
+class TracedEmbodiInferClient:
+    """Forward real EmbodiInfer calls while retaining their raw responses."""
 
     def __init__(self, endpoint: str, trace: InferenceTrace, token: str | None, timeout_s: float) -> None:
-        self._inner = VvlaHttpClient(endpoint, token=token, timeout_s=timeout_s)
+        self._inner = EmbodiInferHttpClient(endpoint, token=token, timeout_s=timeout_s)
         self.trace = trace
 
     def health(self) -> Mapping[str, Any]:
@@ -727,7 +727,7 @@ def running_experiment(
 
     state_dir.mkdir(parents=True, exist_ok=True)
     source = RecordedReplayCameraSource(records)
-    client = TracedVvlaClient(config.inference_endpoint, trace, token, timeout_s)
+    client = TracedEmbodiInferClient(config.inference_endpoint, trace, token, timeout_s)
     manager = DeviceManager(
         config.node_id,
         owner_id=f"policy-vector-replay:{threading.get_ident()}",
@@ -862,7 +862,7 @@ def _http_json(
     server: ControlHttpServer, method: str, path: str, body: Mapping[str, Any] | None = None
 ) -> tuple[int, dict[str, Any]]:
     host, port = server.server_address[:2]
-    # A first remote VVLA request may include model warm-up.  Keep this bounded
+    # A first remote EmbodiInfer request may include model warm-up.  Keep this bounded
     # but longer than the per-request inference budget so the HTTP caller does
     # not abandon a still-valid task while its result is being serialized.
     connection = http.client.HTTPConnection(host, port, timeout=120.0)
@@ -904,12 +904,12 @@ def run_experiment(
         record_line=record_line,
     )
     trace = InferenceTrace(endpoint)
-    preflight_client = TracedVvlaClient(endpoint, trace, token, inference_timeout_s)
+    preflight_client = TracedEmbodiInferClient(endpoint, trace, token, inference_timeout_s)
     health = dict(preflight_client.health())
     capabilities = dict(preflight_client.capabilities())
     capability_summary = validate_capabilities(capabilities)
     if health.get("status") != "ok":
-        raise ExperimentError(f"VVLA endpoint is not healthy: {health!r}")
+        raise ExperimentError(f"EmbodiInfer endpoint is not healthy: {health!r}")
 
     initial_state = native_state_from_record(records[0])
     config = build_experiment_config(
@@ -1076,7 +1076,7 @@ def run_experiment(
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="run_shared_device_inference")
-    parser.add_argument("--endpoint", required=True, help="VVLA HTTP endpoint")
+    parser.add_argument("--endpoint", required=True, help="EmbodiInfer HTTP endpoint")
     parser.add_argument("--input", required=True, help="frames.jsonl or its recording directory")
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--state-dir", required=True)
@@ -1099,12 +1099,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             record_line=args.record_line,
         )
         trace = InferenceTrace(args.endpoint)
-        client = TracedVvlaClient(args.endpoint, trace, args.token, args.inference_timeout_s)
+        client = TracedEmbodiInferClient(args.endpoint, trace, args.token, args.inference_timeout_s)
         health = dict(client.health())
         capabilities = dict(client.capabilities())
         summary = validate_capabilities(capabilities)
         if health.get("status") != "ok":
-            raise ExperimentError(f"VVLA endpoint is not healthy: {health!r}")
+            raise ExperimentError(f"EmbodiInfer endpoint is not healthy: {health!r}")
         if args.preflight_only:
             report = {
                 "schema": "rlinf.example.shared_device_inference.v1",

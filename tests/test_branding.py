@@ -25,7 +25,7 @@ import sys
 for suffix in (
     '', '.robots', '.bindings', '.services.host.config',
     '.services.host.plan', '.services.control.contracts',
-    '.services.inference.backends.vvla',
+    '.services.inference.backends.embodiinfer',
 ):
     left = importlib.import_module({first!r} + suffix)
     right = importlib.import_module({second!r} + suffix)
@@ -33,7 +33,7 @@ for suffix in (
     assert left.__spec__.name.startswith('embodirun'), suffix
 from embodirun.services.host.config import ConfigError
 assert pickle.loads(b'crlinf_deploy.services.host.config\\nConfigError\\n.') is ConfigError
-assert not {{'torch', 'sglang', 'vvla'}} & sys.modules.keys()
+assert not {{'torch', 'sglang', 'embodiinfer'}} & sys.modules.keys()
 """,
         ],
         capture_output=True,
@@ -99,7 +99,7 @@ def test_installed_cli_aliases(current: str, legacy: str) -> None:
 
 
 def test_new_and_legacy_cli_validate_existing_config() -> None:
-    config = Path(__file__).parents[1] / "configs/pi05/bi-so101-vvla.yaml"
+    config = Path(__file__).parents[1] / "configs/pi05/bi-so101-embodiinfer.yaml"
     outputs = []
     for name in ("embodirun", "rlinf-deploy"):
         result = subprocess.run(
@@ -124,7 +124,7 @@ def test_cli_aliases_read_legacy_state_without_replaying_or_migrating(
 ) -> None:
     """Both installed entry points honor a stopped service in existing v1 state."""
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    config_path = Path(__file__).parents[1] / "configs/pi05/bi-so101-vvla.yaml"
+    config_path = Path(__file__).parents[1] / "configs/pi05/bi-so101-embodiinfer.yaml"
     config = load_config(config_path)
     plan = build_plan(config)
     runtime = plan.runtimes[0]

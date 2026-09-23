@@ -57,6 +57,634 @@
       "md5": "613b8e4a622c4a2c90e9e1245fc540d6",
       "bytes": 2776833
     },
+    "embodiinfer/embodiinfer/__init__.py": {
+      "md5": "6af9134c4b5e9edd6de26bac7758e6b0",
+      "bytes": 1998
+    },
+    "embodiinfer/embodiinfer/backend/__init__.py": {
+      "md5": "313d58205f0b0c284626c6dade2699a8",
+      "bytes": 56
+    },
+    "embodiinfer/embodiinfer/backend/torch/__init__.py": {
+      "md5": "31eba880d7f92d4ad62b435bf69c2e32",
+      "bytes": 272
+    },
+    "embodiinfer/embodiinfer/backend/torch/attention.py": {
+      "md5": "627304f6d2edd92a9a3375a8a8aa776f",
+      "bytes": 4913
+    },
+    "embodiinfer/embodiinfer/backend/torch/fp8.py": {
+      "md5": "58426ca26c12bdc199d023f30eaf9759",
+      "bytes": 6781
+    },
+    "embodiinfer/embodiinfer/backend/torch/int8.py": {
+      "md5": "1d0eed9c6c9d993eda215bb2328c12d2",
+      "bytes": 2772
+    },
+    "embodiinfer/embodiinfer/backend/torch/nvfp4.py": {
+      "md5": "320cc6a1cf083178bbff2fea144370ca",
+      "bytes": 6360
+    },
+    "embodiinfer/embodiinfer/backend/triton/__init__.py": {
+      "md5": "dd818e3306325cecab3ffec5adf8bd16",
+      "bytes": 1767
+    },
+    "embodiinfer/embodiinfer/backend/triton/activation.py": {
+      "md5": "170ba4e65ce650aebc0a9b8197a52817",
+      "bytes": 5168
+    },
+    "embodiinfer/embodiinfer/backend/triton/attention.py": {
+      "md5": "929641e82fe908f7c892803a6aecd170",
+      "bytes": 4593
+    },
+    "embodiinfer/embodiinfer/backend/triton/capability.py": {
+      "md5": "62304eb339c5b083a096f980622e3ab5",
+      "bytes": 2917
+    },
+    "embodiinfer/embodiinfer/backend/triton/fp8.py": {
+      "md5": "78eb2e0723ac6f05eb751f16e4208115",
+      "bytes": 5255
+    },
+    "embodiinfer/embodiinfer/backend/triton/norm.py": {
+      "md5": "258cb36ce062a4f03daa0683ddbc2742",
+      "bytes": 11789
+    },
+    "embodiinfer/embodiinfer/backend/triton/packed_rope.py": {
+      "md5": "e4caf6881618d2300f3430c02af5ff62",
+      "bytes": 6809
+    },
+    "embodiinfer/embodiinfer/backend/triton/prefill_attention.py": {
+      "md5": "f78150b00dfc81a78d1233edd6088e3c",
+      "bytes": 15325
+    },
+    "embodiinfer/embodiinfer/backend/triton/rotary.py": {
+      "md5": "aa87700fe4630ad1c583582450ca922f",
+      "bytes": 16877
+    },
+    "embodiinfer/embodiinfer/backend/triton/sampling.py": {
+      "md5": "4b953155fd174c0c7b61015aff9ed1ac",
+      "bytes": 9027
+    },
+    "embodiinfer/embodiinfer/backend/triton/segmented_attention.py": {
+      "md5": "85d616b8131c84d496123bbb8bc1ba91",
+      "bytes": 14513
+    },
+    "embodiinfer/embodiinfer/backend/triton/split_kv_attention.py": {
+      "md5": "8e39a49ca31c4929b729882a9b804cf6",
+      "bytes": 10769
+    },
+    "embodiinfer/embodiinfer/engine/__init__.py": {
+      "md5": "f558d5acd5cd4b7620590d1a802c5551",
+      "bytes": 860
+    },
+    "embodiinfer/embodiinfer/engine/async_engine.py": {
+      "md5": "7bf14f021ef3402bb6ea285ef2588800",
+      "bytes": 8543
+    },
+    "embodiinfer/embodiinfer/engine/config.py": {
+      "md5": "8842c83cef10ada8e9852099ecf9f6fe",
+      "bytes": 1692
+    },
+    "embodiinfer/embodiinfer/engine/core.py": {
+      "md5": "44e8e0f986d2fa7d034333224cfe5231",
+      "bytes": 19030
+    },
+    "embodiinfer/embodiinfer/engine/graph.py": {
+      "md5": "797e7365e6769f3040b9a6a98cbca834",
+      "bytes": 22941
+    },
+    "embodiinfer/embodiinfer/engine/parallel/__init__.py": {
+      "md5": "c69e698935c6fb39f88a8b19a90b4ece",
+      "bytes": 1677
+    },
+    "embodiinfer/embodiinfer/engine/parallel/data_parallel.py": {
+      "md5": "9a32fb4e1d58865c64174cf2b574d1d1",
+      "bytes": 32894
+    },
+    "embodiinfer/embodiinfer/engine/parallel/pi05.py": {
+      "md5": "523c4cf3197a3a86b8c2ec9c60aaf3ec",
+      "bytes": 2411
+    },
+    "embodiinfer/embodiinfer/engine/parallel/qwen25_vl.py": {
+      "md5": "43bb8dd5863911f1432afe6a6a7a37b3",
+      "bytes": 7130
+    },
+    "embodiinfer/embodiinfer/engine/parallel/tensor_parallel.py": {
+      "md5": "8844770f26c19ffd17d4a48dbe7114e5",
+      "bytes": 5142
+    },
+    "embodiinfer/embodiinfer/engine/rollout/__init__.py": {
+      "md5": "2285044b7ff4dbd737475e5e1113006f",
+      "bytes": 1110
+    },
+    "embodiinfer/embodiinfer/engine/rollout/demo/__init__.py": {
+      "md5": "68d1d4dfb28da7262d1bd310294163bc",
+      "bytes": 1125
+    },
+    "embodiinfer/embodiinfer/engine/rollout/demo/env.py": {
+      "md5": "104ab6bfaebd037c053656a441d7cc3d",
+      "bytes": 3733
+    },
+    "embodiinfer/embodiinfer/engine/rollout/demo/grpo.py": {
+      "md5": "dd247659fe0fc9850501b485b9de5d0d",
+      "bytes": 9860
+    },
+    "embodiinfer/embodiinfer/engine/rollout/demo/reward.py": {
+      "md5": "6d75a5b76c31e0c5f766951f4dc28761",
+      "bytes": 2660
+    },
+    "embodiinfer/embodiinfer/engine/rollout/demo/rollout_engine.py": {
+      "md5": "24a11e06e8962e610c0966d12cdcc5c4",
+      "bytes": 3195
+    },
+    "embodiinfer/embodiinfer/engine/rollout/generation_backend.py": {
+      "md5": "c30ded29950eef342b4be9c3bf187d38",
+      "bytes": 18852
+    },
+    "embodiinfer/embodiinfer/engine/rollout/logprob.py": {
+      "md5": "118073310e8314616239c677794a1ae5",
+      "bytes": 12641
+    },
+    "embodiinfer/embodiinfer/engine/rollout/refit.py": {
+      "md5": "37ac5d7c00f08a579ac71b1350f1cd6c",
+      "bytes": 8476
+    },
+    "embodiinfer/embodiinfer/engine/rollout/weight_sync.py": {
+      "md5": "12c8beec76bf30a2f9e2ba6a5ec06ebe",
+      "bytes": 2798
+    },
+    "embodiinfer/embodiinfer/engine/serve/__init__.py": {
+      "md5": "05b5f10735aff4c34423f8cbdec4e326",
+      "bytes": 56
+    },
+    "embodiinfer/embodiinfer/engine/serve/api.py": {
+      "md5": "6ce6b084561c4d35222400304b685714",
+      "bytes": 2822
+    },
+    "embodiinfer/embodiinfer/engine/serve/batching.py": {
+      "md5": "a601f11a661ad64422abca4b4a0cd51d",
+      "bytes": 4881
+    },
+    "embodiinfer/embodiinfer/engine/serve/contracts.py": {
+      "md5": "f8923e649a86bc4050ed169b1ef90946",
+      "bytes": 11341
+    },
+    "embodiinfer/embodiinfer/engine/serve/factory.py": {
+      "md5": "42385695a70134e3981f1ffcc3347fad",
+      "bytes": 3700
+    },
+    "embodiinfer/embodiinfer/engine/serve/http_server.py": {
+      "md5": "32424b537e380bd809c0a6610627e60d",
+      "bytes": 11799
+    },
+    "embodiinfer/embodiinfer/engine/serve/server.py": {
+      "md5": "22f77e43031a1f5062c9bd85327e909f",
+      "bytes": 2354
+    },
+    "embodiinfer/embodiinfer/engine/serve/service.py": {
+      "md5": "03c4790e676a51be5d6ce51d141bd392",
+      "bytes": 9197
+    },
+    "embodiinfer/embodiinfer/engine/serve/wireless_server.py": {
+      "md5": "90c32150412faa627c897267172152ea",
+      "bytes": 11666
+    },
+    "embodiinfer/embodiinfer/engine/session.py": {
+      "md5": "896e6eb19edabf19e81b566801c9596b",
+      "bytes": 6385
+    },
+    "embodiinfer/embodiinfer/exceptions.py": {
+      "md5": "72d5f61f34f889f756cd083048c6c2bf",
+      "bytes": 2882
+    },
+    "embodiinfer/embodiinfer/layers/__init__.py": {
+      "md5": "09452eddbee9e21615e5d595b370a916",
+      "bytes": 888
+    },
+    "embodiinfer/embodiinfer/layers/attention.py": {
+      "md5": "318c9675480fd954afa649e151a944dc",
+      "bytes": 6597
+    },
+    "embodiinfer/embodiinfer/layers/linear.py": {
+      "md5": "7d9589e8c13c3605f16a4966c1bc8811",
+      "bytes": 12799
+    },
+    "embodiinfer/embodiinfer/models/__init__.py": {
+      "md5": "d1f521c503dc568aec5c7c7a910d0e7e",
+      "bytes": 1890
+    },
+    "embodiinfer/embodiinfer/models/linear.py": {
+      "md5": "6a4c3fde55022b3874b7b6672ee7e9be",
+      "bytes": 18794
+    },
+    "embodiinfer/embodiinfer/models/qwen25_vl/__init__.py": {
+      "md5": "1de9f07ed3a15ac389f9e4299b848afe",
+      "bytes": 2222
+    },
+    "embodiinfer/embodiinfer/models/qwen25_vl/backend.py": {
+      "md5": "309e12c2eda9f331005bfbcb653d7d67",
+      "bytes": 8079
+    },
+    "embodiinfer/embodiinfer/models/qwen25_vl/compile.py": {
+      "md5": "847614a7878e74ba85e73617ca8366f8",
+      "bytes": 13761
+    },
+    "embodiinfer/embodiinfer/models/qwen25_vl/compile_cache.py": {
+      "md5": "6b098a2908b6cce4a95f69b5d76dbae2",
+      "bytes": 35418
+    },
+    "embodiinfer/embodiinfer/models/qwen25_vl/history_image_cache.py": {
+      "md5": "d568b8250351041166ef2c724c5a5f94",
+      "bytes": 11086
+    },
+    "embodiinfer/embodiinfer/models/qwen25_vl/inputs.py": {
+      "md5": "c6d7f552295443f212fb8653d1505b79",
+      "bytes": 2782
+    },
+    "embodiinfer/embodiinfer/models/qwen25_vl/next_token.py": {
+      "md5": "0b1c46c8eeafa1f57ec184f564c4b4c3",
+      "bytes": 6964
+    },
+    "embodiinfer/embodiinfer/models/qwen25_vl/shape_buckets.py": {
+      "md5": "b19361ac85803fb62222c75eb99a8096",
+      "bytes": 4052
+    },
+    "embodiinfer/embodiinfer/models/qwen25_vl/vision.py": {
+      "md5": "abb3417404a0c9f1595a3b7760e3e19f",
+      "bytes": 5141
+    },
+    "embodiinfer/embodiinfer/models/schedulers/__init__.py": {
+      "md5": "4b93038383c38fd61ac0c7d9cb69e653",
+      "bytes": 1197
+    },
+    "embodiinfer/embodiinfer/models/schedulers/diffusion.py": {
+      "md5": "a825f3b081935cf186fb8f19340c5c14",
+      "bytes": 4037
+    },
+    "embodiinfer/embodiinfer/models/schedulers/flow.py": {
+      "md5": "d346e3d9f51ee054a208ecd40d696efb",
+      "bytes": 4128
+    },
+    "embodiinfer/embodiinfer/models/streamvln/__init__.py": {
+      "md5": "0c1b8f73a9be6861434d33671889454b",
+      "bytes": 361
+    },
+    "embodiinfer/embodiinfer/models/streamvln/backbone.py": {
+      "md5": "ba312b85be01d8d9ed98489706959b4f",
+      "bytes": 36365
+    },
+    "embodiinfer/embodiinfer/models/streamvln/loading.py": {
+      "md5": "2ac1c0ed17d04e56b3ed784b3c27ddf1",
+      "bytes": 10036
+    },
+    "embodiinfer/embodiinfer/models/streamvln/prefill.py": {
+      "md5": "efec76d5a3a01ec8a985d9be7b753121",
+      "bytes": 9518
+    },
+    "embodiinfer/embodiinfer/models/text_encoders/__init__.py": {
+      "md5": "0f9e2a6c90ced6717d96640b1cd733a5",
+      "bytes": 461
+    },
+    "embodiinfer/embodiinfer/models/text_encoders/t5.py": {
+      "md5": "9216f22ce6127f3db05f14b832db7b2b",
+      "bytes": 2538
+    },
+    "embodiinfer/embodiinfer/models/video_dit/__init__.py": {
+      "md5": "e12d1f475cfeeaeb5e5568cb3e551ee5",
+      "bytes": 451
+    },
+    "embodiinfer/embodiinfer/models/video_dit/base.py": {
+      "md5": "03f1f26aec911c770b3a6476e3ff5285",
+      "bytes": 2711
+    },
+    "embodiinfer/embodiinfer/models/video_dit/cosmos_predict2.py": {
+      "md5": "f977e2c0978022c65bfa7d67598a3f01",
+      "bytes": 17833
+    },
+    "embodiinfer/embodiinfer/models/video_vae/__init__.py": {
+      "md5": "f4afd474f873c009fc7fab8599aaa18e",
+      "bytes": 169
+    },
+    "embodiinfer/embodiinfer/models/video_vae/base.py": {
+      "md5": "a4ec70a713a0589b4013dbbbdc349ea1",
+      "bytes": 1644
+    },
+    "embodiinfer/embodiinfer/models/video_vae/wan.py": {
+      "md5": "9574c23652cfbc5e617d3275220cb3d6",
+      "bytes": 17941
+    },
+    "embodiinfer/embodiinfer/policies/__init__.py": {
+      "md5": "8c29355a8af5b2e61a4bd6d1a4743a1c",
+      "bytes": 2441
+    },
+    "embodiinfer/embodiinfer/policies/activevln/__init__.py": {
+      "md5": "6181f84d3737596e3079f324007fb8db",
+      "bytes": 317
+    },
+    "embodiinfer/embodiinfer/policies/activevln/cache_activevln.py": {
+      "md5": "e3fa02c7f020b872c3415d8832819fca",
+      "bytes": 11194
+    },
+    "embodiinfer/embodiinfer/policies/activevln/modeling_activevln.py": {
+      "md5": "7d83678e865248fb5ab01e02a052b234",
+      "bytes": 28003
+    },
+    "embodiinfer/embodiinfer/policies/activevln/processor_activevln.py": {
+      "md5": "0a47f3ba9f2cfa97961da222115d5fd4",
+      "bytes": 3972
+    },
+    "embodiinfer/embodiinfer/policies/activevln/prompt_activevln.py": {
+      "md5": "5534fcb1d603d28af0b7a94f602ab230",
+      "bytes": 5007
+    },
+    "embodiinfer/embodiinfer/policies/base.py": {
+      "md5": "de2c3f898a5010ccf76b3b8a9631be97",
+      "bytes": 16285
+    },
+    "embodiinfer/embodiinfer/policies/config.py": {
+      "md5": "b7f7c7d347947decce964207678fffc6",
+      "bytes": 754
+    },
+    "embodiinfer/embodiinfer/policies/cosmos/__init__.py": {
+      "md5": "68c4ac1c4184956f257ba44c5755e065",
+      "bytes": 135
+    },
+    "embodiinfer/embodiinfer/policies/cosmos/modeling_cosmos.py": {
+      "md5": "2d1d01377f4f0abda89d1078ae73b815",
+      "bytes": 21170
+    },
+    "embodiinfer/embodiinfer/policies/cosmos/processor_cosmos.py": {
+      "md5": "4ddcc67e72b475738e08da6364343b07",
+      "bytes": 7470
+    },
+    "embodiinfer/embodiinfer/policies/decoder.py": {
+      "md5": "534e3613695cc34a5416aa265e88a6e4",
+      "bytes": 12031
+    },
+    "embodiinfer/embodiinfer/policies/dm05/__init__.py": {
+      "md5": "9e86c4d0489ecd0a168165108528cb0c",
+      "bytes": 203
+    },
+    "embodiinfer/embodiinfer/policies/dm05/config.py": {
+      "md5": "f19283d3be7989fb6ac4bc70c0aa4b9b",
+      "bytes": 737
+    },
+    "embodiinfer/embodiinfer/policies/dm05/modeling_dm05.py": {
+      "md5": "01c2e62b3c5624edcd06c791475843eb",
+      "bytes": 23135
+    },
+    "embodiinfer/embodiinfer/policies/dm05/processor_dm05.py": {
+      "md5": "1610bff557ec2e4ce821ac88ece811e5",
+      "bytes": 12257
+    },
+    "embodiinfer/embodiinfer/policies/dm05/serving.py": {
+      "md5": "85af3f44dcd2f98ea4024e4d3b53b91a",
+      "bytes": 14737
+    },
+    "embodiinfer/embodiinfer/policies/factory.py": {
+      "md5": "9b1a97f6b92251a948419907ed7dba31",
+      "bytes": 2391
+    },
+    "embodiinfer/embodiinfer/policies/gr00t/__init__.py": {
+      "md5": "45bf73ac3ad594c3b8bb60dcf86b423c",
+      "bytes": 144
+    },
+    "embodiinfer/embodiinfer/policies/gr00t/modeling_gr00t.py": {
+      "md5": "4f3fecc384b97c249fbba10c9613fdd0",
+      "bytes": 26695
+    },
+    "embodiinfer/embodiinfer/policies/gr00t/modules_gr00t.py": {
+      "md5": "a828cd3e5e0297fbcf2654d3b569a960",
+      "bytes": 15457
+    },
+    "embodiinfer/embodiinfer/policies/gr00t/processor_gr00t.py": {
+      "md5": "8e4265d36b3edeb6113f1f7668219afc",
+      "bytes": 3454
+    },
+    "embodiinfer/embodiinfer/policies/gr00t/runtime.py": {
+      "md5": "2943b15d93ac64221a02b39e4e2bf18b",
+      "bytes": 10275
+    },
+    "embodiinfer/embodiinfer/policies/lingbot_vla/__init__.py": {
+      "md5": "f8ca43075cb87e932931d8fbb3a30f6c",
+      "bytes": 245
+    },
+    "embodiinfer/embodiinfer/policies/lingbot_vla/modeling_lingbot_vla.py": {
+      "md5": "9a6484072064f11b3d63b00f2878b8ac",
+      "bytes": 24354
+    },
+    "embodiinfer/embodiinfer/policies/lingbot_vla/modules_lingbot_vla.py": {
+      "md5": "b60170ff5a7a2b35de11385389407590",
+      "bytes": 4922
+    },
+    "embodiinfer/embodiinfer/policies/lingbot_vla/processor_lingbot_vla.py": {
+      "md5": "ba5bc4f9ea20e7f80a128aacb6e055ae",
+      "bytes": 5339
+    },
+    "embodiinfer/embodiinfer/policies/mock/__init__.py": {
+      "md5": "cfc361aa36bffb215c667c2d89a05b86",
+      "bytes": 236
+    },
+    "embodiinfer/embodiinfer/policies/mock/configuration_mock.py": {
+      "md5": "1b7dbdba7a82a82a4040b502bf21be4f",
+      "bytes": 2496
+    },
+    "embodiinfer/embodiinfer/policies/mock/modeling_mock.py": {
+      "md5": "e35da234a95a7386221a1c36f779422c",
+      "bytes": 9342
+    },
+    "embodiinfer/embodiinfer/policies/navida/__init__.py": {
+      "md5": "ab8fe8b55433cbca46a6867dd6fdae19",
+      "bytes": 191
+    },
+    "embodiinfer/embodiinfer/policies/navida/contract.py": {
+      "md5": "cb475f4d00c06d0636d89e0b3f420e21",
+      "bytes": 3561
+    },
+    "embodiinfer/embodiinfer/policies/navida/cuda_graph.py": {
+      "md5": "c240b3684301b7e2669fd87424df24ab",
+      "bytes": 11438
+    },
+    "embodiinfer/embodiinfer/policies/navida/generation.py": {
+      "md5": "9fd3a2fdb8dc6e555db942763c6b1b25",
+      "bytes": 3778
+    },
+    "embodiinfer/embodiinfer/policies/navida/modeling_navida.py": {
+      "md5": "1931c4a1ed55b9cc8650fb07eccd36c5",
+      "bytes": 1274
+    },
+    "embodiinfer/embodiinfer/policies/navida/policy.py": {
+      "md5": "7e4b849be27ea61bfa8808454ac34a29",
+      "bytes": 5511
+    },
+    "embodiinfer/embodiinfer/policies/navida/processing.py": {
+      "md5": "e9ad961e7616959f826ac7b68292317c",
+      "bytes": 4780
+    },
+    "embodiinfer/embodiinfer/policies/navida/runner.py": {
+      "md5": "6db8928d6980429c0061fe15f2e4e138",
+      "bytes": 4153
+    },
+    "embodiinfer/embodiinfer/policies/openvla_oft/__init__.py": {
+      "md5": "dc7d795bc433006c947df2182d5712e7",
+      "bytes": 599
+    },
+    "embodiinfer/embodiinfer/policies/openvla_oft/head.py": {
+      "md5": "a18334e14c3420f090621389d6a97960",
+      "bytes": 5566
+    },
+    "embodiinfer/embodiinfer/policies/openvla_oft/modeling_openvla_oft.py": {
+      "md5": "4ebc231c5da36f46b76338f1b9dd1371",
+      "bytes": 20722
+    },
+    "embodiinfer/embodiinfer/policies/openvla_oft/processor_openvla_oft.py": {
+      "md5": "6baa4383db588de2e0517d58d39bb043",
+      "bytes": 4873
+    },
+    "embodiinfer/embodiinfer/policies/openvla_oft/vision_prismatic.py": {
+      "md5": "5a325fd50422ed8175d99732735c9b46",
+      "bytes": 6612
+    },
+    "embodiinfer/embodiinfer/policies/pi05/__init__.py": {
+      "md5": "0b16d9c161782da56515585e26f228e8",
+      "bytes": 622
+    },
+    "embodiinfer/embodiinfer/policies/pi05/checkpoints/__init__.py": {
+      "md5": "c47137acb6e0242fd9d1f535f5df6f10",
+      "bytes": 2547
+    },
+    "embodiinfer/embodiinfer/policies/pi05/checkpoints/lerobot.py": {
+      "md5": "9a62a0efd799b6d5a9435eb9363015d8",
+      "bytes": 4516
+    },
+    "embodiinfer/embodiinfer/policies/pi05/checkpoints/openpi.py": {
+      "md5": "48f0566759328b2467ad55a7f88f1e4a",
+      "bytes": 7383
+    },
+    "embodiinfer/embodiinfer/policies/pi05/checkpoints/orbax.py": {
+      "md5": "c796a0e482a7c7118be7d845c0873540",
+      "bytes": 9023
+    },
+    "embodiinfer/embodiinfer/policies/pi05/embeddings.py": {
+      "md5": "53d2fc051077c3647bc33d6d84702f3f",
+      "bytes": 2185
+    },
+    "embodiinfer/embodiinfer/policies/pi05/lerobot_adapter.py": {
+      "md5": "1123bf1af2c294be78cb0246e9a174b5",
+      "bytes": 2532
+    },
+    "embodiinfer/embodiinfer/policies/pi05/modeling_pi05.py": {
+      "md5": "f409606d2bf61a2c1c9f0ab168c6c211",
+      "bytes": 50406
+    },
+    "embodiinfer/embodiinfer/policies/pi05/processor_pi05.py": {
+      "md5": "0946977c1c587ff81643545cdacb6d5c",
+      "bytes": 17187
+    },
+    "embodiinfer/embodiinfer/policies/pi05/runtime.py": {
+      "md5": "597521248f067e641800ddabf6f80ec3",
+      "bytes": 11992
+    },
+    "embodiinfer/embodiinfer/policies/pi05/serving.py": {
+      "md5": "560a21259137f69e9fd18f6ff48cc54e",
+      "bytes": 13956
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_low/__init__.py": {
+      "md5": "62c8dc6b7f7a907caddb3272b196b593",
+      "bytes": 242
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_low/contract.py": {
+      "md5": "9b7c5c5001fba953337e5919f8c311eb",
+      "bytes": 3906
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_low/cuda_graph.py": {
+      "md5": "b5158bc4307ac2e5b85abd13cc86e077",
+      "bytes": 11098
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_low/forward.py": {
+      "md5": "6bad6fe0bcc720116b8e950260a141b2",
+      "bytes": 334
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_low/modeling_qwen_r2r_low.py": {
+      "md5": "a3bd49e68c5a2bf625a761ee6aa50ac9",
+      "bytes": 1853
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_low/policy.py": {
+      "md5": "5636ccc85cf3cf88ce3f0de4d52fa027",
+      "bytes": 7985
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_low/processing.py": {
+      "md5": "587285b2402cee8a147a4d5b92b7e2e2",
+      "bytes": 1066
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_low/runner.py": {
+      "md5": "495906b9ecd1be705e20b7c421d077d6",
+      "bytes": 16731
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_panoramic/__init__.py": {
+      "md5": "f2c228d18963160a79a87e7aa86a4869",
+      "bytes": 209
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_panoramic/contract.py": {
+      "md5": "501ff6b8f335caaf055257d2ad97fc97",
+      "bytes": 3952
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_panoramic/cuda_graph.py": {
+      "md5": "263181d0d0495263ffbaa2d875854d35",
+      "bytes": 13893
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_panoramic/forward.py": {
+      "md5": "e8169b97ccebaad16baa5e0eb61b589d",
+      "bytes": 321
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_panoramic/modeling_qwen_r2r_panoramic.py": {
+      "md5": "151ed64e20568617a0983a0923c393c0",
+      "bytes": 1702
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_panoramic/policy.py": {
+      "md5": "584e1af929fcb95db63a257fab62d2d3",
+      "bytes": 8432
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_panoramic/processing.py": {
+      "md5": "0cbb12e34de5151992b98ef3fbc03390",
+      "bytes": 9194
+    },
+    "embodiinfer/embodiinfer/policies/qwen_r2r_panoramic/runner.py": {
+      "md5": "57593991311113fc1e6931fab3182c48",
+      "bytes": 9723
+    },
+    "embodiinfer/embodiinfer/policies/streamvln/__init__.py": {
+      "md5": "ae7a4ce3b9751203854312f1d2eacbc9",
+      "bytes": 361
+    },
+    "embodiinfer/embodiinfer/policies/streamvln/cuda_graph.py": {
+      "md5": "db12b5814a851461071d3fc5b2a60cae",
+      "bytes": 5940
+    },
+    "embodiinfer/embodiinfer/policies/streamvln/policy.py": {
+      "md5": "a68ea3f158d6208cbef963fa6f3346d5",
+      "bytes": 40689
+    },
+    "embodiinfer/embodiinfer/policies/streamvln/processing.py": {
+      "md5": "4cb896d90a1b508b779f1b8bf06889ab",
+      "bytes": 7511
+    },
+    "embodiinfer/embodiinfer/policies/streamvln/prompt.py": {
+      "md5": "182ab9d2d1f2ba92177301ca01b8e9f1",
+      "bytes": 3977
+    },
+    "embodiinfer/embodiinfer/policies/streamvln/serving.py": {
+      "md5": "6a9e5b675b5e28582682d6b8554535a9",
+      "bytes": 7874
+    },
+    "embodiinfer/embodiinfer/types.py": {
+      "md5": "dff729bcc55910126931e6c2a7166496",
+      "bytes": 12227
+    },
+    "embodiinfer/embodiinfer/utils.py": {
+      "md5": "f050b684fa5b2b78c3ebd26930dda3df",
+      "bytes": 1711
+    },
     "project/data/demo_microduck_vln.jsonl": {
       "md5": "e588fe178b023cea5448ceb5423a2673",
       "bytes": 431
@@ -9464,634 +10092,6 @@
     "project/src/val_2.json": {
       "md5": "45d8e22b75b52113400fba31fd18ca57",
       "bytes": 190618
-    },
-    "vvla/vvla/__init__.py": {
-      "md5": "0780266fa134f8c5d8d019ca54f9824e",
-      "bytes": 1942
-    },
-    "vvla/vvla/backend/__init__.py": {
-      "md5": "25efcb917e67a10018e1b6baaae4501d",
-      "bytes": 49
-    },
-    "vvla/vvla/backend/torch/__init__.py": {
-      "md5": "31eba880d7f92d4ad62b435bf69c2e32",
-      "bytes": 272
-    },
-    "vvla/vvla/backend/torch/attention.py": {
-      "md5": "627304f6d2edd92a9a3375a8a8aa776f",
-      "bytes": 4913
-    },
-    "vvla/vvla/backend/torch/fp8.py": {
-      "md5": "58426ca26c12bdc199d023f30eaf9759",
-      "bytes": 6781
-    },
-    "vvla/vvla/backend/torch/int8.py": {
-      "md5": "1d0eed9c6c9d993eda215bb2328c12d2",
-      "bytes": 2772
-    },
-    "vvla/vvla/backend/torch/nvfp4.py": {
-      "md5": "320cc6a1cf083178bbff2fea144370ca",
-      "bytes": 6360
-    },
-    "vvla/vvla/backend/triton/__init__.py": {
-      "md5": "4b49bf3ffe1a28fa5b7a03051e224d1f",
-      "bytes": 1679
-    },
-    "vvla/vvla/backend/triton/activation.py": {
-      "md5": "54ccbd8ac133d2e566da8948e12f5749",
-      "bytes": 5154
-    },
-    "vvla/vvla/backend/triton/attention.py": {
-      "md5": "73ccaf26c7de4acb76c5a0dbaece3a90",
-      "bytes": 4579
-    },
-    "vvla/vvla/backend/triton/capability.py": {
-      "md5": "2fd67927767d2a1eb84b29a7e0210db4",
-      "bytes": 2910
-    },
-    "vvla/vvla/backend/triton/fp8.py": {
-      "md5": "51392acee716f6e70e130e77653f6c96",
-      "bytes": 5248
-    },
-    "vvla/vvla/backend/triton/norm.py": {
-      "md5": "caa1f149aca87b48daf9f0d48d824436",
-      "bytes": 11768
-    },
-    "vvla/vvla/backend/triton/packed_rope.py": {
-      "md5": "e4caf6881618d2300f3430c02af5ff62",
-      "bytes": 6809
-    },
-    "vvla/vvla/backend/triton/prefill_attention.py": {
-      "md5": "587c38ca343e60497f6d43fb70cf71ae",
-      "bytes": 15311
-    },
-    "vvla/vvla/backend/triton/rotary.py": {
-      "md5": "fd123c324fcb1ae5a6520991e8c64b4b",
-      "bytes": 16849
-    },
-    "vvla/vvla/backend/triton/sampling.py": {
-      "md5": "a676b55b9c7e9bf43b53eeef13b91f5a",
-      "bytes": 8999
-    },
-    "vvla/vvla/backend/triton/segmented_attention.py": {
-      "md5": "85d616b8131c84d496123bbb8bc1ba91",
-      "bytes": 14513
-    },
-    "vvla/vvla/backend/triton/split_kv_attention.py": {
-      "md5": "8e39a49ca31c4929b729882a9b804cf6",
-      "bytes": 10769
-    },
-    "vvla/vvla/engine/__init__.py": {
-      "md5": "f558d5acd5cd4b7620590d1a802c5551",
-      "bytes": 860
-    },
-    "vvla/vvla/engine/async_engine.py": {
-      "md5": "7bf14f021ef3402bb6ea285ef2588800",
-      "bytes": 8543
-    },
-    "vvla/vvla/engine/config.py": {
-      "md5": "c4256517c546af285e13fc065b40c5e1",
-      "bytes": 1689
-    },
-    "vvla/vvla/engine/core.py": {
-      "md5": "ca4fa2dbec4b73079db80924d4ec5542",
-      "bytes": 19016
-    },
-    "vvla/vvla/engine/graph.py": {
-      "md5": "2833a620dc0107c4c612ad1f23f693d5",
-      "bytes": 22927
-    },
-    "vvla/vvla/engine/parallel/__init__.py": {
-      "md5": "c69e698935c6fb39f88a8b19a90b4ece",
-      "bytes": 1677
-    },
-    "vvla/vvla/engine/parallel/data_parallel.py": {
-      "md5": "9a32fb4e1d58865c64174cf2b574d1d1",
-      "bytes": 32894
-    },
-    "vvla/vvla/engine/parallel/pi05.py": {
-      "md5": "523c4cf3197a3a86b8c2ec9c60aaf3ec",
-      "bytes": 2411
-    },
-    "vvla/vvla/engine/parallel/qwen25_vl.py": {
-      "md5": "45b37c845f844b125ce87be785a60c28",
-      "bytes": 7116
-    },
-    "vvla/vvla/engine/parallel/tensor_parallel.py": {
-      "md5": "8844770f26c19ffd17d4a48dbe7114e5",
-      "bytes": 5142
-    },
-    "vvla/vvla/engine/rollout/__init__.py": {
-      "md5": "d122538a76cb22dc4d625b14c1a69f82",
-      "bytes": 1096
-    },
-    "vvla/vvla/engine/rollout/demo/__init__.py": {
-      "md5": "68d1d4dfb28da7262d1bd310294163bc",
-      "bytes": 1125
-    },
-    "vvla/vvla/engine/rollout/demo/env.py": {
-      "md5": "104ab6bfaebd037c053656a441d7cc3d",
-      "bytes": 3733
-    },
-    "vvla/vvla/engine/rollout/demo/grpo.py": {
-      "md5": "35a21b67020befca1ecdfa8e99c69919",
-      "bytes": 9825
-    },
-    "vvla/vvla/engine/rollout/demo/reward.py": {
-      "md5": "cdb10b7e27ff333a8df0b197f58f7ade",
-      "bytes": 2653
-    },
-    "vvla/vvla/engine/rollout/demo/rollout_engine.py": {
-      "md5": "24a11e06e8962e610c0966d12cdcc5c4",
-      "bytes": 3195
-    },
-    "vvla/vvla/engine/rollout/generation_backend.py": {
-      "md5": "bd82c5c39ce45645edc5dcfeb14fe6f3",
-      "bytes": 18824
-    },
-    "vvla/vvla/engine/rollout/logprob.py": {
-      "md5": "118073310e8314616239c677794a1ae5",
-      "bytes": 12641
-    },
-    "vvla/vvla/engine/rollout/refit.py": {
-      "md5": "91b66450e609aef783548b35d7f61d6e",
-      "bytes": 8441
-    },
-    "vvla/vvla/engine/rollout/weight_sync.py": {
-      "md5": "12c8beec76bf30a2f9e2ba6a5ec06ebe",
-      "bytes": 2798
-    },
-    "vvla/vvla/engine/serve/__init__.py": {
-      "md5": "7feb44039dc1d7fd0f1e65fa8537edcd",
-      "bytes": 42
-    },
-    "vvla/vvla/engine/serve/api.py": {
-      "md5": "69caa4b09178255f1fdfe43557fefa1f",
-      "bytes": 2759
-    },
-    "vvla/vvla/engine/serve/batching.py": {
-      "md5": "a601f11a661ad64422abca4b4a0cd51d",
-      "bytes": 4881
-    },
-    "vvla/vvla/engine/serve/contracts.py": {
-      "md5": "62f983480bd5d9786c988afeaf53f35d",
-      "bytes": 11327
-    },
-    "vvla/vvla/engine/serve/factory.py": {
-      "md5": "42385695a70134e3981f1ffcc3347fad",
-      "bytes": 3700
-    },
-    "vvla/vvla/engine/serve/http_server.py": {
-      "md5": "6439a16ab1512d35c087863d41a0550c",
-      "bytes": 11714
-    },
-    "vvla/vvla/engine/serve/server.py": {
-      "md5": "fcbd79dea20aba815eba7f7785708186",
-      "bytes": 2340
-    },
-    "vvla/vvla/engine/serve/service.py": {
-      "md5": "262f2e4ec7d671088d83819f4a965d67",
-      "bytes": 8901
-    },
-    "vvla/vvla/engine/serve/wireless_server.py": {
-      "md5": "8f3e138d94e1ff968b879276ac96320f",
-      "bytes": 11337
-    },
-    "vvla/vvla/engine/session.py": {
-      "md5": "896e6eb19edabf19e81b566801c9596b",
-      "bytes": 6385
-    },
-    "vvla/vvla/exceptions.py": {
-      "md5": "d03fa43f2698360526fa36bc30a46cd8",
-      "bytes": 2784
-    },
-    "vvla/vvla/layers/__init__.py": {
-      "md5": "09452eddbee9e21615e5d595b370a916",
-      "bytes": 888
-    },
-    "vvla/vvla/layers/attention.py": {
-      "md5": "49093216fba1d3840307e9951a7263d5",
-      "bytes": 6548
-    },
-    "vvla/vvla/layers/linear.py": {
-      "md5": "9e2e66bf2951fb91068afeadc8245b2b",
-      "bytes": 12750
-    },
-    "vvla/vvla/models/__init__.py": {
-      "md5": "886d55a9e422cb42b9b2f8e5676d04aa",
-      "bytes": 1841
-    },
-    "vvla/vvla/models/linear.py": {
-      "md5": "c74e690a30596e64d1e7f2597780c9ed",
-      "bytes": 18745
-    },
-    "vvla/vvla/models/qwen25_vl/__init__.py": {
-      "md5": "1de9f07ed3a15ac389f9e4299b848afe",
-      "bytes": 2222
-    },
-    "vvla/vvla/models/qwen25_vl/backend.py": {
-      "md5": "309e12c2eda9f331005bfbcb653d7d67",
-      "bytes": 8079
-    },
-    "vvla/vvla/models/qwen25_vl/compile.py": {
-      "md5": "847614a7878e74ba85e73617ca8366f8",
-      "bytes": 13761
-    },
-    "vvla/vvla/models/qwen25_vl/compile_cache.py": {
-      "md5": "c5857363160bc99deaaf669718204e4e",
-      "bytes": 34578
-    },
-    "vvla/vvla/models/qwen25_vl/history_image_cache.py": {
-      "md5": "d568b8250351041166ef2c724c5a5f94",
-      "bytes": 11086
-    },
-    "vvla/vvla/models/qwen25_vl/inputs.py": {
-      "md5": "c6d7f552295443f212fb8653d1505b79",
-      "bytes": 2782
-    },
-    "vvla/vvla/models/qwen25_vl/next_token.py": {
-      "md5": "0b1c46c8eeafa1f57ec184f564c4b4c3",
-      "bytes": 6964
-    },
-    "vvla/vvla/models/qwen25_vl/shape_buckets.py": {
-      "md5": "b19361ac85803fb62222c75eb99a8096",
-      "bytes": 4052
-    },
-    "vvla/vvla/models/qwen25_vl/vision.py": {
-      "md5": "abb3417404a0c9f1595a3b7760e3e19f",
-      "bytes": 5141
-    },
-    "vvla/vvla/models/schedulers/__init__.py": {
-      "md5": "1bdbede845e7277027a7813b96a2c274",
-      "bytes": 1169
-    },
-    "vvla/vvla/models/schedulers/diffusion.py": {
-      "md5": "07fd7d83e6f5b63f9194c5242caa874e",
-      "bytes": 4030
-    },
-    "vvla/vvla/models/schedulers/flow.py": {
-      "md5": "d346e3d9f51ee054a208ecd40d696efb",
-      "bytes": 4128
-    },
-    "vvla/vvla/models/streamvln/__init__.py": {
-      "md5": "0c1b8f73a9be6861434d33671889454b",
-      "bytes": 361
-    },
-    "vvla/vvla/models/streamvln/backbone.py": {
-      "md5": "9d4797491fada52dd2ee260c0a954acc",
-      "bytes": 36330
-    },
-    "vvla/vvla/models/streamvln/loading.py": {
-      "md5": "2ac1c0ed17d04e56b3ed784b3c27ddf1",
-      "bytes": 10036
-    },
-    "vvla/vvla/models/streamvln/prefill.py": {
-      "md5": "efec76d5a3a01ec8a985d9be7b753121",
-      "bytes": 9518
-    },
-    "vvla/vvla/models/text_encoders/__init__.py": {
-      "md5": "f3ca4c0b883ce8150aebd1c45cf378fd",
-      "bytes": 447
-    },
-    "vvla/vvla/models/text_encoders/t5.py": {
-      "md5": "9216f22ce6127f3db05f14b832db7b2b",
-      "bytes": 2538
-    },
-    "vvla/vvla/models/video_dit/__init__.py": {
-      "md5": "e12d1f475cfeeaeb5e5568cb3e551ee5",
-      "bytes": 451
-    },
-    "vvla/vvla/models/video_dit/base.py": {
-      "md5": "9cda7979607fa8cc2b1fb1cf0538dfdd",
-      "bytes": 2683
-    },
-    "vvla/vvla/models/video_dit/cosmos_predict2.py": {
-      "md5": "37d631bcbd08a370612d50308cdd8b13",
-      "bytes": 17819
-    },
-    "vvla/vvla/models/video_vae/__init__.py": {
-      "md5": "f4afd474f873c009fc7fab8599aaa18e",
-      "bytes": 169
-    },
-    "vvla/vvla/models/video_vae/base.py": {
-      "md5": "27734b40aaf44e931eddaba89317b996",
-      "bytes": 1616
-    },
-    "vvla/vvla/models/video_vae/wan.py": {
-      "md5": "9574c23652cfbc5e617d3275220cb3d6",
-      "bytes": 17941
-    },
-    "vvla/vvla/policies/__init__.py": {
-      "md5": "e3081ec3ed636b48e820e738601c9640",
-      "bytes": 2350
-    },
-    "vvla/vvla/policies/activevln/__init__.py": {
-      "md5": "6181f84d3737596e3079f324007fb8db",
-      "bytes": 317
-    },
-    "vvla/vvla/policies/activevln/cache_activevln.py": {
-      "md5": "e3fa02c7f020b872c3415d8832819fca",
-      "bytes": 11194
-    },
-    "vvla/vvla/policies/activevln/modeling_activevln.py": {
-      "md5": "7d83678e865248fb5ab01e02a052b234",
-      "bytes": 28003
-    },
-    "vvla/vvla/policies/activevln/processor_activevln.py": {
-      "md5": "0a47f3ba9f2cfa97961da222115d5fd4",
-      "bytes": 3972
-    },
-    "vvla/vvla/policies/activevln/prompt_activevln.py": {
-      "md5": "5534fcb1d603d28af0b7a94f602ab230",
-      "bytes": 5007
-    },
-    "vvla/vvla/policies/base.py": {
-      "md5": "1b6056daaae1f73b7ad63b18a1dca5cd",
-      "bytes": 16271
-    },
-    "vvla/vvla/policies/config.py": {
-      "md5": "e2976ad5e5e1495099b92bc8de77410a",
-      "bytes": 747
-    },
-    "vvla/vvla/policies/cosmos/__init__.py": {
-      "md5": "ce42e993d519520e9bd7801a57fa7e9f",
-      "bytes": 128
-    },
-    "vvla/vvla/policies/cosmos/modeling_cosmos.py": {
-      "md5": "cfd81141a857be731b40f4eb551847d3",
-      "bytes": 21120
-    },
-    "vvla/vvla/policies/cosmos/processor_cosmos.py": {
-      "md5": "c88734b3c7c35e97773dd84ff8236f2a",
-      "bytes": 7456
-    },
-    "vvla/vvla/policies/decoder.py": {
-      "md5": "7dc18834e2a1340c273a77cf143ce089",
-      "bytes": 12010
-    },
-    "vvla/vvla/policies/dm05/__init__.py": {
-      "md5": "9e86c4d0489ecd0a168165108528cb0c",
-      "bytes": 203
-    },
-    "vvla/vvla/policies/dm05/config.py": {
-      "md5": "f19283d3be7989fb6ac4bc70c0aa4b9b",
-      "bytes": 737
-    },
-    "vvla/vvla/policies/dm05/modeling_dm05.py": {
-      "md5": "4026a9b160076cfa7bca27ce8c59a218",
-      "bytes": 23107
-    },
-    "vvla/vvla/policies/dm05/processor_dm05.py": {
-      "md5": "1610bff557ec2e4ce821ac88ece811e5",
-      "bytes": 12257
-    },
-    "vvla/vvla/policies/dm05/serving.py": {
-      "md5": "85af3f44dcd2f98ea4024e4d3b53b91a",
-      "bytes": 14737
-    },
-    "vvla/vvla/policies/factory.py": {
-      "md5": "f5edbc12ebf4979e8373e343ef3f1126",
-      "bytes": 2300
-    },
-    "vvla/vvla/policies/gr00t/__init__.py": {
-      "md5": "3b11098af0bc02d0b6212e36d9918450",
-      "bytes": 137
-    },
-    "vvla/vvla/policies/gr00t/modeling_gr00t.py": {
-      "md5": "2798bc3b97865c8f53e059002812c25c",
-      "bytes": 26660
-    },
-    "vvla/vvla/policies/gr00t/modules_gr00t.py": {
-      "md5": "800cd3c010900d093f586379f84e3b91",
-      "bytes": 15422
-    },
-    "vvla/vvla/policies/gr00t/processor_gr00t.py": {
-      "md5": "ee1aa4733cf7b3fac7f358eeddf7939f",
-      "bytes": 3447
-    },
-    "vvla/vvla/policies/gr00t/runtime.py": {
-      "md5": "2943b15d93ac64221a02b39e4e2bf18b",
-      "bytes": 10275
-    },
-    "vvla/vvla/policies/lingbot_vla/__init__.py": {
-      "md5": "f8ca43075cb87e932931d8fbb3a30f6c",
-      "bytes": 245
-    },
-    "vvla/vvla/policies/lingbot_vla/modeling_lingbot_vla.py": {
-      "md5": "250c628e245330a7160cd1f0dfe38436",
-      "bytes": 24334
-    },
-    "vvla/vvla/policies/lingbot_vla/modules_lingbot_vla.py": {
-      "md5": "62ba52530e7049fa1e93edd4525002d4",
-      "bytes": 4923
-    },
-    "vvla/vvla/policies/lingbot_vla/processor_lingbot_vla.py": {
-      "md5": "ded39048671bd45d593e3f5eeefb0029",
-      "bytes": 5332
-    },
-    "vvla/vvla/policies/mock/__init__.py": {
-      "md5": "cfc361aa36bffb215c667c2d89a05b86",
-      "bytes": 236
-    },
-    "vvla/vvla/policies/mock/configuration_mock.py": {
-      "md5": "1b7dbdba7a82a82a4040b502bf21be4f",
-      "bytes": 2496
-    },
-    "vvla/vvla/policies/mock/modeling_mock.py": {
-      "md5": "e35da234a95a7386221a1c36f779422c",
-      "bytes": 9342
-    },
-    "vvla/vvla/policies/navida/__init__.py": {
-      "md5": "ab8fe8b55433cbca46a6867dd6fdae19",
-      "bytes": 191
-    },
-    "vvla/vvla/policies/navida/contract.py": {
-      "md5": "cb475f4d00c06d0636d89e0b3f420e21",
-      "bytes": 3561
-    },
-    "vvla/vvla/policies/navida/cuda_graph.py": {
-      "md5": "c240b3684301b7e2669fd87424df24ab",
-      "bytes": 11438
-    },
-    "vvla/vvla/policies/navida/generation.py": {
-      "md5": "9fd3a2fdb8dc6e555db942763c6b1b25",
-      "bytes": 3778
-    },
-    "vvla/vvla/policies/navida/modeling_navida.py": {
-      "md5": "1931c4a1ed55b9cc8650fb07eccd36c5",
-      "bytes": 1274
-    },
-    "vvla/vvla/policies/navida/policy.py": {
-      "md5": "e66315626d688f14f0a5950d6c1c45f3",
-      "bytes": 5504
-    },
-    "vvla/vvla/policies/navida/processing.py": {
-      "md5": "e9ad961e7616959f826ac7b68292317c",
-      "bytes": 4780
-    },
-    "vvla/vvla/policies/navida/runner.py": {
-      "md5": "6db8928d6980429c0061fe15f2e4e138",
-      "bytes": 4153
-    },
-    "vvla/vvla/policies/openvla_oft/__init__.py": {
-      "md5": "7a13914b7a27bb52805a05bd4e8f93b6",
-      "bytes": 585
-    },
-    "vvla/vvla/policies/openvla_oft/head.py": {
-      "md5": "1a4d7744926327d761951ac5b700600a",
-      "bytes": 5558
-    },
-    "vvla/vvla/policies/openvla_oft/modeling_openvla_oft.py": {
-      "md5": "d514cef7846237408e019c14b5dd33a9",
-      "bytes": 20694
-    },
-    "vvla/vvla/policies/openvla_oft/processor_openvla_oft.py": {
-      "md5": "6baa4383db588de2e0517d58d39bb043",
-      "bytes": 4873
-    },
-    "vvla/vvla/policies/openvla_oft/vision_prismatic.py": {
-      "md5": "fc96279ab008c397af9dccb9f2d38dcd",
-      "bytes": 6605
-    },
-    "vvla/vvla/policies/pi05/__init__.py": {
-      "md5": "8559c8ae1555de5543f53617543f0bf3",
-      "bytes": 615
-    },
-    "vvla/vvla/policies/pi05/checkpoints/__init__.py": {
-      "md5": "c47137acb6e0242fd9d1f535f5df6f10",
-      "bytes": 2547
-    },
-    "vvla/vvla/policies/pi05/checkpoints/lerobot.py": {
-      "md5": "9a62a0efd799b6d5a9435eb9363015d8",
-      "bytes": 4516
-    },
-    "vvla/vvla/policies/pi05/checkpoints/openpi.py": {
-      "md5": "48f0566759328b2467ad55a7f88f1e4a",
-      "bytes": 7383
-    },
-    "vvla/vvla/policies/pi05/checkpoints/orbax.py": {
-      "md5": "d8ff4d9aa6b62699892ce0ba1ce57e53",
-      "bytes": 8786
-    },
-    "vvla/vvla/policies/pi05/embeddings.py": {
-      "md5": "18cb9877347beaf6b027cf608d05ad93",
-      "bytes": 2178
-    },
-    "vvla/vvla/policies/pi05/lerobot_adapter.py": {
-      "md5": "6efd6c10f7309dd20800488f3cf9547b",
-      "bytes": 2511
-    },
-    "vvla/vvla/policies/pi05/modeling_pi05.py": {
-      "md5": "639f76089a9a09ef0eb1078adb0c9767",
-      "bytes": 49971
-    },
-    "vvla/vvla/policies/pi05/processor_pi05.py": {
-      "md5": "0946977c1c587ff81643545cdacb6d5c",
-      "bytes": 17187
-    },
-    "vvla/vvla/policies/pi05/runtime.py": {
-      "md5": "597521248f067e641800ddabf6f80ec3",
-      "bytes": 11992
-    },
-    "vvla/vvla/policies/pi05/serving.py": {
-      "md5": "282863356f77642424b4bdbb275372ec",
-      "bytes": 13928
-    },
-    "vvla/vvla/policies/qwen_r2r_low/__init__.py": {
-      "md5": "62c8dc6b7f7a907caddb3272b196b593",
-      "bytes": 242
-    },
-    "vvla/vvla/policies/qwen_r2r_low/contract.py": {
-      "md5": "9b7c5c5001fba953337e5919f8c311eb",
-      "bytes": 3906
-    },
-    "vvla/vvla/policies/qwen_r2r_low/cuda_graph.py": {
-      "md5": "b5158bc4307ac2e5b85abd13cc86e077",
-      "bytes": 11098
-    },
-    "vvla/vvla/policies/qwen_r2r_low/forward.py": {
-      "md5": "6bad6fe0bcc720116b8e950260a141b2",
-      "bytes": 334
-    },
-    "vvla/vvla/policies/qwen_r2r_low/modeling_qwen_r2r_low.py": {
-      "md5": "a3bd49e68c5a2bf625a761ee6aa50ac9",
-      "bytes": 1853
-    },
-    "vvla/vvla/policies/qwen_r2r_low/policy.py": {
-      "md5": "de1654a8e83d0902bc7b5a168181c405",
-      "bytes": 7978
-    },
-    "vvla/vvla/policies/qwen_r2r_low/processing.py": {
-      "md5": "587285b2402cee8a147a4d5b92b7e2e2",
-      "bytes": 1066
-    },
-    "vvla/vvla/policies/qwen_r2r_low/runner.py": {
-      "md5": "495906b9ecd1be705e20b7c421d077d6",
-      "bytes": 16731
-    },
-    "vvla/vvla/policies/qwen_r2r_panoramic/__init__.py": {
-      "md5": "f2c228d18963160a79a87e7aa86a4869",
-      "bytes": 209
-    },
-    "vvla/vvla/policies/qwen_r2r_panoramic/contract.py": {
-      "md5": "501ff6b8f335caaf055257d2ad97fc97",
-      "bytes": 3952
-    },
-    "vvla/vvla/policies/qwen_r2r_panoramic/cuda_graph.py": {
-      "md5": "263181d0d0495263ffbaa2d875854d35",
-      "bytes": 13893
-    },
-    "vvla/vvla/policies/qwen_r2r_panoramic/forward.py": {
-      "md5": "e8169b97ccebaad16baa5e0eb61b589d",
-      "bytes": 321
-    },
-    "vvla/vvla/policies/qwen_r2r_panoramic/modeling_qwen_r2r_panoramic.py": {
-      "md5": "151ed64e20568617a0983a0923c393c0",
-      "bytes": 1702
-    },
-    "vvla/vvla/policies/qwen_r2r_panoramic/policy.py": {
-      "md5": "584e1af929fcb95db63a257fab62d2d3",
-      "bytes": 8432
-    },
-    "vvla/vvla/policies/qwen_r2r_panoramic/processing.py": {
-      "md5": "0cbb12e34de5151992b98ef3fbc03390",
-      "bytes": 9194
-    },
-    "vvla/vvla/policies/qwen_r2r_panoramic/runner.py": {
-      "md5": "57593991311113fc1e6931fab3182c48",
-      "bytes": 9723
-    },
-    "vvla/vvla/policies/streamvln/__init__.py": {
-      "md5": "ae7a4ce3b9751203854312f1d2eacbc9",
-      "bytes": 361
-    },
-    "vvla/vvla/policies/streamvln/cuda_graph.py": {
-      "md5": "db12b5814a851461071d3fc5b2a60cae",
-      "bytes": 5940
-    },
-    "vvla/vvla/policies/streamvln/policy.py": {
-      "md5": "a68ea3f158d6208cbef963fa6f3346d5",
-      "bytes": 40689
-    },
-    "vvla/vvla/policies/streamvln/processing.py": {
-      "md5": "4cb896d90a1b508b779f1b8bf06889ab",
-      "bytes": 7511
-    },
-    "vvla/vvla/policies/streamvln/prompt.py": {
-      "md5": "182ab9d2d1f2ba92177301ca01b8e9f1",
-      "bytes": 3977
-    },
-    "vvla/vvla/policies/streamvln/serving.py": {
-      "md5": "8679f72699fbec174e27d80af2d7679e",
-      "bytes": 7853
-    },
-    "vvla/vvla/types.py": {
-      "md5": "1444af101801ff0d2397597c93e023b8",
-      "bytes": 12220
-    },
-    "vvla/vvla/utils.py": {
-      "md5": "f050b684fa5b2b78c3ebd26930dda3df",
-      "bytes": 1711
     }
   }
 }

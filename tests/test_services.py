@@ -171,7 +171,7 @@ def simulation_deployment(tmp_path, kind, backend, transport):
 @pytest.mark.parametrize(
     "kind,backend,transport",
     [
-        (kind, "vvla", transport)
+        (kind, "embodiinfer", transport)
         for kind in ("vlabench", "libero", "habitat", "isaac")
         for transport in ("http", "wireless")
     ]
@@ -193,7 +193,7 @@ def test_simulation_plan_preserves_backend_and_environment_boundaries(tmp_path, 
     assert model_profile.install == ("packages" if backend == "sglang" else "project-group")
 
     model_service, simulation_service = build_plan(config).services
-    assert model_service.command.argv[0] == ("sglang" if backend == "sglang" else f"vvla-{transport}-serve")
+    assert model_service.command.argv[0] == ("sglang" if backend == "sglang" else f"embodiinfer-{transport}-serve")
     assert simulation_service.command.argv[0] == "embodirun-simulation-serve"
     runtime = SimulationServiceConfig.from_json(simulation_service.simulation_config_json)
     assert runtime.inference_backend == backend
@@ -213,7 +213,7 @@ def test_simulation_plan_preserves_backend_and_environment_boundaries(tmp_path, 
 
 @pytest.mark.parametrize("wireless_first", [False, True])
 def test_simulators_sharing_environment_union_wireless_dependencies(tmp_path, wireless_first) -> None:
-    config = simulation_deployment(tmp_path, "habitat", "vvla", "http")
+    config = simulation_deployment(tmp_path, "habitat", "embodiinfer", "http")
     other_id = "aaa-wireless" if wireless_first else "zzz-wireless"
     config = replace(
         config,
@@ -508,11 +508,11 @@ def two_node_model_config(tmp_path: Path) -> Path:
 """
     second_model = """
   pi05-02:
-    backend: vvla
+    backend: embodiinfer
     transport: http
     type: pi05
     node: jetson-worker
-    environment: .venv-vvla
+    environment: .venv-embodiinfer
     source: /models/pi05-02
     adapter_config: /configs/pi05-02.json
     server:
@@ -560,7 +560,7 @@ def test_single_node_environment_and_runtime() -> None:
     model_service, control_service = plan.services
     assert model_service.health_endpoint == "http://127.0.0.1:8000/healthz"
     assert model_service.command.argv == (
-        "vvla-http-serve",
+        "embodiinfer-http-serve",
         "--policy",
         "pi05",
         "--checkpoint",
@@ -598,7 +598,7 @@ def test_single_node_environment_and_runtime() -> None:
     assert control_config["schema"] == "rlinf.control.config.v1"
     assert control_config["binding"] == "lerobot.so101.pi05"
     assert control_config["inference"] == {
-        "backend": "vvla",
+        "backend": "embodiinfer",
         "transport": "http",
         "endpoint": "http://127.0.0.1:8000",
         "options": {},
@@ -629,11 +629,11 @@ def test_wireless_model_resolves_server_and_control_client_boundaries(
         "--comm-config",
         "pi05-01.wireless.json",
     )
-    assert model_service.command.argv[0] == "vvla-wireless-serve"
+    assert model_service.command.argv[0] == "embodiinfer-wireless-serve"
     assert model_service.health_endpoint is None
     control_config = json.loads(control_service.control_config_json)
     assert control_config["inference"] == {
-        "backend": "vvla",
+        "backend": "embodiinfer",
         "transport": "wireless",
         "endpoint": "wireless://model.pi05-01",
         "options": {
@@ -762,7 +762,7 @@ def test_data_addresses_override_ssh_hosts(tmp_path, transport) -> None:
 
 
 def test_wireless_multiple_models_keep_their_peers_separate(tmp_path) -> None:
-    config = simulation_deployment(tmp_path, "habitat", "vvla", "wireless")
+    config = simulation_deployment(tmp_path, "habitat", "embodiinfer", "wireless")
     document = json.loads(config.path.read_text(encoding="utf-8"))
     document["models"]["second-model"] = deepcopy(document["models"]["policy"])
     document["models"]["second-model"]["server"]["port"] = 9400
@@ -781,7 +781,7 @@ def test_wireless_multiple_models_keep_their_peers_separate(tmp_path) -> None:
 
 
 def test_generated_endpoint_files_cannot_overwrite_another_service(tmp_path) -> None:
-    config = simulation_deployment(tmp_path, "habitat", "vvla", "wireless")
+    config = simulation_deployment(tmp_path, "habitat", "embodiinfer", "wireless")
     document = json.loads(config.path.read_text(encoding="utf-8"))
     document["models"]["simulation-sim-runtime"] = document["models"].pop("policy")
     document["runtimes"]["sim-runtime"]["model"] = "simulation-sim-runtime"
@@ -876,7 +876,7 @@ def test_http_rejects_wireless_only_fields(tmp_path, field) -> None:
 
 @pytest.mark.parametrize("collision", ["model", "client", "runtime"])
 def test_wireless_listeners_conflict_on_same_node(tmp_path, collision) -> None:
-    config = simulation_deployment(tmp_path, "libero", "vvla", "wireless")
+    config = simulation_deployment(tmp_path, "libero", "embodiinfer", "wireless")
     document = json.loads(config.path.read_text(encoding="utf-8"))
     runtime = document["runtimes"]["sim-runtime"]
     if collision == "model":
@@ -897,7 +897,7 @@ def test_wireless_up_writes_native_configs_and_absolute_references(tmp_path, cap
     config = (
         load_config(WIRELESS_EXAMPLE)
         if target == "robot"
-        else simulation_deployment(tmp_path, "habitat", "vvla", "wireless")
+        else simulation_deployment(tmp_path, "habitat", "embodiinfer", "wireless")
     )
     executors = []
 
@@ -1033,7 +1033,7 @@ def test_sglang_pi05_reuses_existing_so101_binding(tmp_path) -> None:
     config_path = tmp_path / "sglang-so101.yaml"
     config_path.write_text(
         EXAMPLE.read_text(encoding="utf-8")
-        .replace("backend: vvla", "backend: sglang")
+        .replace("backend: embodiinfer", "backend: sglang")
         .replace(
             "    source: /models/pi05_so101\n",
             '    environment_packages: ["sglang[diffusion]==0.5.18"]\n    source: /models/pi05_so101\n',
@@ -1117,7 +1117,7 @@ def test_uv_environment_manager_applies_configured_package_overlay() -> None:
         "pip",
         "install",
         "--python",
-        "/opt/rlinf-inference/.venv-vvla/bin/python",
+        "/opt/rlinf-inference/.venv-embodiinfer/bin/python",
         "--index-url",
         "https://download.pytorch.org/whl/cu130",
         "torch==2.10.0+cu130",
@@ -1680,7 +1680,7 @@ def test_service_supervisor_uses_identity_checked_pid_lifecycle() -> None:
     )
     start_request = json.loads(executor.commands[0].stdin)
     assert start_request["environment"]["RLINF_DEPLOY_SERVICE_ID"] == "pi05-01"
-    assert start_request["argv"][0] == "vvla-http-serve"
+    assert start_request["argv"][0] == "embodiinfer-http-serve"
     assert executor.commands[-1].timeout_s == 10.0
 
 
@@ -1967,10 +1967,10 @@ def test_cli_init_then_up_uses_persisted_initialized_state(tmp_path, capsys) -> 
     assert len(start_commands) == 2
     assert all(command.argv[1].startswith(f"{active_source}/") for command in start_commands)
     start_requests = [json.loads(command.stdin) for command in start_commands]
-    model_request = next(request for request in start_requests if request["argv"][0].endswith("vvla-http-serve"))
+    model_request = next(request for request in start_requests if request["argv"][0].endswith("embodiinfer-http-serve"))
     assert (
         model_request["argv"][0] == "/home/operator/.local/share/rlinf-deploy/thor-so101-pi05/"
-        "sources/inference/.venv-vvla/bin/vvla-http-serve"
+        "sources/inference/.venv-embodiinfer/bin/embodiinfer-http-serve"
     )
     assert any(value.endswith("/thor-so101-pi05/generated/pi05-01.adapter.json") for value in model_request["argv"])
     control_request = next(
@@ -2366,8 +2366,8 @@ def test_runtime_inputs_define_model_image_fields(tmp_path) -> None:
     ]
 
 
-def test_vvla_model_image_keys_are_forwarded_to_the_policy_adapter(tmp_path) -> None:
-    config_path = tmp_path / "vvla-image-keys.yaml"
+def test_embodiinfer_model_image_keys_are_forwarded_to_the_policy_adapter(tmp_path) -> None:
+    config_path = tmp_path / "embodiinfer-image-keys.yaml"
     config_path.write_text(
         EXAMPLE.read_text(encoding="utf-8").replace(
             "    source: /models/pi05_so101\n",

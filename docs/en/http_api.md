@@ -33,7 +33,7 @@ When authentication is configured, send `Authorization: Bearer <token>` on
 requests other than the health check. Server setup and error semantics are
 documented in [EmbodiInfer Serving](https://embodiinfer.readthedocs.io/en/latest/serving/).
 
-Open a session with JSON containing `schema: vvla.policy.session.v1`, a
+Open a session with JSON containing `schema: embodiinfer.policy.session.v1`, a
 `robot_id`, the adapter's `action_space`, and optional `metadata`. Use the
 returned `session_id` for subsequent operations.
 
@@ -47,7 +47,7 @@ session state only once.
 
 `POST /v1/sessions/{session_id}/steps` uses multipart form data.
 
-- `metadata`: `application/json`, schema `vvla.policy.step.v1`
+- `metadata`: `application/json`, schema `embodiinfer.policy.step.v1`
 - `image_0..N`: encoded JPEG/PNG bytes
 
 Send `Idempotency-Key` equal to the metadata's `request_id`. The metadata
@@ -103,8 +103,8 @@ and action dimensions.
 
 ## WirelessComm mapping
 
-WirelessComm uses the same `vvla.policy.session.v1`, `vvla.policy.step.v1` and
-result schemas. RPC metadata uses schema `vvla.policy.rpc.v1`, a per-attempt
+WirelessComm uses the same `embodiinfer.policy.session.v1`, `embodiinfer.policy.step.v1` and
+result schemas. RPC metadata uses schema `embodiinfer.policy.rpc.v1`, a per-attempt
 `rpc_id`, and one of the methods `health`, `capabilities`, `open_session`,
 `step`, `reset` or `close`.
 

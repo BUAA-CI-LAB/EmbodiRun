@@ -14,7 +14,7 @@ def build_inference_client(
     endpoint: str,
     options: Mapping[str, Any],
     *,
-    backend: str = "vvla",
+    backend: str = "embodiinfer",
     timeout_s: float,
 ) -> InferenceClient:
     """Build a registered provider client without exposing its implementation."""

@@ -11,7 +11,7 @@
 ## 配置与校验
 
 ```bash
-cp configs/pi05/bi-so101-vvla.yaml my-deployment.yaml
+cp configs/pi05/bi-so101-embodiinfer.yaml my-deployment.yaml
 # 编辑部署版本、设备、标定和检查点路径。
 uv run embodirun --config my-deployment.yaml validate
 uv run embodirun --config my-deployment.yaml probe
@@ -29,7 +29,7 @@ uv run embodirun --config my-deployment.yaml probe
 `range_0_100` 约定。绑定按名称匹配动作特征，并
 在首次总线写入之前拒绝格式错误或过大的命令。
 
-使用 [configs/pi05/bi-so101-vvla.yaml](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/pi05/bi-so101-vvla.yaml) 作为
+使用 [configs/pi05/bi-so101-embodiinfer.yaml](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/pi05/bi-so101-embodiinfer.yaml) 作为
 校验模板。请替换串口路径、相机路径、标定 ID 和
 推理检查点。`validate` 和 `build_plan` 不会接触设备。
 双臂和单臂适配器均由 Control 统一管理硬件资源。双臂运行时需独占两个串口，

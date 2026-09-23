@@ -1,10 +1,10 @@
 import json
 
 from embodirun.services.inference import (
+    EmbodiInferHttpClient,
     HttpResponse,
     ImagePayload,
     PolicyObservation,
-    VvlaHttpClient,
 )
 
 
@@ -33,7 +33,7 @@ class FakeTransport:
 
 def test_step_uses_multipart_binary_images_and_idempotency_key() -> None:
     transport = FakeTransport()
-    client = VvlaHttpClient("http://vvla:8000", transport=transport)
+    client = EmbodiInferHttpClient("http://embodiinfer:8000", transport=transport)
     result = client.step(
         PolicyObservation(
             session_id="session-1",
