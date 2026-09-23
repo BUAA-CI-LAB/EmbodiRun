@@ -335,7 +335,7 @@ class JobRegistry:
                     worker = threading.Thread(
                         target=self._run_job,
                         args=(key,),
-                        name=f"rlinf-job-{run_id}",
+                        name=f"embodirun-job-{run_id}",
                         daemon=True,
                     )
                     self._workers[key] = worker
@@ -439,7 +439,7 @@ class JobRegistry:
             callback_thread = threading.Thread(
                 target=self._run_cancel_callback,
                 args=(key, runtime, callback),
-                name=f"rlinf-job-cancel-{runtime.key.request_id}",
+                name=f"embodirun-job-cancel-{runtime.key.request_id}",
                 daemon=True,
             )
             # Register before starting so close() cannot release the SQLite

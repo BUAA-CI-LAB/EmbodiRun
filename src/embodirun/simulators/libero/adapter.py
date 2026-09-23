@@ -222,7 +222,7 @@ def _prepare_libero_import() -> None:
 
     os.environ.setdefault("MUJOCO_GL", "egl")
     configured_root = os.environ.get("LIBERO_CONFIG_PATH")
-    config_root = Path(configured_root or Path.home() / ".cache" / "rlinf-deploy" / "libero").expanduser()
+    config_root = Path(configured_root or Path.home() / ".cache" / "embodirun" / "libero").expanduser()
     os.environ["LIBERO_CONFIG_PATH"] = str(config_root)
     config_file = config_root / "config.yaml"
     if configured_root is not None and config_file.is_file():

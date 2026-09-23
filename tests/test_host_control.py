@@ -391,9 +391,9 @@ def _fake_context(tmp_path: Path, *, timeout: bool = False):
                 "local": NodeState(
                     node_id="local",
                     home="/tmp",
-                    root="/tmp/rlinf",
-                    deploy_project="/tmp/rlinf/deploy",
-                    inference_project="/tmp/rlinf/inference",
+                    root="/tmp/embodirun",
+                    deploy_project="/tmp/embodirun/deploy",
+                    inference_project="/tmp/embodirun/inference",
                     platform="test",
                     machine="test",
                     python="python3",

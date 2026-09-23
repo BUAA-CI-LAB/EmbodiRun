@@ -234,7 +234,7 @@ class ObservationRecorder:
                 raise RecordingError(str(error)) from error
             self._thread = threading.Thread(
                 target=self._run,
-                name=f"rlinf-observation-recorder-{self.recording_id}",
+                name=f"embodirun-observation-recorder-{self.recording_id}",
                 daemon=True,
             )
             self._thread.start()

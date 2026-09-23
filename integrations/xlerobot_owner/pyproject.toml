@@ -30,9 +30,6 @@ embodirun-xlerobot-owner = "embodirun_xlerobot_owner.__main__:main"
 embodirun-xlerobot-joycon = "embodirun_xlerobot_owner.joycon_teleop:main"
 embodirun-xlerobot-dualsense = "embodirun_xlerobot_owner.dualsense_drive:main"
 # Compatibility aliases for existing deployments.
-rlinf-xlerobot-owner = "embodirun_xlerobot_owner.__main__:main"
-rlinf-xlerobot-joycon = "embodirun_xlerobot_owner.joycon_teleop:main"
-rlinf-xlerobot-dualsense = "embodirun_xlerobot_owner.dualsense_drive:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
