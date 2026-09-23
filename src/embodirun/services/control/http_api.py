@@ -370,9 +370,8 @@ class ControlHTTPAPI:
 
     def _identity(self, headers: Mapping[str, str], token: str | None) -> tuple[str, str]:
         # ``x-embodirun-*`` are the canonical identity headers; the legacy
-        # ``x-rlinf-*`` names stay accepted for existing deployments.
-        caller = _first_header(headers, "x-embodirun-caller-id", "x-rlinf-caller-id", "x-caller-id")
-        session = _first_header(headers, "x-embodirun-session-id", "x-rlinf-session-id", "x-session-id")
+        caller = _first_header(headers, "x-embodirun-caller-id", "x-caller-id")
+        session = _first_header(headers, "x-embodirun-session-id", "x-session-id")
         if self.application.auth.token_authentication_enabled:
             # Let the application report the normal 401 for a missing token;
             # scope headers are required once a token is actually present.
@@ -435,7 +434,7 @@ def _token(headers: Mapping[str, str]) -> str | None:
         if len(parts) != 2 or parts[0].lower() != "bearer" or not parts[1].strip():
             raise AuthenticationError("authorization must use a Bearer token")
         return parts[1].strip()
-    return _first_header(headers, "x-embodirun-token", "x-rlinf-token", "x-control-token")
+    return _first_header(headers, "x-embodirun-token", "x-control-token")
 
 
 def _optional(mapping: Mapping[str, Any], name: str) -> str | None:

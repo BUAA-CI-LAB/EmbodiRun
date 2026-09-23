@@ -34,7 +34,7 @@ class CommandContext:
 
 
 def state_path(directory: Path | None, deployment_name: str) -> Path:
-    root = Path.home() / ".local" / "state" / "rlinf-deploy" if directory is None else directory.expanduser()
+    root = Path.home() / ".local" / "state" / "embodirun" if directory is None else directory.expanduser()
     return root / f"{deployment_name}.json"
 
 

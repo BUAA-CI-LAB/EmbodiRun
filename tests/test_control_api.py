@@ -363,54 +363,6 @@ def test_configured_token_binds_caller_and_describe_does_not_open_provider() -> 
     app.close()
 
 
-def test_legacy_rlinf_identity_headers_still_authenticate() -> None:
-    """Deprecated ``X-RLinf-*`` identity headers keep authenticating during migration."""
-    service = FakeService()
-    calls = 0
-
-    def provider():
-        nonlocal calls
-        calls += 1
-        raise AssertionError("describe must not resolve the arbiter")
-
-    auth = AuthPolicy(
-        {
-            "token-a": {
-                "role": "controller",
-                "caller_id": "caller-a",
-                "session_id": "session-a",
-            },
-        }
-    )
-    app = ControlApplication(service, arbiter_provider=provider, auth_policy=auth)
-    api = ControlHTTPAPI(app)
-    try:
-        legacy = api.dispatch(
-            "GET",
-            "/v1/describe",
-            headers={
-                "Authorization": "Bearer token-a",
-                "X-RLinf-Caller-ID": "caller-a",
-                "X-RLinf-Session-ID": "session-a",
-            },
-        )
-        assert legacy.status == 200
-        assert calls == 0
-        spoofed = api.dispatch(
-            "GET",
-            "/v1/describe",
-            headers={
-                "Authorization": "Bearer token-a",
-                "X-RLinf-Caller-ID": "caller-b",
-                "X-RLinf-Session-ID": "session-a",
-            },
-        )
-        assert spoofed.status == 403
-        assert spoofed.payload["code"] == "forbidden"
-    finally:
-        app.close()
-
-
 def test_http_legacy_task_keeps_task_result_and_request_identity() -> None:
     service = FakeService()
     service.release.set()

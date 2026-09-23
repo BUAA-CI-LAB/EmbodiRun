@@ -122,15 +122,8 @@ embodirun-control-serve = "embodirun.services.control.server:main"
 embodirun-simulation-serve = "embodirun.services.simulation.server:main"
 embodirun-sglang-serve = "embodirun.services.inference.adapters.sglang.pi05:main"
 embodirun-go2-streamvln = "embodirun.bindings.unitree.go2.streamvln.cli:main"
-# Compatibility aliases for existing deployments.
-rlinf-deploy = "embodirun.services.host.cli.cli:main"
-rlinf-control-serve = "embodirun.services.control.server:main"
-rlinf-simulation-serve = "embodirun.services.simulation.server:main"
-rlinf-sglang-serve = "embodirun.services.inference.adapters.sglang.pi05:main"
-rlinf-go2-streamvln = "embodirun.bindings.unitree.go2.streamvln.cli:main"
 
 [tool.setuptools]
-py-modules = ["rlinf_deploy"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -154,4 +147,4 @@ ignore = ["E501", "B905", "C408"]
 
 [tool.ruff.lint.isort]
 # The independently installed integration packages are first-party too.
-known-first-party = ["embodirun", "embodirun_*", "rlinf_deploy"]
+known-first-party = ["embodirun", "embodirun_*"]

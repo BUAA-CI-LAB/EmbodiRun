@@ -1326,7 +1326,7 @@ def _control_job_database(
 ) -> Path:
     """Choose one persistent, per-service job database under device state."""
 
-    configured = state_dir or os.environ.get("RLINF_DEPLOY_CONTROL_STATE_DIR")
+    configured = state_dir or os.environ.get("EMBODIRUN_CONTROL_STATE_DIR")
     if configured is None:
         manager = service.device_manager
         if manager is None:
@@ -1352,7 +1352,7 @@ def _load_auth_policy(token_file: Path | None) -> AuthPolicy:
 
     configured = token_file
     if configured is None:
-        environment_path = os.environ.get("RLINF_DEPLOY_CONTROL_TOKEN_FILE")
+        environment_path = os.environ.get("EMBODIRUN_CONTROL_TOKEN_FILE")
         configured = Path(environment_path).expanduser() if environment_path else None
     if configured is None:
         return AuthPolicy()
@@ -1379,11 +1379,11 @@ def _configured_recorder(
 ) -> ObservationRecorder | None:
     configured_dir = recording_dir
     if configured_dir is None:
-        environment_path = os.environ.get("RLINF_DEPLOY_CONTROL_RECORDING_DIR")
+        environment_path = os.environ.get("EMBODIRUN_CONTROL_RECORDING_DIR")
         configured_dir = Path(environment_path).expanduser() if environment_path else None
     if configured_dir is None:
         return None
-    configured_id = recording_id or os.environ.get("RLINF_DEPLOY_CONTROL_RECORDING_ID", config.runtime_id)
+    configured_id = recording_id or os.environ.get("EMBODIRUN_CONTROL_RECORDING_ID", config.runtime_id)
     expected_frames = tuple(item.name for item in config.inputs)
     return ObservationRecorder(
         store,
@@ -1693,7 +1693,7 @@ def _shutdown_client(client: Any) -> None:
 def _package_version() -> str:
     """Report installed package metadata without inventing a source hash."""
 
-    for distribution in ("embodirun", "rlinf-deploy"):
+    for distribution in ("embodirun", "embodirun"):
         try:
             return package_version(distribution)
         except PackageNotFoundError:  # editable/source checkouts may lack metadata

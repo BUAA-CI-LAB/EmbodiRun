@@ -23,7 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--state-dir",
         type=Path,
-        help=("local state directory (default: ~/.local/state/rlinf-deploy, kept for compatibility)"),
+        help=("local state directory (default: ~/.local/state/embodirun, kept for compatibility)"),
     )
     commands = parser.add_subparsers(dest="command", required=True)
     validate.register(commands)

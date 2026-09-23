@@ -953,7 +953,7 @@ def run_experiment(
                     raise ExperimentError("task input state differs from prior policy readback")
                 request_id = f"policy-vector-replay-{index}"
                 task = {
-                    "schema": "rlinf.control.task.v1",
+                    "schema": "embodirun.control.task.v1",
                     "request_id": request_id,
                     "runtime_id": RUNTIME_ID,
                     "prompt": "pick up the blue cube and place it in the bowl",
@@ -964,7 +964,7 @@ def run_experiment(
                     "wait": True,
                 }
                 status, response = _http_json(server, "POST", "/v1/tasks", task)
-                if status != 200 or response.get("schema") != "rlinf.control.result.v1":
+                if status != 200 or response.get("schema") != "embodirun.control.result.v1":
                     raise ExperimentError(f"task {request_id} failed: {status} {response}")
                 if response.get("completed_steps") != 1:
                     raise ExperimentError(f"task {request_id} did not complete one policy step")
@@ -1031,7 +1031,7 @@ def run_experiment(
         raise ExperimentError("no shared observation reached the consumer subscription")
 
     report = {
-        "schema": "rlinf.example.shared_device_inference.v1",
+        "schema": "embodirun.example.shared_device_inference.v1",
         "status": "software_complete",
         "software_only": True,
         "physical_robot": False,
@@ -1107,7 +1107,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             raise ExperimentError(f"EmbodiInfer endpoint is not healthy: {health!r}")
         if args.preflight_only:
             report = {
-                "schema": "rlinf.example.shared_device_inference.v1",
+                "schema": "embodirun.example.shared_device_inference.v1",
                 "status": "preflight_only",
                 "software_only": True,
                 "physical_robot": False,
