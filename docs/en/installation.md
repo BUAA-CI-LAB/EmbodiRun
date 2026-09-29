@@ -24,6 +24,37 @@ uv sync --frozen
 development tools. It is enough for `embodirun validate`, the Host lifecycle,
 and the test suite.
 
+For runnable recipes, use the same source checkout as the entrypoint:
+
+```bash
+uv run --frozen embodirun example init xlerobot
+uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml setup
+```
+
+`init` creates linked, editable files in a new ignored directory. `setup`
+uses Python 3.12 and uv 0.12.x. For custom `--output`, prefer
+`examples/local/` or a directory outside the checkout
+so generated settings and credentials stay outside the Docker build context.
+`runs/` and generated Control credential files are excluded from Git and Docker.
+The Host environment comes from `uv.lock`;
+optional XLeRobot owner and MicroDuck integration packages are installed from
+their own declared version ranges, so their complete dependency trees are not
+locked by `uv.lock`. A first full optional XLeRobot installation selects CPU
+PyTorch wheels for the owner, because model inference runs in a separate service.
+It can still download large packages and needs network access; Host fixture
+rehearsal time does not measure this installation. MicroDuck's separate GPU
+profile has larger dependencies. While `setup` runs, follow
+`command-0.log` under the directory printed as `Outputs:` to see installation
+progress. If that log explicitly reports a uv HTTP read timeout during native
+setup, retry with a temporary override, for example
+`UV_HTTP_TIMEOUT=300 uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml setup`.
+This host environment variable is not automatically passed to `docker compose build`;
+the current Dockerfile has no build argument for it. Check robot SDK, calibration,
+camera roles, routes, model checkpoint compatibility, and live stop feedback on
+the target host before
+enabling motion. `example check` only checks local prerequisites for XLeRobot;
+it cannot establish physical readiness.
+
 ### Capability groups
 
 Choose the dependency group for the robot or simulator on each node. Use
@@ -103,6 +134,42 @@ for reproducibility. Initialize it only if you want the pinned tree:
 ```bash
 git submodule update --init third_party/embodiinfer
 ```
+
+The recipe container targets are `host`, `xlerobot`, and `microduck` in the
+repository `Dockerfile`. Build them on the target Linux host, with the pinned
+submodule initialized before building `microduck`:
+
+```bash
+docker compose build host
+docker compose --profile hardware build xlerobot
+docker compose --profile gpu build microduck
+```
+
+After building `host`, its first software-only XLeRobot run can use the bind
+mounted `examples/local` directory without installing anything on the host
+beyond Docker:
+
+```bash
+mkdir -p examples/local
+docker compose run --rm --user "$(id -u):$(id -g)" host init xlerobot --output /workspace/xlerobot
+docker compose run --rm --user "$(id -u):$(id -g)" host /workspace/xlerobot/example.local.yaml dry-run
+```
+
+`/workspace/xlerobot` inside the container is
+`examples/local/xlerobot` in this checkout. The same host user owns the new
+files and can edit them. This dry-run uses fixtures and starts no robot owner.
+
+The hardware profile requires explicit device mappings and read-only SDK and
+calibration mounts in a local Compose override; the GPU profile uses a configured
+NVIDIA container runtime (`runtime: nvidia`, required by Thor's NVIDIA CSV mode)
+and external assets. The Compose defaults only show
+help. A recipe `down` reaches an active launcher through a private Unix socket
+in that same container instance; a fresh `docker compose run` container cannot
+stop a previous container's launcher. Stop the original foreground container
+with Ctrl-C or `docker stop --time 300 CONTAINER` so owned children have time
+to clean up, then confirm physical stop feedback.
+ARM64 build and runtime support must be verified on each target and optional
+integration; an image definition alone does not establish it.
 
 ## PyPI
 

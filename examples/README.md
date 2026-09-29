@@ -1,16 +1,23 @@
 # Runnable examples
 
-Use one YAML manifest and one launcher for each demo. Run these commands from
-the repository root after `uv sync --frozen`:
+Use the installed `embodirun example` command for all recipes. `examples/run.sh`
+uses the same Python runner for source checkouts. From the repository root:
 
 ```bash
-bash examples/run.sh examples/multi_robot_serving/example.yaml validate
-bash examples/run.sh examples/multi_robot_serving/example.yaml plan
+uv sync --frozen
+uv run --frozen embodirun example init xlerobot
+uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml validate
+uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml plan
 ```
 
-Both commands are offline: they neither connect to devices nor start inference.
-`validate` checks the configuration; `plan` prints the command, arguments, and
-output directory that `run` would use.
+`init` creates one new, ignored directory with all referenced files linked:
+manifest, deployment, hardware configuration, task, and routes for XLeRobot.
+It refuses to overwrite an existing directory. Other templates are `so101`,
+`embodiinfer-http`, `embodiinfer-wireless`, `sglang-http`, and `microduck`.
+Use `--output NEW_DIRECTORY` to choose a location; MicroDuck accepts
+`--assets ASSET_ROOT` to fill its project, checkpoint, and episode paths.
+`validate` and `plan` are offline. `plan` prints the command and output path
+without launching it.
 
 | Demo | Configuration | Setup and execution |
 |---|---|---|
@@ -40,16 +47,17 @@ parameters:
 - `name`: a readable identifier for the example.
 - `kind`: `rollout`, `microduck`, or `snack`; selects an existing execution path.
 - `output_dir`: output root. Each invocation gets a fresh timestamped directory.
-- `python` (optional): interpreter for MicroDuck or XLeRobot; defaults to the
-  launcher's interpreter. Host commands use the Host environment.
+- `python` (optional): interpreter for MicroDuck or XLeRobot; the launcher
+  otherwise selects the dedicated recipe environment after `setup`. Host
+  commands use the Host environment.
 - `parameters`: settings for that execution path, shown in the shipped manifests.
   Unknown fields, duplicate YAML keys, and invalid numeric limits are rejected.
 
 Manifest paths resolve **relative to the YAML file**, independent of the shell's
 working directory. Paths inside a deployment remain paths on the corresponding
-node. There is no shell interpolation in YAML; write concrete values. Copy a
-manifest and deployment to `*.local.yaml` in the same directory before editing;
-local YAML/JSON files are ignored by Git.
+node. There is no shell interpolation in YAML; write concrete values. Use
+`init` to create and link editable local files; `examples/local/` is ignored by
+Git.
 
 Deployment YAML owns nodes, devices, cameras, models, and bindings. The example
 manifest owns the task and execution limits. XLeRobot references its existing
@@ -61,14 +69,16 @@ and episode manifest.
 | Command | SO-101 rollout | XLeRobot | MicroDuck |
 |---|---|---|---|
 | `validate` / `plan` | Offline configuration / command preview | Same | Same; assets need not be installed |
-| `setup` | Host `init`, then sync this checkout | Install the example and owner environment | Follow the dedicated environment instructions |
+| `setup` | Host `init`, then sync this checkout | Install Host from `uv.lock` and owner integration | Install Host from `uv.lock` and MicroDuck integration |
 | `up --allow-hardware` | Start model and robot services | Start owner and Control in the foreground | Inference starts with `run` |
 | `run` | Concurrent bounded rollouts; requires `--allow-hardware` | Supervised delivery; requires `--allow-hardware` | Launch simulation and inference |
 | `dry-run` | — | Fixture-only task rehearsal | — |
-| `check` | — | — | Check assets, CUDA, EGL, controller, and encoder |
-| `down` | Stop this deployment | Ctrl-C in the `up` terminal | Child services stop when `run` exits |
+| `check` | Report local placeholders and node-owned prerequisites | Report local SDK, calibration, camera role, route, and fixture gaps | Check paths and run the scene's CUDA/EGL/asset preflight |
+| `down` | Stop this deployment | Ask this recipe's foreground launcher to stop | Ask this recipe's foreground launcher to stop |
 
-Hardware examples require calibrated devices, a working emergency stop, and an
+`check` is a prerequisite check, not proof that a robot, model, camera, or stop
+feedback is ready. The MicroDuck scene preflight uses GPU resources; run it on
+the target Linux GPU host. Hardware examples require calibrated devices, a working emergency stop, and an
 operator. `--allow-hardware` permits startup or motion; it does not skip action
 limits or XLeRobot's confirmation gates. Stop one deployment before starting
 another that uses the same robot or ports.
@@ -91,6 +101,15 @@ Do not run unrelated work in the example's deployment.
 Set `EMBODIRUN_EXAMPLE_PYTHON` to an absolute Host Python path if you are not
 using the repository's `.venv`.
 
+For a first Linux deployment, run `uv run --frozen embodirun example
+examples/local/xlerobot/example.local.yaml setup` before `check`. Host packages
+come from `uv.lock`; the separately installed owner/MicroDuck integration
+packages use their declared version ranges and are not fully locked by that
+file. Do not copy an existing machine's virtual environment. Container targets
+`host`, `xlerobot`, and `microduck` are in the root `Dockerfile`; see the
+installation guide for their Linux prerequisites and the Compose opt-in
+profiles. Building an image does not enable robot motion.
+
 ## Smaller software examples
 
 - [Simulated device and public Control API](shared-device-fake.md)
@@ -98,3 +117,18 @@ using the repository's `.venv`.
 
 For latency measurements and report comparison, use
 [benchmarks](../benchmarks/README.md).
+
+## First-use feedback
+
+For a first software-only trial, start from a fresh checkout, run
+`uv sync --frozen`, then `uv run --frozen embodirun example init xlerobot`,
+`validate`, `plan`, and `dry-run` against
+`examples/local/xlerobot/example.local.yaml` through the same `uv run --frozen
+embodirun example` entrypoint. On the
+target Linux host, try `setup` and `check` separately; stop before `up` or
+`run --allow-hardware` unless an authorized operator has completed calibration
+and physical stop checks. Record the OS/architecture, Python and uv versions,
+exact commands and exit codes, the first blocking error, and the generated
+`run.json`/command log path with secrets and private routes removed. This
+documents what a new user could reproduce; it is not a substitute for actual
+independent-user feedback.

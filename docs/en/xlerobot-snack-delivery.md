@@ -43,8 +43,10 @@ route files.
 After `uv sync --frozen`, rehearse the task through the shared entrypoint:
 
 ```bash
-bash examples/run.sh examples/xlerobot_snack_delivery/example.yaml validate
-bash examples/run.sh examples/xlerobot_snack_delivery/example.yaml dry-run
+uv run --frozen embodirun example init xlerobot
+CONFIG=examples/local/xlerobot/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" dry-run
 ```
 
 The package README covers local YAML setup, service startup, supervised

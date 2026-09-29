@@ -9,10 +9,11 @@ camera connections; the example coordinates tasks through Control.
 From the repository root, after `uv sync --frozen`:
 
 ```bash
-CONFIG=examples/xlerobot_snack_delivery/example.yaml
-bash examples/run.sh "$CONFIG" validate
-bash examples/run.sh "$CONFIG" plan
-bash examples/run.sh "$CONFIG" dry-run
+uv run --frozen embodirun example init xlerobot
+CONFIG=examples/local/xlerobot/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" dry-run
 ```
 
 The dry-run exercises task sequencing with fixture routes and feedback. It
@@ -21,22 +22,12 @@ and `result/events.jsonl` in the printed output directory.
 
 ## Prepare your robot
 
-Follow [setup and calibration](guide.md), then copy the local configuration:
+Follow [setup and calibration](guide.md). The `init` command above already
+created the manifest, task, deployment, hardware file and both route files in
+one directory, with references connected. It refuses to overwrite existing
+local work. Edit the generated files:
 
-```bash
-cp examples/xlerobot_snack_delivery/example.yaml examples/xlerobot_snack_delivery/example.local.yaml
-cp examples/xlerobot_snack_delivery/config.example.json examples/xlerobot_snack_delivery/config.local.json
-cp examples/xlerobot_snack_delivery/deployment.example.yaml examples/xlerobot_snack_delivery/deployment.local.yaml
-cp examples/xlerobot_snack_delivery/hardware.example.json examples/xlerobot_snack_delivery/hardware.local.json
-```
-
-Edit the local files:
-
-- In the manifest, point `parameters.config` to `config.local.json` and
-  `parameters.deployment` to `deployment.local.yaml`. Set
-  `python: ../../.venv-xlerobot-snack/bin/python` for the hardware environment.
-- In the deployment, set `owner.hardware_config: hardware.local.json` and the
-  running model service's endpoint and camera roles.
+- In the deployment, set the running model service's endpoint and camera roles.
 - In the hardware config, set SDK/device paths, calibration, and motion limits.
   Confirm camera roles and stop feedback before enabling motion.
 - In the task JSON, set your recorded routes, grasp instruction, agent factory,
@@ -50,10 +41,10 @@ route export, owner setup, and agent configuration.
 ## Run a supervised delivery
 
 ```bash
-CONFIG=examples/xlerobot_snack_delivery/example.local.yaml
-bash examples/run.sh "$CONFIG" setup
-bash examples/run.sh "$CONFIG" validate
-bash examples/run.sh "$CONFIG" up --allow-hardware
+CONFIG=examples/local/xlerobot/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" setup
+uv run --frozen embodirun example "$CONFIG" check
+uv run --frozen embodirun example "$CONFIG" up --allow-hardware
 ```
 
 Keep `up` running in this terminal. It starts one owner and two scoped Control
@@ -61,14 +52,16 @@ services. Confirm the physical stop through the owner UI, then in a second
 terminal run:
 
 ```bash
-bash examples/run.sh examples/xlerobot_snack_delivery/example.local.yaml run --allow-hardware
+CONFIG=examples/local/xlerobot/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" run --allow-hardware
 ```
 
 Follow the prompts for arrival, grasp, and handover. Hardware confirmation is
-never automated. Ctrl-C in the `up` terminal stops its service stack; check
+never automated. Use `embodirun example "$CONFIG" down` from another terminal
+or Ctrl-C in the `up` terminal to stop its service stack; check
 the physical stop state before leaving the robot.
 
-The default output root is `artifacts/examples/xlerobot-snack-delivery/`.
+The generated example's output root is `examples/local/xlerobot/runs/`.
 `services/` holds private owner/Control configs and service logs; timestamped
 task directories contain `run.json` and `result/` with events, status, agent
 decisions, and proposals. Keep generated credentials local.

@@ -23,6 +23,28 @@ uv sync --frozen
 `uv sync --frozen` 会安装核心包、`host` 依赖组和开发工具。
 安装后即可校验配置、通过 Host 管理服务，以及运行测试。
 
+可运行的 Recipe 使用同一源码入口：
+
+```bash
+uv run --frozen embodirun example init xlerobot
+uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml setup
+```
+
+`init` 在新的 Git 忽略目录中生成已联动的可编辑配置。`setup` 使用
+Python 3.12 与 uv 0.12.x。自定义 `--output` 优先使用 `examples/local/`
+或仓库外目录，避免生成配置与凭证进入 Docker 构建上下文；`runs/` 和生成的
+Control 凭证文件已从 Git、Docker 上下文排除。Host 环境来自 `uv.lock`，XLeRobot owner 与
+MicroDuck 可选集成按各自声明的版本范围安装，完整依赖树未被该锁文件锁定。
+首次完整安装 XLeRobot 可选集成会为 owner 选择 CPU 版 PyTorch wheel；模型推理由
+独立服务承担。安装仍可能下载较大的依赖包，需要网络；Host fixture 演练耗时不能
+代表完整安装耗时。MicroDuck 独立 GPU profile 的依赖更大。`setup` 运行期间，
+可查看终端 `Outputs:` 所示目录内的 `command-0.log` 确认安装进度。
+若原生 `setup` 的该日志明确报 uv HTTP 读取超时，可临时重试，例如
+`UV_HTTP_TIMEOUT=300 uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml setup`。
+宿主机环境变量不会自动传入 `docker compose build`；当前 Dockerfile 没有对应构建参数。
+启用运动前，须在目标主机核对 SDK、标定、摄像头角色、路线、模型检查点适配与
+实际停止反馈。XLeRobot 的 `example check` 只检查本地前提，不能证明真机就绪。
+
 ### 依赖组
 
 按节点上的机器人或仿真器选择依赖组，不同设备的依赖安装在独立环境中。
@@ -99,6 +121,36 @@ uv sync --frozen --extra wireless
 ```bash
 git submodule update --init third_party/embodiinfer
 ```
+
+仓库 `Dockerfile` 提供 `host`、`xlerobot`、`microduck` 三个目标。
+在目标 Linux 主机构建；构建 `microduck` 前先初始化上述固定子模块：
+
+```bash
+docker compose build host
+docker compose --profile hardware build xlerobot
+docker compose --profile gpu build microduck
+```
+
+构建 `host` 后，可通过绑定挂载的 `examples/local` 首次运行 XLeRobot 软件演练，
+宿主机除 Docker 外无需安装 Recipe 依赖：
+
+```bash
+mkdir -p examples/local
+docker compose run --rm --user "$(id -u):$(id -g)" host init xlerobot --output /workspace/xlerobot
+docker compose run --rm --user "$(id -u):$(id -g)" host /workspace/xlerobot/example.local.yaml dry-run
+```
+
+容器内的 `/workspace/xlerobot` 对应仓库的 `examples/local/xlerobot`，
+使用当前宿主用户创建，便于继续编辑。此 `dry-run` 使用 fixture，不启动机器人 owner。
+
+硬件 profile 需要在本地 Compose 覆盖文件中显式映射设备并只读挂载 SDK、
+标定；GPU profile 使用已配置的 NVIDIA 容器运行时（Thor 的 NVIDIA CSV 模式
+要求 `runtime: nvidia`）并需要外部资源。默认 Compose 命令只显示
+帮助。Recipe 的 `down` 通过同一容器实例内的私有 Unix socket 联系运行中的
+launcher；新开的 `docker compose run` 容器无法停止旧容器中的 launcher。
+应对原前台容器按 Ctrl-C，或执行 `docker stop --time 300 CONTAINER`
+给其子进程留出清理时间，然后核验真机停止反馈。
+ARM64 构建和运行需要在目标机器及可选集成上实测，镜像定义本身不构成支持证明。
 
 ## PyPI
 

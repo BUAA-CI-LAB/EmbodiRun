@@ -26,6 +26,9 @@ from embodirun.bindings import binding_definition
 from embodirun.deployment.config import load_config
 from embodirun.deployment.config.loader import _load_yaml
 from embodirun.deployment.plan import build_plan
+from examples.configuration import check_requirements, init_main
+from examples.lifecycle import Supervisor, stop_owned
+from examples.setup_environment import environment_path
 
 ROOT = Path(__file__).resolve().parents[1]
 HOST = [sys.executable, "-c", "from embodirun.services.host.cli.cli import main; raise SystemExit(main())"]
@@ -76,7 +79,15 @@ class Example:
 
     @property
     def python(self) -> str:
-        return str(self.resolve(self.data["python"])) if "python" in self.data else sys.executable
+        if "python" in self.data:
+            return str(self.resolve(self.data["python"]))
+        if override := os.environ.get("EMBODIRUN_SCENE_PYTHON"):
+            return override
+        if self.kind in {"snack", "microduck"}:
+            candidate = environment_path(self.kind) / "bin/python"
+            if candidate.is_file():
+                return str(candidate)
+        return sys.executable
 
     def host(self, *args: str) -> list[str]:
         return [
@@ -178,6 +189,8 @@ def commands(example: Example, action: str, output: Path) -> tuple[list[list[str
     """Build argv without invoking a shell or importing optional GPU packages."""
     p = example.parameters
     env: dict[str, str] = {}
+    if action == "setup" and example.kind in {"snack", "microduck"}:
+        return [[sys.executable, str(ROOT / "examples/setup_environment.py"), example.kind]], env
     if example.kind == "rollout":
         if action == "setup":
             return [example.host("init"), example.host("sync", "--source", str(ROOT))], env
@@ -205,8 +218,6 @@ def commands(example: Example, action: str, output: Path) -> tuple[list[list[str
             ], env
     elif example.kind == "snack":
         directory = ROOT / "examples/xlerobot_snack_delivery"
-        if action == "setup":
-            return [["bash", str(directory / "setup.sh")]], env
         if action == "up":
             return [
                 [
@@ -276,7 +287,15 @@ def commands(example: Example, action: str, output: Path) -> tuple[list[list[str
     raise ValueError(f"{action} is not supported for {example.kind}; see examples/README.md")
 
 
-def execute(argv: list[list[str]], env: dict[str, str], output: Path, *, parallel: bool, interactive: bool) -> None:
+def execute(
+    argv: list[list[str]],
+    env: dict[str, str],
+    output: Path,
+    *,
+    parallel: bool,
+    interactive: bool,
+    supervisor: Supervisor | None = None,
+) -> None:
     """Own and reap local children; preserve stdin for supervised handover."""
     children: list[subprocess.Popen] = []
     logs = []
@@ -290,9 +309,17 @@ def execute(argv: list[list[str]], env: dict[str, str], output: Path, *, paralle
                 command, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True
             )
             children.append(child)
-            if not parallel and child.wait() != 0:
-                raise RuntimeError(f"command {index} failed; see {output}")
+            if not parallel:
+                while child.poll() is None:
+                    if supervisor is not None and supervisor.cancelled.wait(0.1):
+                        raise KeyboardInterrupt
+                    if supervisor is None:
+                        time.sleep(0.1)
+                if child.returncode != 0:
+                    raise RuntimeError(f"command {index} failed; see {output}")
         while True:
+            if supervisor is not None and supervisor.cancelled.is_set():
+                raise KeyboardInterrupt
             # Poll every client: short-circuiting on the first live child can
             # hide a later client's failure until the first rollout finishes.
             codes = [child.poll() for child in children]
@@ -317,13 +344,47 @@ def execute(argv: list[list[str]], env: dict[str, str], output: Path, *, paralle
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == "init":
+        try:
+            return init_main(argv[1:])
+        except (OSError, ValueError) as error:
+            print(f"example: {error}", file=sys.stderr)
+            return 2
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("config", type=Path)
     parser.add_argument("command", choices=COMMANDS)
     parser.add_argument("--allow-hardware", action="store_true", help="permit hardware service startup or motion")
     args = parser.parse_args(argv)
+    stop_error: RuntimeError | None = None
     try:
-        example = load_example(args.config)
+        if args.command == "down":
+            path = args.config.expanduser().resolve()
+            data = _load_yaml(path)
+            example = Example(path, data)
+            if example.kind not in {"rollout", "snack", "microduck"}:
+                raise ValueError("unknown recipe kind")
+        else:
+            example = load_example(args.config)
+        if args.command == "down":
+            try:
+                stop_owned(example.output)
+            except RuntimeError as error:
+                if example.kind != "rollout":
+                    raise
+                stop_error = error
+                print(f"Local launcher stop unconfirmed: {error}", file=sys.stderr)
+            if example.kind != "rollout":
+                return 0
+        if args.command == "check":
+            problems = check_requirements(example)
+            if problems:
+                for problem in problems:
+                    print(f"Missing: {problem}", file=sys.stderr)
+                return 2
+            if example.kind != "microduck":
+                print("Local prerequisites checked; live robot/model readiness was not tested.")
+                return 0
         if args.command == "validate":
             print(f"Valid example: {example.data['name']} (offline configuration check)")
             return 0
@@ -340,7 +401,7 @@ def main(argv: list[str] | None = None) -> int:
             deployment_values = _load_yaml(example.resolve(example.parameters["deployment"]))
             if "REPLACE_" in repr(deployment_values):
                 raise ValueError("replace the REPLACE_* values in the deployment YAML before setup/up/run")
-        if example.kind == "microduck":
+        if example.kind == "microduck" and action != "setup":
             for key in ("project_root", "inference_root", "checkpoint", "episodes", "manifest"):
                 path = example.resolve(example.parameters[key])
                 if action == "provision" and key == "manifest":
@@ -357,7 +418,12 @@ def main(argv: list[str] | None = None) -> int:
         output.mkdir(parents=True, exist_ok=False, mode=0o700)
         print(f"Outputs: {output}", flush=True)
         report = {"example": example.data, "command": action, "commands": argv_list, "status": "running"}
-        report["revision"] = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        try:
+            report["revision"] = subprocess.check_output(
+                ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True, stderr=subprocess.DEVNULL
+            ).strip()
+        except (OSError, subprocess.CalledProcessError):
+            report["revision"] = os.environ.get("EMBODIRUN_REVISION")
         inputs = [example.path]
         for key in ("deployment", "config", "manifest", "episodes"):
             if key in example.parameters:
@@ -376,31 +442,33 @@ def main(argv: list[str] | None = None) -> int:
             report["input_snapshots"][str(path)] = str(snapshot.relative_to(output))
         report_path = output / "run.json"
         report_path.write_text(json.dumps(report, indent=2) + "\n")
-        try:
-            execute(
-                argv_list,
-                env,
-                output,
-                parallel=example.kind == "rollout" and action == "run",
-                interactive=example.kind == "snack" and action in {"up", "run"},
-            )
-            report["status"] = "complete"
-        except BaseException:
-            report["status"] = "failed"
-            if example.kind == "rollout" and action in {"up", "run"}:
-                # Killing a Host client alone would leave remote motion running.
-                print("Stopping this example's deployment after failure/interruption.", flush=True)
-                result = subprocess.run(example.host("down"), cwd=ROOT, env=env, check=False)
-                report["cleanup_returncode"] = result.returncode
-                if result.returncode:
-                    print(
-                        "Shutdown failed: use the physical emergency stop and inspect the robot services.",
-                        file=sys.stderr,
-                    )
-            raise
-        finally:
-            report_path.write_text(json.dumps(report, indent=2) + "\n")
-        return 0
+        with Supervisor(example.output, action) as supervisor:
+            try:
+                execute(
+                    argv_list,
+                    env,
+                    output,
+                    parallel=example.kind == "rollout" and action == "run",
+                    interactive=example.kind == "snack" and action in {"up", "run"},
+                    supervisor=supervisor,
+                )
+                report["status"] = "failed" if stop_error else "complete"
+            except BaseException:
+                report["status"] = "cancelled" if supervisor.cancelled.is_set() else "failed"
+                if example.kind == "rollout" and action in {"up", "run"}:
+                    # Killing a Host client alone would leave remote motion running.
+                    print("Stopping this example's deployment after failure/interruption.", flush=True)
+                    result = subprocess.run(example.host("down"), cwd=ROOT, env=env, check=False)
+                    report["cleanup_returncode"] = result.returncode
+                    if result.returncode:
+                        print(
+                            "Shutdown failed: use the physical emergency stop and inspect the robot services.",
+                            file=sys.stderr,
+                        )
+                raise
+            finally:
+                report_path.write_text(json.dumps(report, indent=2) + "\n")
+        return 2 if stop_error else 0
     except (OSError, ValueError, RuntimeError) as error:
         print(f"example: {error}", file=sys.stderr)
         return 2

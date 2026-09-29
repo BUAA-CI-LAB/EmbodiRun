@@ -12,20 +12,21 @@ from embodirun.deployment.environment import EnvironmentError
 from embodirun.deployment.executor import Executor, executor_for
 from embodirun.deployment.plan import ServiceError, build_plan
 
-from .command import control, down, init, probe, run, sync, up, validate
+from .command import control, down, example, init, probe, run, sync, up, validate
 from .context import CommandContext, state_path
 from .progress import ConsoleProgressReporter
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="embodirun")
-    parser.add_argument("--config", required=True, help="deployment YAML path")
+    parser.add_argument("--config", help="deployment YAML path (required for deployment commands)")
     parser.add_argument(
         "--state-dir",
         type=Path,
         help=("local state directory (default: ~/.local/state/rlinf-deploy, kept for compatibility)"),
     )
     commands = parser.add_subparsers(dest="command", required=True)
+    example.register(commands)
     validate.register(commands)
     probe.register(commands)
     init.register(commands)
@@ -44,6 +45,14 @@ def main(
 ) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.command == "example":
+        try:
+            return example.run(args)
+        except (OSError, RuntimeError, ValueError) as error:
+            print(f"embodirun: error: {error}", file=sys.stderr)
+            return 2
+    if args.config is None:
+        parser.error("--config is required for deployment commands")
     try:
         config = load_config(args.config)
         deployment = build_plan(config)

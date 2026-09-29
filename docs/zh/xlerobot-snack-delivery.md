@@ -39,8 +39,10 @@ XLeRobot 沿录制路线前往取物台，通过 π0.5/VLA 生成抓取动作，
 执行 `uv sync --frozen` 后，通过共享入口演练该任务：
 
 ```bash
-bash examples/run.sh examples/xlerobot_snack_delivery/example.yaml validate
-bash examples/run.sh examples/xlerobot_snack_delivery/example.yaml dry-run
+uv run --frozen embodirun example init xlerobot
+CONFIG=examples/local/xlerobot/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" dry-run
 ```
 
 示例 README 说明了本地 YAML 配置、服务启动、操作员监督下的执行和输出文件。

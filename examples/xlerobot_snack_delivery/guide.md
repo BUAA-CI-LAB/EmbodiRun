@@ -5,26 +5,26 @@
 ## Bring-up and calibration
 
 1. 按 [XLeRobot 官方装配资料](https://github.com/Vector-Wangel/XLeRobot) 搭建双轮底盘、双 SO-101 机械臂、供电和急停，安装前视、左右腕相机。硬件选择和预算见 [清单](hardware.md)。
-2. 复制 [hardware.example.json](hardware.example.json)，填写稳定串口名、相机路径、SDK 路径、标定文件、轮向、轮径和轮距。保持 `allow_motion: false` 完成读数检查。确认相机角色、关节单位、限位和停止反馈后再开启运动；不要直接照搬示例轮向和递交姿态。
-3. 在机器人 Linux 主机运行 `bash examples/run.sh examples/xlerobot_snack_delivery/example.yaml setup`。安装器用项目 `uv.lock` 安装核心和 Host 依赖；硬件 SDK、相机和录制 extras 由独立 owner 包安装。仅做离线演练时，使用 Host 环境即可。
+2. 在仓库根目录运行 `uv run --frozen embodirun example init xlerobot`，一次生成已联动的 `examples/local/xlerobot/` 配置。编辑其中的 `hardware.local.json`，填写稳定串口名、相机路径、SDK 路径、标定文件、轮向、轮径和轮距。保持 `allow_motion: false` 完成读数检查。确认相机角色、关节单位、限位和停止反馈后再开启运动；不要直接照搬示例轮向和递交姿态。
+3. 在机器人 Linux 主机运行 `uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml setup`。安装器用项目 `uv.lock` 安装核心和 Host 依赖；硬件 SDK、相机和录制 extras 由独立 owner 包按其版本范围安装。仅做离线演练时，使用 Host 环境即可。
 4. 在 GPU 主机启动与该机器人训练配置匹配的 π0.5 服务，参考 [模型部署示例](../../configs/pi05/bi-so101-embodiinfer.yaml)。这里复用的是服务启动方式；本 recipe 的 binding 是 `lerobot.xlerobot.pi05`。模型须输出带 feature names 的本机标定绝对位置：关节 degrees、夹爪 range_0_100，左右各六维。通用权重或匿名 50×12 数组不能自动视为适配完成。
-5. 复制 [deployment.example.yaml](deployment.example.yaml)，填写硬件配置路径、模型服务 endpoint 和 owner 相机角色。模型 endpoint 可经 SSH 转发到机器人主机。底盘和双臂 Control 默认分别使用 `127.0.0.1:8100`、`127.0.0.1:8101`；owner 使用 `8766`，提供不同的 `/robot/*` API。
+5. 编辑生成的 `deployment.local.yaml`，填写模型服务 endpoint 和 owner 相机角色；硬件配置路径已指向生成的 `hardware.local.json`。模型 endpoint 可经 SSH 转发到机器人主机。底盘和双臂 Control 默认分别使用 `127.0.0.1:8100`、`127.0.0.1:8101`；owner 使用 `8766`，提供不同的 `/robot/*` API。
 
 先生成并校验配置，不启动硬件：
 
 ```bash
 .venv-xlerobot-snack/bin/python examples/xlerobot_snack_delivery/services.py \
-  --deployment examples/xlerobot_snack_delivery/deployment.local.yaml \
-  --state-dir artifacts/examples/xlerobot-snack-delivery/services --write-only
+  --deployment examples/local/xlerobot/deployment.local.yaml \
+  --state-dir examples/local/xlerobot/runs/services --write-only
 ```
 
 启动唯一 owner 与两个 Control 服务，在该终端保持运行：
 
 ```bash
-bash examples/run.sh examples/xlerobot_snack_delivery/example.local.yaml up --allow-hardware
+uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml up --allow-hardware
 ```
 
-`up` 自动生成仅本机可读的 owner 认证文件和 Control 配置。生成文件及日志默认放在 `artifacts/examples/xlerobot-snack-delivery/services/`。端口已被占用时命令拒绝启动，不会替换已有 owner。退出后检查急停和 owner 的停止反馈。
+`up` 自动生成仅本机可读的 owner 认证文件和 Control 配置。生成文件及日志默认放在 `examples/local/xlerobot/runs/services/`。端口已被占用时命令拒绝启动，不会替换已有 owner。退出后检查急停和 owner 的停止反馈。
 
 owner 页面使用 `service-0.log` 中的短期配对码登录，无需填写 API token。通过 owner 的显式停止操作取得已确认的停止反馈，再开始 recipe。仅观察到轮速为零不会清除 `stop_unconfirmed`。owner 的生命周期和操作入口见 [owner 文档](../../integrations/xlerobot_owner/README.md)。
 
@@ -79,17 +79,19 @@ RPent 根据图和片段注释选择去程、返程的片段序列；无法判�
 
 ## 运行场景
 
-复制 recipe 配置，填写两个 Control endpoint、自己的路线、RPent 工厂和本机标定的 `handover.forward_pose` / `gripper_opening`。安装与脚本从仓库根目录执行：
+编辑 `init` 生成的 recipe 配置，填写两个 Control endpoint、自己的路线、RPent 工厂和本机标定的 `handover.forward_pose` / `gripper_opening`。安装与脚本从仓库根目录执行：
 
 ```bash
-CONFIG=examples/xlerobot_snack_delivery/example.local.yaml
-bash examples/run.sh "$CONFIG" validate
-bash examples/run.sh "$CONFIG" plan
-bash examples/run.sh "$CONFIG" dry-run
-bash examples/run.sh "$CONFIG" run --allow-hardware
+CONFIG=examples/local/xlerobot/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" check
+uv run --frozen embodirun example "$CONFIG" dry-run
+uv run --frozen embodirun example "$CONFIG" run --allow-hardware
 ```
 
 - `validate` 校验配置，`plan` 预览运行命令与输出路径，均不连接设备、模型或 RPent。
+- `check` 列出本地配置的 SDK、标定、相机角色与路线缺项；不启动硬件，也不能证明停止反馈或模型已就绪。
 - `dry-run` 使用标明 fixture 的状态和动作，只演练任务顺序。它不调用 Astra，也不证明模型或硬件可用。
 - `run --allow-hardware` 先检查两个 Control 服务的 runtime、scope 和能力，然后执行“去程 → RPent 判断 → VLA 短段抓取 → 持物确认 → 返程 → 伸臂 → 松夹爪 → 接收确认”。人工确认之后会重新观测；只允许 dry-run 自动确认。
 
