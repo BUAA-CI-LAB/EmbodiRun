@@ -1,0 +1,33 @@
+name: History guard
+
+# The repository has a single root commit. A branch whose history contains any
+# other root was built on unrelated history and must not be merged; rebuild it
+# on main instead.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  single-root:
+    name: Single root commit
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Reject unrelated history
+        run: |
+          expected="7b6a2f555a6bc2659fb06a10469384413baa1b1e"
+          foreign="$(git rev-list --max-parents=0 HEAD | grep -vx "$expected" || true)"
+          if [ -n "$foreign" ]; then
+            echo "::error::History contains root commits other than $expected: $foreign. Rebuild the branch on main (cherry-pick) instead."
+            exit 1
+          fi
+          echo "Single root commit: $expected"
