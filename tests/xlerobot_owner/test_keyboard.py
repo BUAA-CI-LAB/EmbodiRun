@@ -5,12 +5,12 @@ import time
 from pathlib import Path
 
 import pytest
-from tests.xlerobot_owner.test_hardware import _config
-from tests.xlerobot_owner.test_server import HEADERS, station, wait_for
 
 from embodirun_xlerobot_owner.control import InputClock, MappingConfig
 from embodirun_xlerobot_owner.keyboard import KeyboardFrame
 from embodirun_xlerobot_owner.robot import DemoRobot
+from tests.xlerobot_owner.test_hardware import _config
+from tests.xlerobot_owner.test_server import HEADERS, station, wait_for
 
 
 def packet(seq=0, keys=(), **extra):
