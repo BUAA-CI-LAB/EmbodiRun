@@ -17,12 +17,24 @@ dependencies = [
 # The owner tests exercise the HTTP boundary and recorder with fakes. Keep
 # these dependencies separate from the core deployment package so installing
 # EmbodiRun itself does not pull in a test runner or data-processing stack.
-test = ["pytest>=8,<9", "pytest-asyncio>=0.23,<1", "numpy>=1.26,<2", "Pillow>=10,<13"]
+test = ["pytest>=8,<9", "pytest-asyncio>=0.23,<1", "numpy>=2,<2.3", "Pillow>=10,<13"]
 web = ["cryptography>=43"]
-hardware = ["lerobot>=0.6,<0.7"]
+hardware = ["lerobot[feetech]>=0.6,<0.7"]
 hid = ["hidapi>=0.14,<1"]
 camera = ["opencv-python-headless>=4.10,<5"]
-recording = ["lerobot>=0.6,<0.7", "numpy>=1.26,<2", "Pillow>=10,<13"]
+# LeRobotDataset imports its table/image writer stack even when use_videos=False.
+# This export uses images with use_videos=False, so it does not need video
+# decoding or torchcodec.
+recording = [
+  "lerobot>=0.6,<0.7",
+  "numpy>=2,<2.3",
+  "Pillow>=10,<13",
+  "datasets>=4.8,<5",
+  "pandas>=2,<3",
+  "pyarrow>=21,<30",
+  "av>=15,<16",
+  "jsonlines>=4,<5",
+]
 video = ["aiortc>=1.14,<2"]
 
 [project.scripts]

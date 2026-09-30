@@ -11,6 +11,8 @@ uv sync --frozen
 ```
 
 依赖组和可选组件见[安装指南](installation.md)。
+如需一次生成已联动的可编辑演示配置，运行
+`uv run --frozen embodirun example init xlerobot`，再看[示例指南](examples.md)。
 
 ## 1. 运行模拟设备
 
