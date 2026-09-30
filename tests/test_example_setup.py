@@ -8,6 +8,7 @@ import sys
 import time
 
 import pytest
+import yaml
 from examples import lifecycle, runner
 from examples.configuration import TEMPLATES, check_requirements, initialize
 from examples.lifecycle import Supervisor, stop_owned
@@ -127,15 +128,22 @@ def test_deployment_cli_still_requires_config():
 def test_profile_setup_does_not_need_assets_and_uses_one_dependency_source(tmp_path):
     example = runner.load_example(runner.ROOT / "examples/microduck_vln/example.yaml")
     command = runner.commands(example, "setup", tmp_path)[0][0]
-    assert command[-1] == "microduck"
+    assert command[2] == "microduck"
     for profile in ("snack", "microduck"):
         commands = install_commands(profile, tmp_path / profile)
         assert "--frozen" in commands[0]
         assert commands[0][commands[0].index("--python") + 1] == "3.12"
-        assert str(runner.ROOT / "integrations") in commands[1][-1]
-        assert ("--torch-backend" in commands[1]) is (profile == "snack")
         if profile == "snack":
-            assert commands[1][commands[1].index("--torch-backend") + 1] == "cpu"
+            assert len(commands) == 1
+            assert commands[0][commands[0].index("--project") + 1] == str(
+                runner.ROOT / "examples/xlerobot_snack_delivery"
+            )
+            assert commands[0][-2:] == ["--extra", "hardware"]
+            software = install_commands(profile, tmp_path / profile, mode="software")
+            assert "--extra" not in software[0]
+            assert software[0][software[0].index("--project") + 1] == commands[0][commands[0].index("--project") + 1]
+        else:
+            assert str(runner.ROOT / "integrations") in commands[1][-1]
 
 
 def test_duplicate_launch_does_not_remove_first_owners_socket(tmp_path):
@@ -232,6 +240,12 @@ def test_down_works_even_if_referenced_configuration_was_removed(tmp_path):
 
 def test_generated_xlerobot_dry_run_uses_fixtures_without_git_metadata(tmp_path, monkeypatch):
     path = initialize("xlerobot", tmp_path / "recipe")
+    # Exercise fixture dispatch and reporting with the test interpreter, independently of setup.
+    manifest = yaml.safe_load(path.read_text())
+    manifest["python"] = sys.executable
+    path.write_text(yaml.safe_dump(manifest, sort_keys=False))
+    monkeypatch.delenv("EMBODIRUN_SCENE_PYTHON", raising=False)
+    monkeypatch.delenv("EMBODIRUN_REVISION", raising=False)
 
     def no_git(*args, **kwargs):
         raise subprocess.CalledProcessError(128, "git")

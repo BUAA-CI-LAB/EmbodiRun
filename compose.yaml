@@ -9,6 +9,19 @@ services:
     tty: true
     volumes:
       - ./examples/local:/workspace
+      - launcher-tmp:/tmp
+    command: [--help]
+  xlerobot-software:
+    build:
+      context: .
+      target: xlerobot-software
+    image: embodirun-examples:xlerobot-software
+    init: true
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./examples/local:/workspace
+      - launcher-tmp:/tmp
     command: [--help]
   xlerobot:
     profiles: [hardware]
@@ -23,6 +36,7 @@ services:
     stop_grace_period: 70s
     volumes:
       - ./examples/local:/workspace
+      - launcher-tmp:/tmp
     # Add explicit devices and read-only SDK/calibration mounts in compose.local.yaml.
     # No privileged mode or automatic hardware startup.
     command: [--help]
@@ -39,6 +53,7 @@ services:
     stop_grace_period: 70s
     volumes:
       - ./examples/local:/workspace
+      - launcher-tmp:/tmp
       - ${MICRODUCK_ASSETS:-./examples/local/microduck/assets}:/assets:ro
     deploy:
       resources:
@@ -48,3 +63,8 @@ services:
               count: 1
               capabilities: [gpu]
     command: [--help]
+
+volumes:
+  # Keep private launcher sockets reachable from another same-UID Compose run.
+  # Default copy-up retains the image's /tmp permissions; this volume is project-scoped.
+  launcher-tmp:

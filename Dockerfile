@@ -13,6 +13,7 @@ RUN chmod -R a+rX /opt/embodirun
 ENV UV_LINK_MODE=copy UV_PROJECT_ENVIRONMENT=/opt/venv \
     PATH="/opt/venv/bin:$PATH" PYTHONPATH=/opt/embodirun \
     EMBODIRUN_SOURCE_ROOT=/opt/embodirun EMBODIRUN_SCENE_PYTHON=/opt/venv/bin/python \
+    EMBODIRUN_EXAMPLE_PYTHON=/opt/venv/bin/python \
     PYTHONUNBUFFERED=1
 RUN --mount=type=cache,target=/root/.cache/uv,sharing=locked \
     python examples/setup_environment.py host --environment /opt/venv
@@ -21,8 +22,13 @@ ENV EMBODIRUN_REVISION=$EMBODIRUN_REVISION
 ENTRYPOINT ["embodirun", "example"]
 CMD ["--help"]
 
+# Rehearsal uses the same small recipe lock as native setup --mode software.
+FROM host AS xlerobot-software
+RUN --mount=type=cache,target=/root/.cache/uv,sharing=locked \
+    python examples/setup_environment.py snack --mode software --environment /opt/venv
+
 # Local Linux robot host. Device access and verified calibration are supplied at run time.
-FROM host AS xlerobot
+FROM xlerobot-software AS xlerobot
 RUN apt-get update && apt-get install -y --no-install-recommends libglib2.0-0 libgl1 ffmpeg build-essential \
     && rm -rf /var/lib/apt/lists/*
 RUN --mount=type=cache,target=/root/.cache/uv,sharing=locked \
