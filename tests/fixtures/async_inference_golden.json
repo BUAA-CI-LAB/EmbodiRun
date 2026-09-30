@@ -1,0 +1,425 @@
+{
+  "description": "Shared RTC/VLASH golden vectors. Asserted by EmbodiInfer (tests/test_async_rtc_vlash.py) and EmbodiRun (tests/test_async_algorithms.py).",
+  "rtc_prefix_weights": [
+    {
+      "end": 6,
+      "expected": [
+        1.0,
+        1.0,
+        0.800000011920929,
+        0.6000000238418579,
+        0.4000000059604645,
+        0.20000000298023224,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "name": "linear_2_6_10",
+      "schedule": "linear",
+      "start": 2,
+      "total": 10
+    },
+    {
+      "end": 10,
+      "expected": [
+        0.9090908765792847,
+        0.8181818127632141,
+        0.7272727489471436,
+        0.6363636255264282,
+        0.5454545021057129,
+        0.4545454680919647,
+        0.3636363744735718,
+        0.27272728085517883,
+        0.1818181872367859,
+        0.09090909361839294
+      ],
+      "name": "linear_0_10_10",
+      "schedule": "linear",
+      "start": 0,
+      "total": 10
+    },
+    {
+      "end": 0,
+      "expected": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "name": "linear_0_0_10_all_held",
+      "schedule": "linear",
+      "start": 0,
+      "total": 10
+    },
+    {
+      "end": 3,
+      "expected": [
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "name": "linear_3_3_10_degenerate",
+      "schedule": "linear",
+      "start": 3,
+      "total": 10
+    },
+    {
+      "end": 5,
+      "expected": [
+        0.8333333134651184,
+        0.6666666269302368,
+        0.5,
+        0.3333333432674408,
+        0.1666666716337204
+      ],
+      "name": "linear_0_5_5",
+      "schedule": "linear",
+      "start": 0,
+      "total": 5
+    },
+    {
+      "end": 8,
+      "expected": [
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "name": "zeros_3_8_10",
+      "schedule": "zeros",
+      "start": 3,
+      "total": 10
+    },
+    {
+      "end": 5,
+      "expected": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "name": "zeros_0_5_5",
+      "schedule": "zeros",
+      "start": 0,
+      "total": 5
+    },
+    {
+      "end": 4,
+      "expected": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "name": "ones_0_4_6",
+      "schedule": "ones",
+      "start": 0,
+      "total": 6
+    },
+    {
+      "end": 7,
+      "expected": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "name": "ones_2_7_10",
+      "schedule": "ones",
+      "start": 2,
+      "total": 10
+    },
+    {
+      "end": 6,
+      "expected": [
+        1.0,
+        1.0,
+        0.570589005947113,
+        0.28707242012023926,
+        0.11449221521615982,
+        0.02577025070786476,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "name": "exp_2_6_10",
+      "schedule": "exp",
+      "start": 2,
+      "total": 10
+    },
+    {
+      "end": 4,
+      "expected": [
+        0.570589005947113,
+        0.28707242012023926,
+        0.11449221521615982,
+        0.02577025070786476,
+        0.0,
+        0.0
+      ],
+      "name": "exp_0_4_6",
+      "schedule": "exp",
+      "start": 0,
+      "total": 6
+    },
+    {
+      "end": 9,
+      "expected": [
+        1.0,
+        0.7410117983818054,
+        0.5325998067855835,
+        0.3677061200141907,
+        0.24019765853881836,
+        0.14475014805793762,
+        0.07674574851989746,
+        0.03218316286802292,
+        0.007599262986332178,
+        0.0
+      ],
+      "name": "exp_1_9_10",
+      "schedule": "exp",
+      "start": 1,
+      "total": 10
+    }
+  ],
+  "vlash_roll_forward": [
+    {
+      "actions": [
+        [
+          1.0,
+          2.0
+        ],
+        [
+          3.0,
+          4.0
+        ],
+        [
+          5.0,
+          6.0
+        ]
+      ],
+      "delay": 0,
+      "expected": [
+        0.5,
+        -0.25
+      ],
+      "name": "absolute_zero_delay",
+      "semantics": "absolute",
+      "state": [
+        0.5,
+        -0.25
+      ]
+    },
+    {
+      "actions": [
+        [
+          1.0,
+          2.0
+        ],
+        [
+          3.0,
+          4.0
+        ],
+        [
+          5.0,
+          6.0
+        ]
+      ],
+      "delay": 1,
+      "expected": [
+        1.0,
+        2.0
+      ],
+      "name": "absolute_one_step",
+      "semantics": "absolute",
+      "state": [
+        0.5,
+        -0.25
+      ]
+    },
+    {
+      "actions": [
+        [
+          1.0,
+          2.0
+        ],
+        [
+          3.0,
+          4.0
+        ],
+        [
+          5.0,
+          6.0
+        ]
+      ],
+      "delay": 3,
+      "expected": [
+        5.0,
+        6.0
+      ],
+      "name": "absolute_full_buffer",
+      "semantics": "absolute",
+      "state": [
+        0.5,
+        -0.25
+      ]
+    },
+    {
+      "actions": [
+        [
+          1.0,
+          2.0
+        ],
+        [
+          3.0,
+          4.0
+        ],
+        [
+          5.0,
+          6.0
+        ]
+      ],
+      "delay": 0,
+      "expected": [
+        0.5,
+        -0.25
+      ],
+      "name": "delta_zero_delay",
+      "semantics": "delta",
+      "state": [
+        0.5,
+        -0.25
+      ]
+    },
+    {
+      "actions": [
+        [
+          1.0,
+          2.0
+        ],
+        [
+          3.0,
+          4.0
+        ],
+        [
+          5.0,
+          6.0
+        ]
+      ],
+      "delay": 1,
+      "expected": [
+        1.5,
+        1.75
+      ],
+      "name": "delta_one_step",
+      "semantics": "delta",
+      "state": [
+        0.5,
+        -0.25
+      ]
+    },
+    {
+      "actions": [
+        [
+          1.0,
+          2.0
+        ],
+        [
+          3.0,
+          4.0
+        ],
+        [
+          5.0,
+          6.0
+        ]
+      ],
+      "delay": 2,
+      "expected": [
+        4.5,
+        5.75
+      ],
+      "name": "delta_two_steps",
+      "semantics": "delta",
+      "state": [
+        0.5,
+        -0.25
+      ]
+    },
+    {
+      "actions": [
+        [
+          1.0,
+          2.0
+        ],
+        [
+          3.0,
+          4.0
+        ],
+        [
+          5.0,
+          6.0
+        ]
+      ],
+      "delay": 3,
+      "expected": [
+        9.5,
+        11.75
+      ],
+      "name": "delta_full_buffer",
+      "semantics": "delta",
+      "state": [
+        0.5,
+        -0.25
+      ]
+    },
+    {
+      "actions": [
+        [
+          -1.0
+        ],
+        [
+          -2.0
+        ]
+      ],
+      "delay": 2,
+      "expected": [
+        7.0
+      ],
+      "name": "delta_single_dim",
+      "semantics": "delta",
+      "state": [
+        10.0
+      ]
+    }
+  ]
+}
