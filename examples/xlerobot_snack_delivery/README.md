@@ -47,6 +47,21 @@ The GPU inference service is started separately; use a π0.5 checkpoint adapted
 to XLeRobot's two-arm feature names and units. The [guide](guide.md) describes
 route export, owner setup, and agent configuration.
 
+## Prepare routes and recordings
+
+Record outbound and return routes through the owner's teleoperation interface,
+then export bounded chunks at the configured playback rate. Follow
+[route input choices](guide.md#route-input-choices) for formats and export commands.
+
+To save camera and state observations, configure a Control recorder and use the
+[recording API](../../docs/en/agent-workflow.md). Supply a compatible π0.5
+checkpoint through the separately running model service; use your existing
+tools for dataset preparation and training.
+
+The delivery run also saves events, review decisions, and VLA proposals.
+See the [workflow and service diagram](../../docs/en/demos/xlerobot-snack-delivery.md)
+for how route preparation, recording, deployment, and execution fit together.
+
 ## Run a supervised delivery
 
 ```bash

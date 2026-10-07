@@ -72,6 +72,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Check the recorded performance figure
+        run: python benchmarks/engine-comparison/generate_plot.py --check
+
       - name: Build the documentation
         run: |
           pip install -r docs/requirements.txt

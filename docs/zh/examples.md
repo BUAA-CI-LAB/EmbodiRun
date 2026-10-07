@@ -1,14 +1,19 @@
-# 复现演示
+# 场景与 Recipe
 
-四个演示均通过 `examples/run.sh` 启动，并使用带格式版本号的 YAML 配置。
-部署配置描述设备和服务，示例配置指定任务、执行限制和输出目录。
+通过统一的 `examples/run.sh` 启动脚本，运行抓取、导航或移动抓取任务。
+每个 Recipe 提供环境准备、本地配置、任务执行、输出文件与停止说明。
 
-| 演示 | 示例目录 | 运行内容 |
+| 场景 | 演示 | Recipe |
 |---|---|---|
-| [三台机器人，一个服务](demos/multi-robot-serving.md) | [multi_robot_serving](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/multi_robot_serving) | 三个并发的 SO-101 循环，共享 π0.5 批次 |
-| [引擎对比](demos/engine-e2e-contrast.md) | [engine_comparison](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/engine_comparison) | EmbodiInfer HTTP/WirelessComm 或 SGLang HTTP |
-| [零食递送](demos/xlerobot-snack-delivery.md) | [xlerobot_snack_delivery](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/xlerobot_snack_delivery) | 沿路线移动、VLA 抓取、操作员确认交接 |
-| [MicroDuck 导航](demos/microduck-vln.md) | [microduck_vln](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/microduck_vln) | MuJoCo 与 ActiveVLN，本地 GPU 或 Slurm |
+| **VLA** | [SO-101 抓取](demos/so101-grasping.md) | [单臂 + π0.5 / HTTP](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/so101_grasping.md) |
+| **VLN** | [MicroDuck 导航](demos/microduck-vln.md) | [MuJoCo + ActiveVLN](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/microduck_vln/README.md) |
+| **Agent** | [XLeRobot 零食递送](demos/xlerobot-snack-delivery.md) | [录制路线、RPent/Astra 与 VLA 抓取](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/xlerobot_snack_delivery/README.md) |
+
+[Recipe 索引](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/README.md)
+还提供[多臂共享推理](demos/multi-robot-serving.md)、[引擎与传输变体](demos/engine-e2e-contrast.md)
+及纯软件示例。其他设备与仿真器的接入情况见[支持矩阵](support-matrix.md)。
+
+部署 YAML 定义设备与服务；示例清单选择任务、执行限制和输出目录。
 
 ## 检查配置
 
@@ -16,8 +21,8 @@
 
 ```bash
 uv sync --frozen
-bash examples/run.sh examples/multi_robot_serving/example.yaml validate
-bash examples/run.sh examples/multi_robot_serving/example.yaml plan
+bash examples/run.sh examples/engine_comparison/embodiinfer-http.yaml validate
+bash examples/run.sh examples/engine_comparison/embodiinfer-http.yaml plan
 ```
 
 `validate` 在本地检查字段和部署引用；`plan` 打印一次运行
@@ -36,7 +41,7 @@ bash examples/run.sh examples/multi_robot_serving/example.yaml plan
 按照所选示例的标定与环境说明操作后：
 
 ```bash
-CONFIG=examples/multi_robot_serving/example.local.yaml
+CONFIG=examples/engine_comparison/so101.local.yaml
 bash examples/run.sh "$CONFIG" setup
 bash examples/run.sh "$CONFIG" up --allow-hardware
 bash examples/run.sh "$CONFIG" run --allow-hardware

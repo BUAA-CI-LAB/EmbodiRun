@@ -14,8 +14,19 @@
 
 </div>
 
-EmbodiRun 负责服务部署、跨节点通信和机器人执行，让同一套配置能够重复运行。
-配套推理引擎 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer) 提供高性能模型推理，也支持独立使用。
+EmbodiRun 部署服务，将机器人观测送入推理服务，并协调动作执行。
+你可以使用 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer)、外部模型服务，
+或由 Agent 编排任务循环。
+
+## 三个场景
+
+| 场景 | 任务 | 入口 |
+|---|---|---|
+| **VLA · 机械臂抓取** | SO-101 + π0.5 抓取方块并放入碗中。 | [演示](demos/so101-grasping.md) |
+| **VLN · 语言导航** | MicroDuck + ActiveVLN 在 MuJoCo 中按语言指令导航。 | [演示](demos/microduck-vln.md) |
+| **Agent · 移动与抓取** | XLeRobot 结合底盘路线、RPent/Astra 判断和 VLA 抓取，在监督下完成零食递送。 | [流程与架构](demos/xlerobot-snack-delivery.md) |
+
+每个 [Recipe](examples.md)提供环境准备、配置、运行、输出与停止说明。
 
 ## 从这里开始
 
@@ -85,7 +96,7 @@ flowchart TB
 ## 选择设备与示例
 
 浏览[支持的机器人、仿真器和模型](support-matrix.md)，或者
-从[四个演示示例](examples.md)中选一个开始。每个示例都包含
+从[三个场景及其 Recipe](examples.md)中选一个开始。每个示例都包含
 配置文件、启动命令以及对其输出的说明。
 有关延迟测量和传输对比，请参见[实验](experiments.md)。
 

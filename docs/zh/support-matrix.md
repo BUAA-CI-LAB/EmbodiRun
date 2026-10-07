@@ -7,6 +7,20 @@
 **◐ 实验性支持** — 集成代码可用，需按平台配置。<br>
 **○ 计划支持** — 尚未实现。
 
+## 场景指南
+
+| 场景 | 入门 | 相关配置 |
+|---|---|---|
+| VLA | [SO-101 抓取](demos/so101-grasping.md) | [多臂共享推理](demos/multi-robot-serving.md)、[引擎变体](demos/engine-e2e-contrast.md)、[Bi-SO-101](pi05-bi-so101.md) |
+| VLN | [MuJoCo 中的 MicroDuck / ActiveVLN](demos/microduck-vln.md) | 下方的仿真器与机器人配置 |
+| Agent | [XLeRobot 零食递送](demos/xlerobot-snack-delivery.md) | [Agent 工作流](agent-workflow.md)、[RPent 集成](rpent-integration.md) |
+
+完整任务步骤见 [Recipe 索引](examples.md)。下方目录说明适配器支持状态，
+各平台的依赖与标定要求见对应指南。
+
+π0.5 HTTP 与 WirelessComm 服务通过 `--max-batch` 支持跨会话批处理，默认值为 1。
+DM0.5 与 StreamVLN 当前逐请求执行。MicroDuck 使用其专用集成中的 ActiveVLN HTTP 服务。
+
 ## 当前支持
 
 <div class="grid cards support-grid" markdown>
@@ -21,6 +35,7 @@
     **◐ VLABench**<br>
     π0.5 操作任务。
 
+    **◐ MuJoCo / MicroDuck** — ActiveVLN 导航。<br>
     **◐ Habitat · Isaac Sim**<br>
     使用 StreamVLN 进行导航。
 
@@ -147,6 +162,19 @@
     - [ ] 示例部署与闭环检查
 
 </div>
+
+### 计划补充的 Recipe 与基准
+
+| 方向 | 内容 | 状态 |
+|---|---|---|
+| VLA | Bi-SO-101、Franka FR3、ARX X5 与操作仿真器的完整 Recipe | 🟨 待补充 |
+| VLA | SO-101 专用单臂视频与多次任务成功率测量 | 🟨 待补充 |
+| VLN | Go2、Habitat、Isaac Sim 与 LightNav-0/XLeRobot 的完整 Recipe | 🟨 待补充 |
+| Agent | 自动采集流程与视频，包含任务复位和数据集导出 | 🟨 待补充 |
+| Agent | 更多移动抓取 Agent Recipe | 🟨 待补充 |
+| 性能 | 部署框架对比及客户端／节点扩展曲线 | 🟨 待补充 |
+
+测量工作负载与数据要求见[基准规划](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/benchmarks/README.md#planned-benchmarks)。
 
 ## Agent 与扩展
 

@@ -7,6 +7,23 @@ The roadmap tracks the next integrations separately from the current catalog.
 **◐ Experimental** — integration code is available; setup is platform-specific.<br>
 **○ Planned** — on the roadmap, not yet implemented.
 
+## Scenario guides
+
+| Scenario | Start here | Related setup |
+|---|---|---|
+| VLA | [SO-101 grasping](demos/so101-grasping.md) | [Multiple arms](demos/multi-robot-serving.md), [engine variants](demos/engine-e2e-contrast.md), [Bi-SO-101](pi05-bi-so101.md) |
+| VLN | [MicroDuck / ActiveVLN in MuJoCo](demos/microduck-vln.md) | Simulator and robot configurations below |
+| Agent | [XLeRobot snack delivery](demos/xlerobot-snack-delivery.md) | [Agent workflow](agent-workflow.md), [RPent integration](rpent-integration.md) |
+
+Full task instructions are in the [Recipe index](examples.md). The catalog
+below describes adapter support; follow the linked guide for platform-specific
+dependencies and calibration.
+
+π0.5 HTTP and WirelessComm services support cross-session batching with
+`--max-batch`, which defaults to 1. DM0.5 and StreamVLN currently execute one
+request at a time. MicroDuck uses its integration-specific ActiveVLN HTTP
+service.
+
 ## Current support
 
 <div class="grid cards support-grid" markdown>
@@ -21,6 +38,7 @@ The roadmap tracks the next integrations separately from the current catalog.
     **◐ VLABench**<br>
     Manipulation with π0.5.
 
+    **◐ MuJoCo / MicroDuck** — ActiveVLN navigation.<br>
     **◐ Habitat · Isaac Sim**<br>
     Navigation with StreamVLN.
 
@@ -147,6 +165,20 @@ The roadmap tracks the next integrations separately from the current catalog.
     - [ ] Example deployments and closed-loop checks
 
 </div>
+
+### Planned Recipes and benchmarks
+
+| Area | Deliverable | Status |
+|---|---|---|
+| VLA | Complete Recipes for Bi-SO-101, Franka FR3, ARX X5, and manipulation simulators | 🟨 待补充 |
+| VLA | Dedicated single-arm SO-101 video and repeated task-success measurements | 🟨 待补充 |
+| VLN | Complete Recipes for Go2, Habitat, Isaac Sim, and LightNav-0/XLeRobot | 🟨 待补充 |
+| Agent | Automatic collection workflow and video, including task reset and dataset export | 🟨 待补充 |
+| Agent | Additional mobile-manipulation agent Recipes | 🟨 待补充 |
+| Performance | Deployment comparisons and client/node scaling curves | 🟨 待补充 |
+
+Benchmark workloads and data requirements are described in the
+[benchmark plan](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/benchmarks/README.md#planned-benchmarks).
 
 ## Agents and extensions
 

@@ -8,6 +8,14 @@ The [support matrix](support-matrix.md) lists available integrations.
 Each experiment specifies its inputs and whether it uses replay, simulation,
 or physical devices.
 
+## Engine comparison
+
+The [SO-101 comparison](demos/engine-e2e-contrast.md) measures inference and full
+action-chunk latency for EmbodiInfer, SGLang, and native LeRobot.
+[Summary data and a chart generator](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/benchmarks/engine-comparison)
+accompany the report. For benchmark commands and planned measurements, see the
+[benchmark index](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/benchmarks/README.md).
+
 ## Choose an experiment
 
 | Note | Question | Current conclusion |

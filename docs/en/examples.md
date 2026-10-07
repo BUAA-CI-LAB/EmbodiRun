@@ -1,15 +1,23 @@
-# Reproduce the demos
+# Scenarios and Recipes
 
-The four demos use one entrypoint, `examples/run.sh`, and versioned YAML
-manifests. Deployment files describe devices and services; the example manifest
-selects the task, execution limits, and output directory.
+Run manipulation, navigation, or mobile-manipulation tasks using the shared
+`examples/run.sh` launcher. Each Recipe covers environment setup, local
+configuration, task execution, output files, and shutdown.
 
-| Demo | Example directory | Execution |
+| Scenario | Demo | Recipe |
 |---|---|---|
-| [Three robots, one service](demos/multi-robot-serving.md) | [multi_robot_serving](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/multi_robot_serving) | Three concurrent SO-101 loops, shared π0.5 batches |
-| [Engine comparison](demos/engine-e2e-contrast.md) | [engine_comparison](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/engine_comparison) | EmbodiInfer HTTP/WirelessComm or SGLang HTTP |
-| [Snack delivery](demos/xlerobot-snack-delivery.md) | [xlerobot_snack_delivery](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/xlerobot_snack_delivery) | Routes, VLA grasping, supervised handover |
-| [MicroDuck navigation](demos/microduck-vln.md) | [microduck_vln](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/microduck_vln) | MuJoCo and ActiveVLN, local GPU or Slurm |
+| **VLA** | [SO-101 grasping](demos/so101-grasping.md) | [One arm + π0.5 / HTTP](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/so101_grasping.md) |
+| **VLN** | [MicroDuck navigation](demos/microduck-vln.md) | [MuJoCo + ActiveVLN](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/microduck_vln/README.md) |
+| **Agent** | [XLeRobot snack delivery](demos/xlerobot-snack-delivery.md) | [Recorded routes, RPent/Astra, and VLA grasping](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/xlerobot_snack_delivery/README.md) |
+
+The [Recipe index](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/README.md)
+also includes [multi-arm serving](demos/multi-robot-serving.md),
+[engine and transport variants](demos/engine-e2e-contrast.md), and software-only
+examples. Use the [support matrix](support-matrix.md) to choose other devices
+or simulators.
+
+Deployment YAML defines devices and services; the example manifest selects the
+task, execution limits, and output directory.
 
 ## Inspect a configuration
 
@@ -17,8 +25,8 @@ From the repository root:
 
 ```bash
 uv sync --frozen
-bash examples/run.sh examples/multi_robot_serving/example.yaml validate
-bash examples/run.sh examples/multi_robot_serving/example.yaml plan
+bash examples/run.sh examples/engine_comparison/embodiinfer-http.yaml validate
+bash examples/run.sh examples/engine_comparison/embodiinfer-http.yaml plan
 ```
 
 `validate` checks fields and deployment references locally; `plan` prints the
@@ -38,7 +46,7 @@ reference is in [examples/README.md](https://github.com/BUAA-CI-LAB/EmbodiRun/bl
 After following the selected example's calibration and environment instructions:
 
 ```bash
-CONFIG=examples/multi_robot_serving/example.local.yaml
+CONFIG=examples/engine_comparison/so101.local.yaml
 bash examples/run.sh "$CONFIG" setup
 bash examples/run.sh "$CONFIG" up --allow-hardware
 bash examples/run.sh "$CONFIG" run --allow-hardware

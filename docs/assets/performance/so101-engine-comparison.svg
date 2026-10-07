@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 360" role="img" aria-labelledby="title description">
+<title id="title">SO-101 engine comparison: recorded medians</title>
+<desc id="description">Jetson AGX Thor Developer Kit, 15 chunks per configuration. Inference medians (ms): 162, 170, 194, 1061. Full-chunk medians (ms): 2660, 2666, 2713, 3592. Source: published SO-101 engine comparison.</desc>
+<rect width="1020" height="360" rx="12" fill="#fff"/>
+<g font-family="sans-serif" fill="#172b4d">
+<text x="24" y="30" font-size="20" font-weight="bold">SO-101 · π0.5 · Jetson AGX Thor Developer Kit</text>
+<text x="24" y="54" font-size="13">Median of 15 chunks; 1 run per configuration; lower is better</text>
+<text x="24" y="88" font-size="16" font-weight="bold">Inference latency (ms)</text>
+<path d="M198 102V270" stroke="#e5eaf0"/>
+<text x="198" y="292" text-anchor="middle" font-size="11">0</text>
+<path d="M260.5 102V270" stroke="#e5eaf0"/>
+<text x="260.5" y="292" text-anchor="middle" font-size="11">300</text>
+<path d="M323 102V270" stroke="#e5eaf0"/>
+<text x="323" y="292" text-anchor="middle" font-size="11">600</text>
+<path d="M385.5 102V270" stroke="#e5eaf0"/>
+<text x="385.5" y="292" text-anchor="middle" font-size="11">900</text>
+<path d="M448 102V270" stroke="#e5eaf0"/>
+<text x="448" y="292" text-anchor="middle" font-size="11">1200</text>
+<text x="24" y="129" font-size="11">EmbodiInfer / WirelessComm</text>
+<rect x="198" y="112" width="33.750" height="24" fill="#0072b2"/>
+<text x="236.750" y="129" font-size="12">162</text>
+<text x="24" y="169" font-size="11">EmbodiInfer / HTTP</text>
+<rect x="198" y="152" width="35.417" height="24" fill="#56b4e9"/>
+<text x="238.417" y="169" font-size="12">170</text>
+<text x="24" y="209" font-size="11">SGLang / HTTP</text>
+<rect x="198" y="192" width="40.417" height="24" fill="#d55e00"/>
+<text x="243.417" y="209" font-size="12">194</text>
+<text x="24" y="249" font-size="11">Native LeRobot / HTTP</text>
+<rect x="198" y="232" width="221.042" height="24" fill="#666666"/>
+<text x="424.042" y="249" font-size="12">1,061</text>
+<text x="524" y="88" font-size="16" font-weight="bold">Full chunk time (ms)</text>
+<path d="M698 102V270" stroke="#e5eaf0"/>
+<text x="698" y="292" text-anchor="middle" font-size="11">0</text>
+<path d="M760.5 102V270" stroke="#e5eaf0"/>
+<text x="760.5" y="292" text-anchor="middle" font-size="11">1000</text>
+<path d="M823 102V270" stroke="#e5eaf0"/>
+<text x="823" y="292" text-anchor="middle" font-size="11">2000</text>
+<path d="M885.5 102V270" stroke="#e5eaf0"/>
+<text x="885.5" y="292" text-anchor="middle" font-size="11">3000</text>
+<path d="M948 102V270" stroke="#e5eaf0"/>
+<text x="948" y="292" text-anchor="middle" font-size="11">4000</text>
+<text x="524" y="129" font-size="11">EmbodiInfer / WirelessComm</text>
+<rect x="698" y="112" width="166.250" height="24" fill="#0072b2"/>
+<text x="869.250" y="129" font-size="12">2,660</text>
+<text x="524" y="169" font-size="11">EmbodiInfer / HTTP</text>
+<rect x="698" y="152" width="166.625" height="24" fill="#56b4e9"/>
+<text x="869.625" y="169" font-size="12">2,666</text>
+<text x="524" y="209" font-size="11">SGLang / HTTP</text>
+<rect x="698" y="192" width="169.562" height="24" fill="#d55e00"/>
+<text x="872.562" y="209" font-size="12">2,713</text>
+<text x="524" y="249" font-size="11">Native LeRobot / HTTP</text>
+<rect x="698" y="232" width="224.500" height="24" fill="#666666"/>
+<text x="927.500" y="249" font-size="12">3,592</text>
+<text x="24" y="324" font-size="12">50 actions at 20 Hz; 10 denoising steps; 2 cameras; engine optimization settings differ.</text>
+<text x="24" y="345" font-size="12" fill="#52647b">Source: SO-101 engine comparison. Data and measurement details are linked in the report.</text>
+</g></svg>

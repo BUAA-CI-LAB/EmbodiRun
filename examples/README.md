@@ -1,23 +1,55 @@
-# Runnable examples
+# Recipes and runnable examples
 
-Use one YAML manifest and one launcher for each demo. Run these commands from
-the repository root after `uv sync --frozen`:
+Choose a task below, then follow its Recipe for dependencies, configuration,
+execution, outputs, and shutdown. Run launcher commands from the repository
+root after `uv sync --frozen`.
+
+## VLA · Manipulation
+
+| Recipe | Configuration | Purpose |
+|---|---|---|
+| [SO-101 grasping](so101_grasping.md) | [EmbodiInfer HTTP](engine_comparison/embodiinfer-http.yaml) | One arm, two cameras, and π0.5. |
+| [Engine and transport variants](engine_comparison/README.md) | [Configuration profiles](engine_comparison/) | Run SO-101 with EmbodiInfer HTTP, WirelessComm, or SGLang HTTP. |
+| [Multiple SO-101 arms](multi_robot_serving/README.md) | [Shared-service manifest](multi_robot_serving/example.yaml) | Independent robot sessions sharing one model service. |
+
+For dual-arm deployment, see the [Bi-SO-101 tutorial](../docs/en/pi05-bi-so101.md)
+and [configuration template](../configs/pi05/bi-so101-embodiinfer.yaml).
+
+## VLN · Navigation
+
+| Recipe | Configuration | Purpose |
+|---|---|---|
+| [MicroDuck + ActiveVLN](microduck_vln/README.md) | [MuJoCo manifest](microduck_vln/example.yaml) | Language-guided navigation with episode videos and metrics. |
+
+Prepare the scene assets, model checkpoint, and optional simulation environment
+as described in the Recipe.
+
+## Agent · Mobile manipulation
+
+| Recipe | Configuration | Purpose |
+|---|---|---|
+| [XLeRobot snack delivery](xlerobot_snack_delivery/README.md) | [Delivery manifest](xlerobot_snack_delivery/example.yaml) | Recorded base routes, RPent/Astra review, VLA grasping, and supervised handover. |
+
+The Recipe includes route preparation and a hardware-free task rehearsal.
+For custom agents, see the [public client](../agents/CLIENT.md) and
+[agent examples](../agents/README.md).
+
+Other robot and simulator integrations are listed in the
+[support matrix](../docs/en/support-matrix.md).
+中文场景介绍：[VLA](../docs/zh/demos/so101-grasping.md) ·
+[VLN](../docs/zh/demos/microduck-vln.md) ·
+[Agent](../docs/zh/demos/xlerobot-snack-delivery.md)。
+
+## Preview a run
 
 ```bash
-bash examples/run.sh examples/multi_robot_serving/example.yaml validate
-bash examples/run.sh examples/multi_robot_serving/example.yaml plan
+bash examples/run.sh examples/engine_comparison/embodiinfer-http.yaml validate
+bash examples/run.sh examples/engine_comparison/embodiinfer-http.yaml plan
 ```
 
-Both commands are offline: they neither connect to devices nor start inference.
-`validate` checks the configuration; `plan` prints the command, arguments, and
-output directory that `run` would use.
-
-| Demo | Configuration | Setup and execution |
-|---|---|---|
-| Three SO-101 arms, one service | [multi_robot_serving/example.yaml](multi_robot_serving/example.yaml) | [Instructions](multi_robot_serving/README.md) |
-| SO-101 engine comparison | [engine_comparison/embodiinfer-http.yaml](engine_comparison/embodiinfer-http.yaml), [embodiinfer-wireless.yaml](engine_comparison/embodiinfer-wireless.yaml), [sglang-http.yaml](engine_comparison/sglang-http.yaml) | [Instructions](engine_comparison/README.md) |
-| XLeRobot snack delivery | [xlerobot_snack_delivery/example.yaml](xlerobot_snack_delivery/example.yaml) | [Instructions](xlerobot_snack_delivery/README.md) |
-| MicroDuck navigation | [microduck_vln/example.yaml](microduck_vln/example.yaml) | [Instructions](microduck_vln/README.md) |
+`validate` checks the configuration locally. `plan` prints the command,
+arguments, and output directory without connecting to devices or starting
+inference.
 
 ## Configuration contract
 

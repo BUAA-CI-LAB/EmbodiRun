@@ -109,3 +109,8 @@ up to three requests in a 5 ms collection window, using smaller batches when
 fewer requests are ready. Each arm keeps its own session and action sequence.
 Run directories contain `run.json` and one command log per arm. See
 [Reproduce the demos](../examples.md) for the manifest contract and outputs.
+
+## Related Recipes
+
+Start with [single-arm SO-101 grasping](so101-grasping.md), or
+[compare inference engines and transports](engine-e2e-contrast.md).

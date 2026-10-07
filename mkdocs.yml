@@ -45,7 +45,7 @@ nav:
   - Getting started:
       - Installation: installation.md
       - Quick start: quickstart.md
-      - Reproduce the demos: examples.md
+      - Scenarios and Recipes: examples.md
       - Configuration: configuration.md
   - Operating:
       - Control: control.md
@@ -60,6 +60,7 @@ nav:
       - Architecture: architecture.md
   - Experiments:
       - Overview: experiments.md
+      - Inference engines on SO-101: demos/engine-e2e-contrast.md
       - Inference transport: inference-transport.md
       - Camera-only capture: camera-only-experiments.md
       - Transport candidates: transport-experiments.md
@@ -68,11 +69,11 @@ nav:
       - XLeRobot snack delivery: xlerobot-snack-delivery.md
   - Reference:
       - Python API: api.md
-  - Demos:
-      - Three robots, one service: demos/multi-robot-serving.md
-      - Inference engines on SO-101: demos/engine-e2e-contrast.md
-      - XLeRobot snack delivery: demos/xlerobot-snack-delivery.md
-      - Language-guided MicroDuck navigation: demos/microduck-vln.md
+  - Scenarios:
+      - VLA — SO-101 grasping: demos/so101-grasping.md
+      - VLN — MicroDuck navigation: demos/microduck-vln.md
+      - Agent — XLeRobot delivery: demos/xlerobot-snack-delivery.md
+      - Multi-robot Recipe: demos/multi-robot-serving.md
   - Project:
       - Contributing: contributing.md
       - Code of Conduct: code-of-conduct.md
