@@ -71,3 +71,47 @@ EmbodiRun 增加了 YAML 配置、adapter/绑定约束、部署状态、服务�
 较小的现有流程比较**同一个真实 Control 服务、`simulated.joints` 与假相机**的直接启动和 Host 管理。
 它不需要模型资产，可测服务准备、就绪、关闭和软件故障定位。
 此范围不能得出模型加载、warmup、换后端或真机结论；采集空模板也不代表已经完成任何一次成本实测。
+
+## 准备同原生 LeRobot 后端的对照
+
+第一个候选组合是 **Pi0.5、SO-101 命名观测与录制的相机输入，不向机器人下发动作**。
+两侧使用相同版本的 LeRobot v0.6.1 policy server、checkpoint 与前后处理：
+一侧由 gRPC 回放客户端直接调用，另一侧经过可选的 HTTP 到 gRPC bridge。
+这项计划回放用于核对协议和策略输出是否等价，不是原生异步机器人 rollout，
+也不能算作六类部署成本已经完成实测。
+
+上游 [`AsyncInference` 服务](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/transport/services.proto#L38)
+提供 `Ready`、`SendPolicyInstructions`、`SendObservations` 与 `GetActions`。
+服务的 [`Ready`](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/async_inference/policy_server.py#L108)
+会重置全局队列状态，不会创建 HTTP 式独立 session。
+每条路线、每次试验都应使用新服务进程，由一个客户端独占；
+不能把 `Ready` 当健康探针，也不能让两侧客户端同时连接来做此对照。
+
+| 边界 | 已有能力 | 候选对照还需要什么 |
+|---|---|---|
+| 观测特征 | [`PolicyObservation`](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/src/embodirun/model_services/contracts.py#L48)包含状态、编码图片、指令与 metadata。 | 按 checkpoint 顺序恢复 SO-101 六个 `.pos` 键，并统一关节/夹爪单位、相机名和 RGB 数组。回放用无损 PNG；缩放、归一化、分词与后处理仍由原生服务完成一次。先核对 checkpoint 的实际特征。 |
+| 动作 chunk | [SO-101 mapper](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/src/embodirun/bindings/lerobot/so101/pi05/mapper.py#L63)核对数值行和特征名，binding 最多执行 50 步。 | 将原生 tensor 转成有限数值行，保持六个特征名、horizon 与 `pi05.action_chunk.v1`。保留原生 timestep/timestamp 供回放检查；当前 mapper 会重新赋 wall-clock 时间戳，不保留原生调度语义。 |
+| Session 与重试 | [HTTP 客户端](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/src/embodirun/model_services/backends/embodiinfer/http.py#L50)提供 session/reset/close，并核对 request/session/step 身份。 | bridge 独占一个 session，把请求与 chunk 对应起来，限制等待时间并保留已有幂等行为。不自动重发结果不确定的原生请求。模型状态重置需要新建归本任务管理的后端，或已验证的显式 reset；仅清队列不够。 |
+| 异步执行 | 当前[模型循环](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/src/embodirun/application/model_loop.py#L125)等待 chunk，再按 `control_hz` 执行选定前缀。 | 原生 [robot-client 队列](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/async_inference/robot_client.py#L224)会丢弃已消费 timestep 并聚合重叠 chunk。要对齐还需调度、观测发送阈值、取消/停止反馈和时钟处理，不是加一个 HTTP wrapper 就完成。 |
+
+现有 HTTP payload 能表达候选回放的观测和数值 chunk，但 provider 注册表没有原生 LeRobot adapter。
+未来 bridge 的依赖应放在可选 integration 进程，不能塞入通用 Runtime。
+LeRobot v0.6.1 的[依赖声明](https://github.com/huggingface/lerobot/blob/v0.6.1/pyproject.toml#L60)
+使用 NumPy 2，`pi` extra 使用 Transformers 5.4–5.5，与 MicroDuck 的 NumPy 1/Transformers 4 配置不同。
+两条对照路线复用相同的隔离后端环境；各 Recipe 不强行合成一个环境。
+此实验不能把原生后端换成 EmbodiInfer 引擎。
+
+核对过的 server 与 robot client 将配置、观测和动作以 pickle 放入 insecure gRPC，
+这些入口没有应用认证。因此这段连接只允许受信任的本机 loopback，
+或通过已认证 SSH 转发连接到可信对端；不接收不可信 pickle，也不公开 gRPC 监听。
+HTTP 的认证、限额和请求检查仍保留。依据见
+[server](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/async_inference/policy_server.py#L125)与
+[client](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/async_inference/robot_client.py#L110)。
+
+输出等价需要逐层比较解码后的 RGB/状态/task、原生前处理 tensor 和后处理后的命名 chunk，
+并核对单位、horizon 和时间信息。[Pi0.5 采样](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/policies/pi05/modeling_pi05.py#L631)还需要对齐随机状态或明确重复试验比较方法；
+v0.6.1 server CLI 没有 seed 参数。要保留权重成功加载的记录：核对过的
+[Pi0.5 loader](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/policies/pi05/modeling_pi05.py#L810)
+可能在 checkpoint 加载失败后返回初始化模型；所以 gRPC 能连上或返回数值 chunk 也不能证明 checkpoint 已加载。
+[测量流程](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/benchmarks/deployment-runtime/README.md#native-backend-preparation)
+列出已按源码核对的服务命令及后续实现检查。bridge、回放客户端、授权 checkpoint/输入集与目标机器执行仍待完成。

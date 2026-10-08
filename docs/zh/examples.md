@@ -67,23 +67,23 @@ uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml dry
 
 ## 在仿真中运行
 
-按照 [MicroDuck 环境搭建](microduck-vln.md) 准备外部场景与检查点，
-在 Linux GPU 主机执行：
+先在仓库根目录安装锁定的配置环境：
 
 ```bash
-uv run --frozen embodirun example init microduck --assets /absolute/asset/root
+RECIPE_ENV="$PWD/.venv-microduck"
+UV_PROJECT_ENVIRONMENT="$RECIPE_ENV" uv sync \
+  --project examples/microduck_vln --frozen --python 3.12 --no-default-groups
+"$RECIPE_ENV/bin/embodirun" example init microduck --assets /absolute/asset/root
 CONFIG=examples/local/microduck/example.local.yaml
-uv run --frozen embodirun example "$CONFIG" validate
-uv run --frozen embodirun example "$CONFIG" plan
-uv run --frozen embodirun example "$CONFIG" setup
-uv run --frozen embodirun example "$CONFIG" check --json
-uv run --frozen embodirun example "$CONFIG" check
-uv run --frozen embodirun example "$CONFIG" run
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" validate
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" plan
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --json
 ```
 
 `check --json` 只报告本地路径前提。`check`（不带 `--json`）在本地检查通过后继续执行资源/GPU/渲染预检，
-但不运行学习模型推理。当前完整可选环境尚未完整锁定，也没有纯软件模式，
-执行前先核对 [MicroDuck 前提](microduck-vln.md)。YAML 选择
+但不运行学习模型推理。完整运行前，按照 [MicroDuck 环境搭建](microduck-vln.md) 提供场景/checkpoint，
+在 Linux 上安装锁定的 `simulation` extra，再执行 `check` 和 `run`。
+CLI 没有 MicroDuck `--mode software` 选项，现有 `setup` 和 Docker 安装器尚未接入新锁。YAML 选择
 本地或 Slurm 执行、episode 数、随机种子、动作限制和视频帧率。
 运行退出时，推理子进程会停止；另一终端沿用同一 checkout/配置，通过 `down` 请求关闭该前台 launcher。
 

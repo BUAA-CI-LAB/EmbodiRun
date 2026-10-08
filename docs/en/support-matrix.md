@@ -135,11 +135,11 @@ using the HTTP inference client; it does not register a Host/Control device.
 | Stage | Required inputs and evidence |
 |---|---|
 | Configuration | `init microduck`, `validate`, and `plan` work without a GPU; supply real paths before execution. |
-| Installation | Python 3.12 reference environment and pinned EmbodiInfer source; current `setup` installs the full optional integration from version ranges, not a complete MicroDuck lock. |
+| Installation | Python 3.12 / uv 0.12.x; direct `uv sync --project examples/microduck_vln --frozen` uses one Recipe lock for the base and `simulation` profiles. Existing `setup` and Docker still install integration version ranges. |
 | Local check | `check --json` reports project/inference/checkpoint/episodes/inventory paths only; CUDA/EGL and model readiness stay unverified. |
 | Full preflight | `check` without `--json`: Linux CUDA/NVIDIA EGL, external MuJoCo scene and robot meshes, walking ONNX, merged SFT-v3 weights and episode data; verifies the scene/MPC/encoder, not learned VLN inference. |
 | Run | Actual inference and recorded episodes; inspect per-episode success separately from completed process status. |
-| Reproducibility work | Complete native/Docker lock parity, isolated software/full profiles, fresh target-host installation and independent first use remain pending. |
+| Reproducibility work | Connect the existing installer and Docker to the Recipe lock; verify fresh target-host installation, native/Docker parity and independent first use. Full GPU/model execution is still pending. |
 
 Keep Transformers 4.51.3 separate from Transformers 5.x profiles. The historical
 A800 reference environment is not evidence that a different GPU or architecture

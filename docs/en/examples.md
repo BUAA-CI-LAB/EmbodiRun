@@ -77,25 +77,25 @@ uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml dry
 
 ## Run the simulator
 
-Follow [MicroDuck setup](microduck-vln.md) to prepare the external scene and
-checkpoint. On the Linux GPU host, run:
+Start with the locked configuration-only profile from the repository root:
 
 ```bash
-uv run --frozen embodirun example init microduck --assets /absolute/asset/root
+RECIPE_ENV="$PWD/.venv-microduck"
+UV_PROJECT_ENVIRONMENT="$RECIPE_ENV" uv sync \
+  --project examples/microduck_vln --frozen --python 3.12 --no-default-groups
+"$RECIPE_ENV/bin/embodirun" example init microduck --assets /absolute/asset/root
 CONFIG=examples/local/microduck/example.local.yaml
-uv run --frozen embodirun example "$CONFIG" validate
-uv run --frozen embodirun example "$CONFIG" plan
-uv run --frozen embodirun example "$CONFIG" setup
-uv run --frozen embodirun example "$CONFIG" check --json
-uv run --frozen embodirun example "$CONFIG" check
-uv run --frozen embodirun example "$CONFIG" run
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" validate
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" plan
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --json
 ```
 
 `check --json` reports local path prerequisites only. `check` without `--json`
 continues into asset/GPU/rendering preflight after the local checks pass; it
-does not run learned-model inference. The current full optional environment
-is not completely locked and has no software-only mode. See
-[MicroDuck prerequisites](microduck-vln.md) before executing those commands.
+does not run learned-model inference. Follow [MicroDuck setup](microduck-vln.md)
+to provide the scene/checkpoint, install the locked `simulation` extra on Linux
+and execute `check` and `run`. The CLI has no MicroDuck `--mode software` option;
+the existing `setup` and Docker installer have not yet adopted the new lock.
 The YAML selects
 local or Slurm execution, episodes, seed, action limit, and video frame rate.
 The inference child stops when the run exits; `down` from another terminal

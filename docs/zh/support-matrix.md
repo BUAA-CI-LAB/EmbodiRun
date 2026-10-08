@@ -132,11 +132,11 @@ DM0.5 与 StreamVLN 当前逐请求执行。MicroDuck 使用其专用集成中�
 | 阶段 | 所需输入与证据 |
 |---|---|
 | 配置 | `init microduck`、`validate`、`plan` 无需 GPU；执行前填入真实路径。 |
-| 安装 | Python 3.12 参考环境及固定 EmbodiInfer 源码；当前 `setup` 按版本范围安装完整可选集成，还不是完整 MicroDuck 锁。 |
+| 安装 | Python 3.12 / uv 0.12.x；直接 `uv sync --project examples/microduck_vln --frozen` 的基础与 `simulation` profile 共用 Recipe 锁。现有 `setup` 和 Docker 仍按集成版本范围安装。 |
 | 本地检查 | `check --json` 仅报告项目/推理/checkpoint/episode/清单路径，CUDA/EGL 与模型就绪仍未验证。 |
 | 完整预检 | `check`（不带 `--json`）需要 Linux CUDA/NVIDIA EGL、外部 MuJoCo 场景及机器人网格、行走 ONNX、合并 SFT-v3 权重和任务数据；验证场景/MPC/编码器，不运行学习模型 VLN 推理。 |
 | 运行 | 实际推理与录制 episode；任务成功与进程结束状态分别检查。 |
-| 复现剩余工作 | Native/Docker 完整锁一致、隔离软件/完整 profile、新目标主机安装及独立首次上手仍待完成。 |
+| 复现剩余工作 | 将现有安装器与 Docker 接入 Recipe 锁；验证新目标主机安装、Native/Docker 一致性及独立首次上手。完整 GPU/模型运行仍待验证。 |
 
 Transformers 4.51.3 应与 5.x profile 分开。此前 A800 参考环境不能证明另一种 GPU 或架构已通过验证。
 另见 [Runtime 成本](runtime-value.md)中待测的部署对照。

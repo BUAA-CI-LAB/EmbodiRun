@@ -95,3 +95,58 @@ It can measure service preparation, readiness, shutdown, and software failure
 diagnosis without model assets. Model loading, warmup, backend changes, and
 physical-device conclusions remain unavailable in that scope. No recorded
 software or full-model cost results are supplied by the empty templates.
+
+## Prepare a comparison with the native LeRobot backend
+
+The first candidate is **Pi0.5 with SO-101 named observations and recorded
+camera inputs, without sending robot commands**. Both routes would use the same
+LeRobot v0.6.1 policy server, checkpoint and pre/postprocessors: a direct gRPC
+replay client on one route, and an optional HTTP-to-gRPC bridge on the other.
+This planned replay checks protocol and policy-output equivalence. It does not
+measure native asynchronous robot rollout or the six deployment costs.
+
+The upstream [`AsyncInference` service](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/transport/services.proto#L38)
+uses `Ready`, `SendPolicyInstructions`, `SendObservations` and `GetActions`.
+The [server's `Ready`](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/async_inference/policy_server.py#L108)
+resets global queue state; it does not create independent HTTP-style sessions.
+Use a fresh server process for each route and trial, with one exclusive client.
+Calling `Ready` as a health probe or running both clients concurrently would
+invalidate this comparison.
+
+| Boundary | Existing support | Work still required for the candidate |
+|---|---|---|
+| Observation features | [`PolicyObservation`](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/src/embodirun/model_services/contracts.py#L48) carries state, encoded images, instruction and metadata. | Restore the six SO-101 `.pos` keys in checkpoint order, matching joint/gripper units, camera names and RGB arrays. Use lossless PNG in replay; let the native server perform its own resize, normalization, tokenization and postprocessing once. Check the checkpoint's actual features first. |
+| Action chunk | The [SO-101 mapper](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/src/embodirun/bindings/lerobot/so101/pi05/mapper.py#L63) validates numeric rows and named features; its binding limits execution to 50 steps. | Convert native tensors to finite numeric rows with the same six names and horizon, using `pi05.action_chunk.v1`. Retain native timesteps/timestamps for replay inspection. The current mapper assigns new wall-clock action timestamps; it does not preserve native scheduling. |
+| Session and retry | The [HTTP client](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/src/embodirun/model_services/backends/embodiinfer/http.py#L50) has session/reset/close calls and checks request/session/step identity. | The bridge must own one exclusive session, correlate each request to its chunk, bound waits and preserve the existing idempotency behavior. Do not resend an uncertain native request automatically. Model-state reset needs a fresh owned backend or explicit verified reset behavior; queue reset alone is insufficient. |
+| Asynchronous execution | The current [model loop](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/src/embodirun/application/model_loop.py#L125) waits for a chunk and executes a selected prefix at `control_hz`. | Native [robot-client queue handling](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/async_inference/robot_client.py#L224) discards consumed timesteps and aggregates overlapping chunks. Matching this needs scheduling, observation-send thresholds, cancellation/stop feedback and clock handling, beyond an HTTP wrapper. |
+
+The HTTP payload can express the candidate's observation and numeric chunk;
+the current provider registry contains no native LeRobot adapter. Put future
+bridge dependencies in an optional integration process, outside the generic
+Runtime. LeRobot v0.6.1's [package requirements](https://github.com/huggingface/lerobot/blob/v0.6.1/pyproject.toml#L60)
+include NumPy 2 and, through its `pi` extra, Transformers 5.4–5.5. These differ
+from MicroDuck's NumPy 1/Transformers 4 profile, so reuse the same isolated
+backend environment across comparison routes, not a single environment for
+all Recipes. Do not replace the native backend with an EmbodiInfer engine in
+this experiment.
+
+The checked server and robot client serialize configuration, observations and
+actions using pickle over insecure gRPC, without application authentication
+in these entrypoints. Keep that leg on trusted loopback or within an
+authenticated SSH-forwarded connection to a trusted peer; never accept
+untrusted pickle or publish the gRPC listener. Keep HTTP authentication, limits
+and request validation intact. See the [server](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/async_inference/policy_server.py#L125)
+and [client](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/async_inference/robot_client.py#L110).
+
+Before claiming equivalent outputs, compare decoded RGB/state/task features,
+native preprocessed tensors and postprocessed named chunks, including units,
+horizon and timing metadata. [Pi0.5 sampling](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/policies/pi05/modeling_pi05.py#L631) also needs matched random-state
+control or a stated repeat-based comparison; v0.6.1's server CLI does not supply
+a seed option. Preserve successful weight-loading evidence: the checked
+[Pi0.5 loader](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/policies/pi05/modeling_pi05.py#L810)
+can return an initialized model after a checkpoint-loading error. A successful
+gRPC connection or numeric chunk therefore does not prove the checkpoint loaded.
+The [measurement procedure](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/benchmarks/deployment-runtime/README.md#native-backend-preparation)
+lists the source-checked server command and remaining implementation checks.
+The bridge, replay client, authorized checkpoint/input set and target execution
+are still pending.

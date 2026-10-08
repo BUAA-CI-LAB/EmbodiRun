@@ -37,6 +37,9 @@ record, not permission to replace it with a mock and call the task complete.
 
 1. Install from the selected checkout with `uv sync --frozen --python 3.12`.
    Preserve stdout/stderr if installation fails before any Recipe output exists.
+   `uv sync` creates `.venv` without adding its executables to your shell's
+   `PATH`. Recipe hints currently print bare `embodirun` commands; execute them
+   with `uv run --frozen embodirun ...` from the repository root.
 2. Follow [Quick start, no robot required](quickstart.md#1-no-robot-required):
    `validate` → `init` → `sync --source .` → `up` → `describe` → `observe`.
    This starts the actual Control service with in-memory joints and a fake camera.
@@ -54,12 +57,17 @@ record, not permission to replace it with a mock and call the task complete.
    linked local directory, `validate`, `plan`, `setup --mode software`,
    `check --mode software --json`, then `dry-run`. Use a new output directory
    if `init` reports that the default directory already exists.
+   XLeRobot's `plan` previews the manifest's hardware `run` command. The
+   software rehearsal uses the explicit software setup/check and `dry-run`
+   commands above.
 5. Follow [MicroDuck](microduck-vln.md) only within the supplied scope.
    Its current `check` without `--json` is a full CUDA/EGL/assets scene preflight.
    `check --json` only checks local paths and cannot establish GPU readiness.
    A passed scene preflight still does not establish model
    inference or navigation success. Do not add `--mode software` to MicroDuck:
    that option is currently available only to the XLeRobot Recipe.
+   MicroDuck's `init` also prints plain `check` as a next step; for the offline
+   scope, use `check --json` to report missing paths and defer scene preflight.
 6. Record the printed output directories, `run.json`, command/service logs and
    shutdown outcome. Recipe [output guidance](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/README.md#outputs-and-shutdown)
    explains which outputs exist before or after launcher startup.

@@ -30,6 +30,62 @@ executable:
 5. Run the six procedures below. Until then, mark unsupported cases
    `not_run`/`unavailable`; do not substitute a fixture or an optimized engine.
 
+## Native backend preparation
+
+The initial candidate is **Pi0.5/SO-101 named recorded-input replay**, with no
+robot connection or action writes. Direct gRPC and a future optional HTTP bridge
+would call separately started instances of the same LeRobot v0.6.1 backend.
+This checks compatibility before a full deployment comparison; it does not
+measure native async rollout costs or replace the software procedure below.
+The [interface mapping](../../docs/en/runtime-value.md#prepare-a-comparison-with-the-native-lerobot-backend)
+([中文](../../docs/zh/runtime-value.md#准备同原生-lerobot-后端的对照)) explains the existing support and gaps.
+
+After preparing the same isolated v0.6.1 backend environment for both routes,
+the upstream server command is:
+
+```bash
+"$BACKEND_ENV/bin/python" -m lerobot.async_inference.policy_server \
+  --host=127.0.0.1 --port=8080 --fps=5 \
+  --inference_latency=0 --obs_queue_timeout=1
+```
+
+These options are verified against the upstream [configuration](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/async_inference/configs.py#L46);
+the command has not been run for this task. Use a fresh owned process for each
+route/trial, with port 8080 free and only one client. `Ready` resets global queue
+state. `SendPolicyInstructions(RemotePolicyConfig)` supplies `policy_type=pi05`,
+the authorized checkpoint path, the same LeRobot feature descriptions,
+`actions_per_chunk` and device; model loading begins there, not at process
+startup. Keep pickle/gRPC on trusted loopback or authenticated SSH forwarding
+to a trusted peer, and retain HTTP authentication and payload limits.
+
+Remaining work for the bridge and replay client is bounded:
+
+1. Provide the existing HTTP health/capability/session/step/reset/close surface
+   from an optional integration process. Health probing must not call native
+   `Ready`. Explicitly reject an additional session and any unsupported reset;
+   preserve request identity, bounded waits and idempotency. A fresh backend
+   process is the initial trial reset procedure.
+2. Turn the same lossless images and named state into the same native
+   `TimedObservation`, task string and feature order. In this sequential replay,
+   submit one observation at a time with the same `must_go=True` on both routes
+   so native similarity filtering does not silently skip a recorded input.
+   Read `GetActions` to completion before the next input; retain its source
+   timesteps/timestamps and finite named numeric chunk. This is deliberately a
+   replay schedule, not the native robot client's async queue behavior.
+3. Check input/preprocessed/output equivalence with the same checkpoint,
+   processors, dtype, horizon and random-state treatment. Compare unknown,
+   missing and reordered features, empty/malformed chunks, a delayed response,
+   repeated request and reset/close behavior using ordinary tests. Record
+   mismatch and failure cases, including successful checkpoint-loading evidence;
+   do not treat a connection or numeric chunk as proof that weights loaded.
+4. Supply actual bridge/replay commands and a matched execution configuration
+   only after target validation. Complete native async queue/clock/stop-feedback
+   mapping before reporting an async robot deployment comparison. Include this
+   adapter's setup and maintenance in the final manual-work record.
+
+No bridge, replay command or authorized checkpoint/input set is provided yet.
+No learned-policy run is authorized or reported by this preparation section.
+
 ## Timing and collection
 
 Use a new task-owned directory on the same Linux measurement host. Record Git

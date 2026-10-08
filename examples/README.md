@@ -172,8 +172,12 @@ For XLeRobot, the separate environment uses
 `examples/xlerobot_snack_delivery/pyproject.toml` and `uv.lock` for both software
 and full hardware setup. The full owner installs CPU PyTorch; the GPU model
 service is prepared separately. The root checkout Host environment includes
-the default development group. MicroDuck's optional integration still uses
-its declared version ranges and is not fully locked by the root file.
+the default development group. MicroDuck's
+[direct installation](microduck_vln/README.md#install-and-configure) uses its
+own Recipe project and lock for a small configuration environment and the
+optional `simulation` profile. Its existing `setup` and Docker target still
+install integration version ranges; connecting them to this lock and testing
+fresh target-host parity remain unfinished.
 Do not copy an existing machine's virtual environment.
 
 Container targets `host`, `xlerobot-software`, `xlerobot`, and `microduck` are in

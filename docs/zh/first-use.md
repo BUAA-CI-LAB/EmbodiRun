@@ -26,6 +26,9 @@ MicroDuck 只做 validate/plan，直到操作者提供并授权完整 GPU/资源
 ## 执行已有路径
 
 1. 在选定 checkout 中运行 `uv sync --frozen --python 3.12`。安装在 Recipe 启动前失败时，保留标准输出和错误日志。
+   `uv sync` 创建 `.venv`，不会把其中的命令加入当前 shell 的 `PATH`。
+   Recipe 提示目前打印裸 `embodirun` 命令；在仓库根目录执行时，加上
+   `uv run --frozen` 前缀，使用 `uv run --frozen embodirun ...`。
 2. 按[快速开始：无需机器人](quickstart.md#1)依次执行
    `validate` → `init` → `sync --source .` → `up` → `describe` → `observe`。
    该流程启动真实 Control 服务，设备为内存中的模拟关节与假相机。
@@ -39,9 +42,13 @@ MicroDuck 只做 validate/plan，直到操作者提供并授权完整 GPU/资源
 4. 按[场景与 Recipe](examples.md)或 [XLeRobot 软件演练](xlerobot-snack-delivery.md)，
    初始化联动本地目录，再执行 `validate`、`plan`、`setup --mode software`、
    `check --mode software --json`、`dry-run`。默认目录已经存在时，给 `init` 指定新的输出目录。
+   XLeRobot 的 `plan` 预览的是清单中的 hardware `run` 命令；软件演练使用上面显式的
+   software setup/check 与 `dry-run` 命令。
 5. 只在已提供的范围内使用 [MicroDuck](microduck-vln.md)。当前 `check`（不带 `--json`）执行完整 CUDA/EGL/资源场景预检；
    `check --json` 只查本地路径，不验证 GPU 就绪。通过场景预检仍不能证明模型推理或导航成功。
    不要给 MicroDuck 加 `--mode software`，当前该选项仅供 XLeRobot Recipe 使用。
+   MicroDuck 的 `init` 也会把不带 `--json` 的 `check` 打印为下一步；离线范围内使用
+   `check --json` 报告缺失路径，场景预检留到满足前提的目标主机。
 6. 记录打印的输出目录、`run.json`、命令/服务日志及关闭结果。
    [输出说明](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/README.md#outputs-and-shutdown)
    区分 launcher 启动前后产生的文件。

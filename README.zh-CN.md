@@ -132,7 +132,8 @@ uv run --frozen embodirun example "$CONFIG" dry-run
 和命令日志，详见[输出与停止](examples/README.md#outputs-and-shutdown)。
 MicroDuck 的前提不同：当前 `setup` 安装完整可选环境，`check`（不带 `--json`）在 Linux GPU 主机上使用
 CUDA/EGL 和外部资源；`check --json` 只报告本地路径，不验证 CUDA/EGL。
-其可选依赖尚未完整锁定，当前 CLI 没有 MicroDuck 纯软件模式。
+该 Recipe 已提供直接安装使用的独立依赖锁；现有 `setup` 和 Docker 安装器尚未接入。
+当前 CLI 没有 MicroDuck 纯软件模式。
 按该 Recipe 完成前提后再 `run`，并使用其中的日志和 `down` 说明。
 
 让已有编程 Agent 上手时，使用[独立首次上手](docs/zh/first-use.md)与

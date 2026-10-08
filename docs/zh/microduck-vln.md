@@ -13,19 +13,35 @@ MPC 和 ONNX 行走策略负责执行 R2R 导航动作，同时录制第一、�
 
 ## 运行示例
 
-准备好独立环境、检查点、数据集和场景资源后，运行：
+先在仓库根目录安装锁定的轻量环境，并生成联动配置：
 
 ```bash
-git submodule update --init third_party/embodiinfer
-uv sync --frozen
-uv run --frozen embodirun example init microduck --assets /absolute/asset/root
+RECIPE_ENV="$PWD/.venv-microduck"
+UV_PROJECT_ENVIRONMENT="$RECIPE_ENV" uv sync \
+  --project examples/microduck_vln --frozen --python 3.12 --no-default-groups
+"$RECIPE_ENV/bin/embodirun" example init microduck --assets /absolute/asset/root
 CONFIG=examples/local/microduck/example.local.yaml
-uv run --frozen embodirun example "$CONFIG" validate
-uv run --frozen embodirun example "$CONFIG" plan
-uv run --frozen embodirun example "$CONFIG" setup
-uv run --frozen embodirun example "$CONFIG" check --json
-uv run --frozen embodirun example "$CONFIG" check
-uv run --frozen embodirun example "$CONFIG" run
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" validate
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" plan
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --json
+```
+
+基础 profile 支持配置和帮助命令，无需 Torch、MuJoCo 或模型资源；`check --json` 会报告
+缺失的外部路径。运行完整示例时，在 Linux GPU 目标上提供资源并安装完整依赖。
+在仓库根目录执行下面的完整代码块，新终端也重新设置变量。代码使用默认环境和配置；
+如果使用自定义路径，请改为准备阶段使用的同一环境目录与配置文件的绝对路径。
+自定义场景解释器通过 `EMBODIRUN_SCENE_PYTHON` 或配置中的 `python` 指定；
+显式 YAML `python` 优先，应保持它与所选环境一致：
+
+```bash
+RECIPE_ENV="$PWD/.venv-microduck"
+CONFIG="$PWD/examples/local/microduck/example.local.yaml"
+git submodule update --init third_party/embodiinfer
+UV_PROJECT_ENVIRONMENT="$RECIPE_ENV" uv sync \
+  --project examples/microduck_vln --frozen --python 3.12 --no-default-groups \
+  --extra simulation
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" run
 ```
 
 `validate` 和 `plan` 离线运行。`check --json` 只报告本地路径前提，CUDA/EGL 与场景/模型就绪仍未验证。
@@ -33,37 +49,45 @@ uv run --frozen embodirun example "$CONFIG" run
 资源/CUDA/EGL/ONNX/MPC/视频编码器预检。预检通过不证明学习模型推理或导航成功；
 `run` 才启动仿真 episode 和本轮持有的推理子进程。
 
-当前 `setup` 按根目录锁文件安装 Host，再按版本范围安装完整 MicroDuck 可选集成；
-后者尚未完整锁定，当前 CLI 没有 MicroDuck 纯软件模式。
-Native/Docker 使用同一完整锁以及隔离软件 profile 仍是依赖工作，
-还需新的目标主机安装与 GPU/模型验证。Transformers 4.51.3 环境应与 5.x 模型环境分开。
+直接安装的两个 profile 共用 `examples/microduck_vln/pyproject.toml` 和 `uv.lock`。
+当前 `setup` 与 Docker target 仍使用按集成版本范围安装的旧安装器，尚未接入这个锁；
+CLI 也仍没有 MicroDuck `--mode software` 选项。新目标主机安装、Native/Docker 一致性
+与 GPU/模型验证仍待完成。Transformers 4.51.3 环境应与 5.x 模型环境分开。
 实际执行记录见[独立首次上手](first-use.md)。
 
 Recipe 打印 `Outputs:`，运行目录包含 `run.json`、命令日志与 `result/`；
 其中可查看 `preflight.json`、`run.log`、`inference.log`。`run` 退出时清理其子进程。
-另一终端沿用同一 checkout 和配置，通过 `uv run --frozen embodirun example "$CONFIG" down`
-请求关闭本 Recipe 的前台 launcher。Slurm 提交与 `scancel` 见示例指南。
+若要从另一终端请求关闭本 Recipe 的前台 launcher，先进入同一仓库根目录并重新设置路径。
+下面使用默认路径；自定义环境或配置应填写之前使用的绝对路径：
 
-## 参考场景与声明依赖
+```bash
+RECIPE_ENV="$PWD/.venv-microduck"
+CONFIG="$PWD/examples/local/microduck/example.local.yaml"
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" down
+```
+
+Slurm 提交与 `scancel` 见示例指南。
+
+## 参考场景与锁定 profile
 
 此实验性集成使用独立仿真环境。硬件与算法设置来自此前的 A800 场景；
-包版本行是当前集成的声明，不是已解析环境或本轮重新验证的安装结果，完整列表见
-[包元数据](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/integrations/microduck_vln/pyproject.toml)。
+包版本行是 Recipe 锁解析出的 `simulation` 候选版本，该完整 profile 尚未在目标 GPU 上安装或验证。
+集成的[包元数据](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/integrations/microduck_vln/pyproject.toml)
+仍保留较宽的版本范围。
 
 | 设置 | 参考配置 |
 | --- | --- |
 | 硬件 / 运行时 | Linux，一块 A800 80 GB GPU，四个 CPU 核心，EGL；Python 3.12 |
 | 策略 | Qwen2.5-VL-3B ActiveVLN，外部提供的合并 SFT-v3 检查点 |
-| 模型包声明，尚未完整锁定 | `torch>=2.5,<2.12`、`torchvision>=0.20,<0.27`、`transformers==4.51.3`、`tokenizers==0.21.4` |
-| 仿真包声明，尚未完整锁定 | `mujoco==3.8.1`、`onnxruntime>=1.20,<2`、`casadi==3.7.2` |
+| 锁定模型候选 | Linux `torch==2.10.0+cu130`、`torchvision==0.25.0+cu130`、`transformers==4.51.3`、`tokenizers==0.21.4` |
+| 锁定仿真候选 | `numpy==1.26.4`、`Pillow==12.3.0`、`mujoco==3.8.1`、`onnxruntime==1.30.0`、`casadi==3.7.2` |
 | 推理来源 | 由 `third_party/embodiinfer` 固定的 EmbodiInfer 修订版本 |
 | 执行 | B=1，eager，bfloat16，SDPA，贪心解码；每个 episode 使用有状态会话 |
 | 场景 / 限制 | `val_2`，默认出生点 `(6.5, 13.8, 0)`，最多 60 个基元动作 |
 | 成功 | STOP 且最后三个动作端点严格位于 1.0 m 半径内 |
 
-这些范围不会自动与固定推理项目自身的 uv lock/profile 约束合并。
-仍需 MicroDuck 专用完整锁和新的目标主机验证，不能由范围推断 CUDA wheel 已可用、
-Native/Docker 一致或完整环境已经解析成功。
+Torch/torchvision 组合沿用固定推理项目的开发 profile；其约束不会自动作用于独立安装的集成。
+锁解析与公开 ARM64 wheel 信息提供了依赖候选，目标主机的驱动、glibc 和 CUDA/EGL 仍需验证。
 
 ## 查看评估结果
 

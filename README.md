@@ -146,9 +146,10 @@ printed `Outputs:` directory for `run.json` and command logs; see
 MicroDuck has a different prerequisite path: its current `setup` installs the
 full optional environment and `check` without `--json` uses CUDA/EGL and external
 assets on a Linux GPU host. `check --json` only reports local paths; it does not
-verify CUDA/EGL. Its optional dependencies are not yet fully locked; there is
-no MicroDuck software-only mode in the current CLI. Follow its Recipe before
-`run`, then use that Recipe's logs and `down` instructions.
+verify CUDA/EGL. A dedicated Recipe lock is available for direct installation;
+the existing `setup` and Docker installer have not yet been connected to it.
+There is no MicroDuck software-only mode in the current CLI. Follow its Recipe
+before `run`, then use that Recipe's logs and `down` instructions.
 
 For an existing coding Agent, follow [independent first use](docs/en/first-use.md)
 and the [Agent workflow](docs/en/agent-workflow.md). Record actual commands,
