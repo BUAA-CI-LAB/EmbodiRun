@@ -21,6 +21,27 @@ and parse it. A self-contained software walkthrough that starts the real
 [`examples/shared-device-fake.md`](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/shared-device-fake.md).
 You can run the walkthrough without a robot or model checkpoint.
 
+For a first deployment, follow the actual `init`/`sync`/`up` path in
+[Quick start](quickstart.md#1-no-robot-required); the self-contained walkthrough
+uses temporary initialized state. For a new user or coding Agent, use the
+[independent first-use guide](first-use.md) to record execution and help.
+When testing an unmerged PR, install from its head branch.
+
+After the software service is running, set the variables used below:
+
+```bash
+CONFIG=examples/shared-device-fake.yaml
+STATE=/absolute/host-state-directory-from-your-startup-command
+RUNTIME=fake-device
+CALLER=example-agent
+SESSION=software-first-use
+```
+
+Use the same `STATE` as the terminal that ran `init`/`up`; changing it would
+select a different deployment record. The action example below is for this
+simulated device. A physical device needs
+its own calibration, binding, authorization and [safety checks](safety.md).
+
 ## Carry a stable identity
 
 Pass a stable `--caller-id` and `--session-id` on every invocation. Ownership,
@@ -48,7 +69,7 @@ robot:
 
 ```sh
 printf '%s\n' '{"timestamp_s":0,"values":{"type":"joint_position","joint_positions_deg":[0,0,0,0,0],"gripper_position":25},"metadata":{"action_space":"simulated.so101.position.v1"}}' \
-  | embodirun --config "$CONFIG" execute --runtime "$RUNTIME" \
+  | uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" execute --runtime "$RUNTIME" \
       --caller-id "$CALLER" --session-id "$SESSION" \
       --request-id action-1 --action - --steps 1 --json
 ```

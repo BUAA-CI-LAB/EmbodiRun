@@ -69,6 +69,8 @@ devices and service placements.
 
 See [Architecture](docs/en/architecture.md) for the service layout and the
 [Agent workflow](docs/en/agent-workflow.md) for application integration.
+[Runtime responsibilities and costs](docs/en/runtime-value.md) compares this
+scope with LeRobot and ROS 2 and identifies the deployment measurements still needed.
 
 ## Performance
 
@@ -97,6 +99,9 @@ about 2.45 seconds of each chunk.
 
 ## Quick start and Recipes
 
+When testing an unmerged PR, check out its head branch before installing;
+the default `main` checkout does not include that PR's changes.
+
 ### Run a local example
 
 Install from source with Python 3.10+ and [uv](https://docs.astral.sh/uv/) 0.12.x:
@@ -122,6 +127,33 @@ and shutdown:
 - **Agent:** [XLeRobot snack delivery with RPent/Astra](examples/xlerobot_snack_delivery/README.md).
 - **Variants:** [Shared inference, other backends, and software examples](examples/README.md).
 
+For a first Recipe rehearsal, use Python 3.12 and the unified CLI:
+
+```bash
+uv sync --frozen --python 3.12
+uv run --frozen embodirun example init xlerobot
+CONFIG=examples/local/xlerobot/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" setup --mode software
+uv run --frozen embodirun example "$CONFIG" check --mode software --json
+uv run --frozen embodirun example "$CONFIG" dry-run
+```
+
+This XLeRobot rehearsal uses fixtures and opens no robot or model. Use the
+printed `Outputs:` directory for `run.json` and command logs; see
+[outputs and shutdown](examples/README.md#outputs-and-shutdown).
+MicroDuck has a different prerequisite path: its current `setup` installs the
+full optional environment and `check` without `--json` uses CUDA/EGL and external
+assets on a Linux GPU host. `check --json` only reports local paths; it does not
+verify CUDA/EGL. Its optional dependencies are not yet fully locked; there is
+no MicroDuck software-only mode in the current CLI. Follow its Recipe before
+`run`, then use that Recipe's logs and `down` instructions.
+
+For an existing coding Agent, follow [independent first use](docs/en/first-use.md)
+and the [Agent workflow](docs/en/agent-workflow.md). Record actual commands,
+missing prerequisites and help received; a document review alone is not a run.
+
 The [deployment quick start](docs/en/quickstart.md) explains the CLI and YAML
 configuration. Before enabling robot motion, complete calibration and read the
 [hardware safety guide](docs/en/safety.md).
@@ -131,10 +163,10 @@ configuration. Before enabling robot motion, complete calibration and read the
 | Looking for | Start here |
 |---|---|
 | Installation and deployment | [Installation](docs/en/installation.md) · [Quick start](docs/en/quickstart.md) · [Configuration](docs/en/configuration.md) |
-| Application integration | [Agent workflow](docs/en/agent-workflow.md) · [Inference API](docs/en/http_api.md) · [Python API](docs/en/api.md) |
+| Application integration | [Independent first use](docs/en/first-use.md) · [Agent workflow](docs/en/agent-workflow.md) · [Inference API](docs/en/http_api.md) · [Python API](docs/en/api.md) |
 | Complete task instructions | [Recipes](examples/README.md) |
 | Deployment templates | [configs/](configs/) |
-| Measurements and results | [benchmarks/](benchmarks/README.md) |
+| Measurements and results | [benchmarks/](benchmarks/README.md) · [Runtime costs](docs/en/runtime-value.md) |
 | Supported and planned integrations | [Support matrix and roadmap](docs/en/support-matrix.md) |
 
 The roadmap covers additional robot Recipes, an automatic data-collection

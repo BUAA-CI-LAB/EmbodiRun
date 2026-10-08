@@ -58,6 +58,7 @@ nav:
   - 快速开始:
       - 安装: installation.md
       - 快速开始: quickstart.md
+      - 独立首次上手: first-use.md
       - 场景与 Recipe: examples.md
       - 部署配置: configuration.md
   - 机器人操作:
@@ -71,6 +72,7 @@ nav:
       - π0.5 双臂控制: pi05-bi-so101.md
   - 系统设计:
       - 系统架构: architecture.md
+      - Runtime 职责与成本: runtime-value.md
   - 实验:
       - 概览: experiments.md
       - SO-101 推理引擎对比: demos/engine-e2e-contrast.md

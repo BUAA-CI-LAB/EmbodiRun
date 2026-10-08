@@ -127,6 +127,25 @@ service.
     [WirelessComm configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/http-wireless-inference/wireless.yaml)
     and [transport measurements](inference-transport.md).
 
+## MicroDuck prerequisites {#microduck-prerequisites}
+
+The [MicroDuck Recipe](microduck-vln.md) is a dedicated simulation launcher
+using the HTTP inference client; it does not register a Host/Control device.
+
+| Stage | Required inputs and evidence |
+|---|---|
+| Configuration | `init microduck`, `validate`, and `plan` work without a GPU; supply real paths before execution. |
+| Installation | Python 3.12 reference environment and pinned EmbodiInfer source; current `setup` installs the full optional integration from version ranges, not a complete MicroDuck lock. |
+| Local check | `check --json` reports project/inference/checkpoint/episodes/inventory paths only; CUDA/EGL and model readiness stay unverified. |
+| Full preflight | `check` without `--json`: Linux CUDA/NVIDIA EGL, external MuJoCo scene and robot meshes, walking ONNX, merged SFT-v3 weights and episode data; verifies the scene/MPC/encoder, not learned VLN inference. |
+| Run | Actual inference and recorded episodes; inspect per-episode success separately from completed process status. |
+| Reproducibility work | Complete native/Docker lock parity, isolated software/full profiles, fresh target-host installation and independent first use remain pending. |
+
+Keep Transformers 4.51.3 separate from Transformers 5.x profiles. The historical
+A800 reference environment is not evidence that a different GPU or architecture
+has been validated. See [Runtime costs](runtime-value.md) for the separately
+pending deployment comparison.
+
 ## XLeRobot recipe prerequisites {#xlerobot-recipe-prerequisites}
 
 Start with the [software rehearsal](xlerobot-snack-delivery.md). It uses

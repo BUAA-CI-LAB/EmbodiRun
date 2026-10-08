@@ -1,8 +1,11 @@
 # Scenarios and Recipes
 
 Run manipulation, navigation, or mobile-manipulation tasks using the shared
-`embodirun example` CLI (`examples/run.sh` remains compatible). Each Recipe covers environment setup, local
-configuration, task execution, output files, and shutdown.
+`embodirun example` CLI (`examples/run.sh` remains compatible). Each Recipe
+covers environment setup, local configuration, task execution, output files,
+and shutdown. When testing an unmerged PR, install from its head branch.
+For an actual software trial by a new user or coding Agent, follow
+[independent first use](first-use.md).
 
 | Scenario | Demo | Recipe |
 |---|---|---|
@@ -80,14 +83,23 @@ checkpoint. On the Linux GPU host, run:
 ```bash
 uv run --frozen embodirun example init microduck --assets /absolute/asset/root
 CONFIG=examples/local/microduck/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
 uv run --frozen embodirun example "$CONFIG" setup
+uv run --frozen embodirun example "$CONFIG" check --json
 uv run --frozen embodirun example "$CONFIG" check
 uv run --frozen embodirun example "$CONFIG" run
 ```
 
-`check` verifies assets and the GPU/rendering environment. The YAML selects
+`check --json` reports local path prerequisites only. `check` without `--json`
+continues into asset/GPU/rendering preflight after the local checks pass; it
+does not run learned-model inference. The current full optional environment
+is not completely locked and has no software-only mode. See
+[MicroDuck prerequisites](microduck-vln.md) before executing those commands.
+The YAML selects
 local or Slurm execution, episodes, seed, action limit, and video frame rate.
-The inference child stops when the run exits.
+The inference child stops when the run exits; `down` from another terminal
+with the same checkout/configuration requests this foreground launcher's shutdown.
 
 ## Inspect the outputs
 
@@ -99,3 +111,5 @@ delivery events and proposals.
 
 Use the [inference transport benchmark](inference-transport.md) for repeated
 latency measurements.
+The separate [Runtime cost procedure](runtime-value.md) supplies unexecuted
+deployment comparison instructions and empty collection templates.

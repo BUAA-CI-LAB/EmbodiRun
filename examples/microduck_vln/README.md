@@ -89,6 +89,13 @@ Transformers 5.x profiles. Provision packages and weights before running on an
 offline cluster. `setup` installs packages, but does not download weights or
 external assets.
 
+The current Recipe has no `--mode software` option. A minimal software profile,
+an isolated full simulation profile, and one complete lock shared by native and
+Docker installation remain reproducibility work. The current Docker target
+uses the existing installer with version ranges; building it is not evidence
+of a matching fresh native install or working GPU/model. Fresh target-host
+installation, independent first use and full inference remain separate checks.
+
 ## Run
 
 On the Linux GPU host:
@@ -97,12 +104,17 @@ On the Linux GPU host:
 CONFIG=examples/local/microduck/example.local.yaml
 uv run --frozen embodirun example "$CONFIG" validate
 uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" check --json
 uv run --frozen embodirun example "$CONFIG" check
 uv run --frozen embodirun example "$CONFIG" run
 ```
 
-`validate` and `plan` are offline. `check` verifies assets, CUDA, EGL, ONNX,
-MPC and the encoder; `run` starts simulation and its inference child.
+`validate` and `plan` are offline. `check --json` only reports local path
+prerequisites; it does not check CUDA/EGL or model inference. `check` without
+`--json` continues into the asset/CUDA/EGL/ONNX/MPC/encoder preflight after the
+local checks pass. The full preflight exercises the scene and walking policy
+but does not run the learned VLN model. `run` starts simulation and its
+inference child; inspect the episode results for task success separately.
 All settings come from the YAML. Outputs are under
 `examples/local/microduck/runs/<timestamp>-run/result/`.
 

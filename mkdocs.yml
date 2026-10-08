@@ -45,6 +45,7 @@ nav:
   - Getting started:
       - Installation: installation.md
       - Quick start: quickstart.md
+      - Independent first use: first-use.md
       - Scenarios and Recipes: examples.md
       - Configuration: configuration.md
   - Operating:
@@ -58,6 +59,7 @@ nav:
       - π0.5 with two SO-101: pi05-bi-so101.md
   - Concepts:
       - Architecture: architecture.md
+      - Runtime responsibilities and costs: runtime-value.md
   - Experiments:
       - Overview: experiments.md
       - Inference engines on SO-101: demos/engine-e2e-contrast.md

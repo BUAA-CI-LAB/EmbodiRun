@@ -2,6 +2,9 @@
 
 Start a simulated device, inspect its observations, then configure a robot deployment.
 
+When testing an unmerged PR, check out its head branch before installation;
+default `main` may not include that PR's commands.
+
 ## 0. Install
 
 ```bash
@@ -21,22 +24,34 @@ For a linked, editable demo configuration, run
 simulated joints and a fake camera. It opens no hardware and exposes the real
 Host JSON API.
 
+Choose an unused trial directory and confirm port 8100 is free before preparing
+or starting the deployment. If it is occupied, stop this trial and preserve the
+existing listener. Keep the same `STATE` value for all commands, including Agent
+calls in another terminal. `--root` isolates managed environments and sources;
+`--state-dir` isolates the Host record.
+
 ```bash
 CONFIG=examples/shared-device-fake.yaml
+TRIAL="$PWD/artifacts/first-use-01"
+STATE="$TRIAL/host-state"
+mkdir -p "$PWD/artifacts"
+mkdir "$TRIAL"
 
-uv run embodirun --config "$CONFIG" validate
-uv run embodirun --config "$CONFIG" init
-uv run embodirun --config "$CONFIG" sync --source .
-uv run embodirun --config "$CONFIG" up
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" validate
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" init --root "$TRIAL/managed"
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" sync --source .
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" up
 
-uv run embodirun --config "$CONFIG" describe \
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" describe \
   --runtime fake-device --caller-id example-agent --session-id example-session --json
-uv run embodirun --config "$CONFIG" observe \
-  --runtime fake-device --caller-id example-agent --session-id example-session --json
-uv run embodirun --config "$CONFIG" down
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" observe \
+  --runtime fake-device --caller-id example-agent --session-id example-session --include-robot --json
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" down
 ```
 
 `sync --source .` overlays this checkout on the prepared local deployment.
+If `mkdir "$TRIAL"` reports an existing directory, choose another before continuing.
+The returned robot metadata is `simulated: true`, `hardware_access: false`.
 `describe` reports capabilities, `observe` returns one shared observation, and
 `media` fetches frame data for an observation ID. Use `execute` to submit an action.
 The full self-contained walkthrough, including recording and cancellation, is

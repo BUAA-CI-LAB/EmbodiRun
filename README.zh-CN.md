@@ -62,6 +62,7 @@ Recipe 使用统一的 `embodirun example` 命令行入口；源码 checkout 仍
 | **RPent / Astra / 自定义 Agent** | 通过 [Agent 客户端](agents/CLIENT.md)进行任务规划与场景判断。 |
 
 服务布局见[架构](docs/zh/architecture.md)，应用接入方式见 [Agent 工作流](docs/zh/agent-workflow.md)。
+[Runtime 职责与成本](docs/zh/runtime-value.md)核对了与 LeRobot、ROS 2 的关系，并列出待测的部署成本。
 
 ## 性能
 
@@ -89,6 +90,8 @@ SGLang 使用上游默认设置，LeRobot 使用 eager 执行。
 
 ## 快速开始与 Recipe
 
+验证尚未合并的 PR 时，请先切换到该 PR 的 head 分支再安装；默认 `main` 不包含该 PR 的改动。
+
 ### 运行本地示例
 
 使用 Python 3.10+ 和 [uv](https://docs.astral.sh/uv/) 0.12.x 从源码安装：
@@ -112,6 +115,29 @@ uv run python examples/run_shared_device_fake.py
 - **Agent：** [XLeRobot + RPent/Astra 零食递送](examples/xlerobot_snack_delivery/README.md)。
 - **其他组合：** [共享推理、其他后端与纯软件示例](examples/README.md)。
 
+首次 Recipe 演练使用 Python 3.12，通过统一入口执行：
+
+```bash
+uv sync --frozen --python 3.12
+uv run --frozen embodirun example init xlerobot
+CONFIG=examples/local/xlerobot/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" setup --mode software
+uv run --frozen embodirun example "$CONFIG" check --mode software --json
+uv run --frozen embodirun example "$CONFIG" dry-run
+```
+
+这组 XLeRobot 命令使用 fixture，不打开机器人或模型；打印的 `Outputs:` 目录包含 `run.json`
+和命令日志，详见[输出与停止](examples/README.md#outputs-and-shutdown)。
+MicroDuck 的前提不同：当前 `setup` 安装完整可选环境，`check`（不带 `--json`）在 Linux GPU 主机上使用
+CUDA/EGL 和外部资源；`check --json` 只报告本地路径，不验证 CUDA/EGL。
+其可选依赖尚未完整锁定，当前 CLI 没有 MicroDuck 纯软件模式。
+按该 Recipe 完成前提后再 `run`，并使用其中的日志和 `down` 说明。
+
+让已有编程 Agent 上手时，使用[独立首次上手](docs/zh/first-use.md)与
+[Agent 工作流](docs/zh/agent-workflow.md)，记录实际命令、缺失前提与求助过程；只读文档不算运行验证。
+
 [部署快速开始](docs/zh/quickstart.md)介绍 CLI 与 YAML 配置。
 启用真机运动前，请完成标定并阅读[硬件安全指南](docs/zh/safety.md)。
 
@@ -120,10 +146,10 @@ uv run python examples/run_shared_device_fake.py
 | 内容 | 入口 |
 |---|---|
 | 安装与部署 | [安装](docs/zh/installation.md) · [快速开始](docs/zh/quickstart.md) · [配置](docs/zh/configuration.md) |
-| 应用接入 | [Agent 工作流](docs/zh/agent-workflow.md) · [推理 API](docs/zh/http_api.md) · [Python API](docs/zh/api.md) |
+| 应用接入 | [独立首次上手](docs/zh/first-use.md) · [Agent 工作流](docs/zh/agent-workflow.md) · [推理 API](docs/zh/http_api.md) · [Python API](docs/zh/api.md) |
 | 完整任务步骤 | [Recipes](examples/README.md) |
 | 部署模板 | [configs/](configs/) |
-| 测量与结果 | [benchmarks/](benchmarks/README.md) |
+| 测量与结果 | [benchmarks/](benchmarks/README.md) · [Runtime 成本](docs/zh/runtime-value.md) |
 | 已支持与计划支持的集成 | [支持矩阵与路线图](docs/zh/support-matrix.md) |
 
 后续规划包括更多机器人 Recipe、自动数据采集流程、SmolVLA 与 OpenVLA 接入，以及部署和扩展性基准。

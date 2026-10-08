@@ -4,6 +4,9 @@ Choose a task below, then follow its Recipe for dependencies, configuration,
 execution, outputs, and shutdown. Run launcher commands from the repository
 root after `uv sync --frozen`.
 
+When testing an unmerged PR, first check out its head branch; the default
+`main` checkout may not contain the documented PR commands.
+
 ## VLA · Manipulation
 
 | Recipe | Configuration | Purpose |
@@ -119,7 +122,7 @@ and episode manifest.
 | `up --allow-hardware` | Start model and robot services | Start owner and Control in the foreground | Inference starts with `run` |
 | `run` | Concurrent bounded rollouts; requires `--allow-hardware` | Supervised delivery; requires `--allow-hardware` | Launch simulation and inference |
 | `dry-run` | — | Fixture-only task rehearsal | — |
-| `check` | Report local placeholders and node-owned prerequisites | Read-only diagnostics for `--mode software` or `--mode hardware`; `--json` includes issues and next actions | Check paths and run the scene's CUDA/EGL/asset preflight |
+| `check` | Report local placeholders and node-owned prerequisites | Read-only diagnostics for `--mode software` or `--mode hardware`; `--json` includes issues and next actions | `--json`: local paths only; without `--json`: continue into CUDA/EGL/asset preflight after paths pass |
 | `down` | Stop this deployment | Ask this recipe's foreground launcher to stop | Ask this recipe's foreground launcher to stop |
 
 XLeRobot `setup` / `check` default to hardware mode when `--mode` is omitted.
@@ -129,7 +132,8 @@ exits 0 with `status: "passed"` or 2 with `needs_attention`; resolve the listed
 `verified` from `unverified` so its scope remains visible.
 
 `check` is a prerequisite check, not proof that a robot, model, camera, or stop
-feedback is ready. The MicroDuck scene preflight uses GPU resources; run it on
+feedback is ready. MicroDuck `check --json` never performs scene/GPU preflight.
+The MicroDuck scene preflight without `--json` uses GPU resources; run it on
 the target Linux GPU host. Hardware examples require calibrated devices, a working emergency stop, and an
 operator. `--allow-hardware` permits startup or motion; it does not skip action
 limits or XLeRobot's confirmation gates. Stop one deployment before starting
@@ -194,5 +198,8 @@ for a first software-only trial. The [deployment Agent guide](xlerobot_snack_del
 provides a starting prompt for your existing coding Agent. Record where the
 entrypoint was unclear, which local file you needed to edit, what a successful
 software run meant, and which missing paths or real information required help.
-Actual student feedback has not been collected. Independent Agent rehearsal,
-classroom feedback, model validation, and physical delivery are separate results.
+The [independent first-use guide](../docs/en/first-use.md)
+([中文](../docs/zh/first-use.md)) also covers the real Host software lifecycle.
+This directory supplies feedback instructions, not an executed independent
+trial. Independent Agent rehearsal, classroom feedback, model validation, and
+physical delivery are separate results.

@@ -1,7 +1,8 @@
 # 场景与 Recipe
 
-通过统一的 `embodirun example`（兼容 `examples/run.sh`） 启动脚本，运行抓取、导航或移动抓取任务。
+通过统一的 `embodirun example` 命令行入口（兼容 `examples/run.sh`），运行抓取、导航或移动抓取任务。
 每个 Recipe 提供环境准备、本地配置、任务执行、输出文件与停止说明。
+验证未合并 PR 时，从其 head 分支安装。新用户或编程 Agent 的实际软件试用见[独立首次上手](first-use.md)。
 
 | 场景 | 演示 | Recipe |
 |---|---|---|
@@ -72,14 +73,19 @@ uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml dry
 ```bash
 uv run --frozen embodirun example init microduck --assets /absolute/asset/root
 CONFIG=examples/local/microduck/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
 uv run --frozen embodirun example "$CONFIG" setup
+uv run --frozen embodirun example "$CONFIG" check --json
 uv run --frozen embodirun example "$CONFIG" check
 uv run --frozen embodirun example "$CONFIG" run
 ```
 
-`check` 校验资源以及 GPU/渲染环境。YAML 选择
+`check --json` 只报告本地路径前提。`check`（不带 `--json`）在本地检查通过后继续执行资源/GPU/渲染预检，
+但不运行学习模型推理。当前完整可选环境尚未完整锁定，也没有纯软件模式，
+执行前先核对 [MicroDuck 前提](microduck-vln.md)。YAML 选择
 本地或 Slurm 执行、episode 数、随机种子、动作限制和视频帧率。
-运行退出时，推理子进程会停止。
+运行退出时，推理子进程会停止；另一终端沿用同一 checkout/配置，通过 `down` 请求关闭该前台 launcher。
 
 ## 查看日志与结果
 
@@ -89,3 +95,4 @@ SO-101 为每个运行时保存命令日志；MicroDuck 和 XLeRobot 的 `result
 
 使用 [推理传输基准测试](inference-transport.md) 进行重复的
 延迟测量。
+[Runtime 成本流程](runtime-value.md)另提供尚未执行的部署对照说明与采集空模板。

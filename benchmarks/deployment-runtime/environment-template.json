@@ -1,0 +1,51 @@
+{
+  "status": "not_run",
+  "comparison_scope": null,
+  "source_versions": {
+    "embodirun_revision": null,
+    "embodirun_local_changes": null,
+    "lerobot_version": null,
+    "model_backend_version": null,
+    "adapter_version": null
+  },
+  "machine": {
+    "os": null,
+    "architecture": null,
+    "cpu": null,
+    "ram_mib": null,
+    "gpu": null,
+    "driver": null,
+    "cuda": null,
+    "node_roles": [],
+    "network_topology": null
+  },
+  "environment": {
+    "python_version": null,
+    "uv_version": null,
+    "package_versions_file": null,
+    "dependency_file": null,
+    "docker_base_image_version": null,
+    "task_environment_fresh": null,
+    "uv_download_cache_state": null,
+    "docker_cache_state": null,
+    "preexisting_sources_assets": null
+  },
+  "workload": {
+    "policy_checkpoint_version": null,
+    "input_dataset_version": null,
+    "dtype": null,
+    "decode_steps": null,
+    "compile_graph_settings": null,
+    "action_horizon": null,
+    "observation_shape_rate": null,
+    "device_count": null,
+    "client_count": null,
+    "seed": null,
+    "warmup_count": null,
+    "readiness_condition": null,
+    "poll_interval_s": null,
+    "timeout_s": null,
+    "resource_sampling_tool_interval_window": null
+  },
+  "unavailable_fields_and_reasons": []
+}

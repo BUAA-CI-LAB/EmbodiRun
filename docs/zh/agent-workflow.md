@@ -17,6 +17,23 @@ Host 根据部署 YAML 和初始化记录确定 Control 服务地址，通过 SS
 [`examples/shared-device-fake.md`](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/shared-device-fake.md)。
 该示例使用模拟设备启动 `ControlHttpServer`，无需机器人或模型检查点。
 
+首次部署按[快速开始](quickstart.md#1)中的真实 `init`/`sync`/`up` 路径执行；
+自包含演练使用临时初始化状态。新用户或编程 Agent 可按[独立首次上手](first-use.md)记录实际执行与求助。
+验证未合并 PR 时，先 checkout 其 head 分支再安装。
+
+软件服务启动后，设置后文使用的变量：
+
+```bash
+CONFIG=examples/shared-device-fake.yaml
+STATE=/absolute/host-state-directory-from-your-startup-command
+RUNTIME=fake-device
+CALLER=example-agent
+SESSION=software-first-use
+```
+
+`STATE` 沿用执行 `init`/`up` 的终端中的值；更换它会选择另一份部署记录。
+下方动作仅供此模拟设备使用；真实设备需完成自身标定、绑定、授权与[安全检查](safety.md)。
+
 ## 保持调用方与会话标识一致
 
 同一工作流中的调用应使用相同的 `--caller-id` 和 `--session-id`。
@@ -38,7 +55,7 @@ Host 根据部署 YAML 和初始化记录确定 Control 服务地址，通过 SS
 
 ```sh
 printf '%s\n' '{"timestamp_s":0,"values":{"type":"joint_position","joint_positions_deg":[0,0,0,0,0],"gripper_position":25},"metadata":{"action_space":"simulated.so101.position.v1"}}' \
-  | embodirun --config "$CONFIG" execute --runtime "$RUNTIME" \
+  | uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" execute --runtime "$RUNTIME" \
       --caller-id "$CALLER" --session-id "$SESSION" \
       --request-id action-1 --action - --steps 1 --json
 ```

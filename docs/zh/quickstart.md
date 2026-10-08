@@ -2,6 +2,8 @@
 
 先用模拟设备走通启动和观测流程，再配置真实机器人。
 
+验证未合并 PR 时，先 checkout 其 head 分支再安装；默认 `main` 可能没有该 PR 的命令。
+
 ## 0. 安装
 
 ```bash
@@ -19,22 +21,32 @@ uv sync --frozen
 `examples/shared-device-fake.yaml` 使用模拟关节和虚拟相机启动 Control 服务，
 无需硬件或模型。你可以通过实际的 Host JSON API 查看设备和观测。
 
+选择未使用的试用目录，并在准备和启动前确认端口 8100 空闲；若被占用，停止本次试用并保留原监听进程。
+后续命令及其他终端中的 Agent 调用沿用同一 `STATE`。
+`--root` 隔离托管环境和源码，`--state-dir` 隔离 Host 记录。
+
 ```bash
 CONFIG=examples/shared-device-fake.yaml
+TRIAL="$PWD/artifacts/first-use-01"
+STATE="$TRIAL/host-state"
+mkdir -p "$PWD/artifacts"
+mkdir "$TRIAL"
 
-uv run embodirun --config "$CONFIG" validate
-uv run embodirun --config "$CONFIG" init
-uv run embodirun --config "$CONFIG" sync --source .
-uv run embodirun --config "$CONFIG" up
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" validate
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" init --root "$TRIAL/managed"
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" sync --source .
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" up
 
-uv run embodirun --config "$CONFIG" describe \
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" describe \
   --runtime fake-device --caller-id example-agent --session-id example-session --json
-uv run embodirun --config "$CONFIG" observe \
-  --runtime fake-device --caller-id example-agent --session-id example-session --json
-uv run embodirun --config "$CONFIG" down
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" observe \
+  --runtime fake-device --caller-id example-agent --session-id example-session --include-robot --json
+uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" down
 ```
 
 `sync --source .` 会将当前工作目录中的源码同步到已准备好的本地部署中。
+`mkdir "$TRIAL"` 报告目录已存在时，先换目录再继续。返回的机器人 metadata 中
+`simulated: true`、`hardware_access: false`。
 `describe` 报告能力，`observe` 返回一条共享观测，
 `media` 按观测 ID 获取帧数据。使用 `execute` 提交一个动作。
 录制、取消等完整操作见
