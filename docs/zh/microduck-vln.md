@@ -17,13 +17,15 @@ MPC 和 ONNX 行走策略负责执行 R2R 导航动作，同时录制第一、�
 
 ```bash
 git submodule update --init third_party/embodiinfer
-cp examples/microduck_vln/example.yaml examples/microduck_vln/example.local.yaml
-# 编辑 YAML，填入资产路径、Python 环境和资源选择。
-bash examples/run.sh examples/microduck_vln/example.local.yaml check
-bash examples/run.sh examples/microduck_vln/example.local.yaml run
+uv sync --frozen
+uv run --frozen embodirun example init microduck --assets /absolute/asset/root
+CONFIG=examples/local/microduck/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" setup
+uv run --frozen embodirun example "$CONFIG" check
+uv run --frozen embodirun example "$CONFIG" run
 ```
 
-该示例在仿真中运行，使用本地准备好的检查点、数据集
+`check` 在目标 Linux 主机执行 GPU/EGL 预检。该示例在仿真中运行，使用本地准备好的检查点、数据集
 和场景资源。示例指南也提供了通过 `sbatch` 提交任务的方法。
 
 ## 参考配置

@@ -85,7 +85,7 @@ def test_microduck_argv_paths_and_legacy_env_are_explicit(tmp_path):
     assert "--check-only" in command
     assert command[command.index("--output") + 1] == str(tmp_path / "result")
     assert command[command.index("--manifest") + 1] == str(example.path.parent / "assets.md5.json")
-    assert command[0].endswith(".venv-microduck/bin/python")
+    assert command[0] == example.python
     assert env["MUJOCO_GL"] == "egl"
     assert "integrations/microduck_vln/src" in env["PYTHONPATH"]
 
@@ -114,8 +114,44 @@ def test_failed_rollout_stops_deployment_and_records_failure(tmp_path, monkeypat
     report = json.loads(next((tmp_path / "outputs").glob("*/run.json")).read_text())
     assert report["status"] == "failed"
     assert report["cleanup_returncode"] == 0
-    output = next((tmp_path / "outputs").iterdir())
+    output = next(path for path in (tmp_path / "outputs").iterdir() if path.is_dir())
     assert (output / report["input_snapshots"][str(deployment)]).read_text() == deployment.read_text()
+
+
+def test_rollout_down_still_stops_host_when_launcher_pointer_is_stale(tmp_path, monkeypatch, capsys):
+    source = runner.ROOT / "examples" / CONFIGS[0]
+    data = yaml.safe_load(source.read_text())
+    data["output_dir"] = str(tmp_path / "outputs")
+    data["parameters"]["deployment"] = str(source.parent / "deployment.yaml")
+    path = tmp_path / "example.yaml"
+    path.write_text(yaml.safe_dump(data))
+    example = runner.Example(path, data)
+
+    def stale_stop(_output):
+        raise RuntimeError("stale pointer")
+
+    monkeypatch.setattr(runner, "stop_owned", stale_stop)
+    monkeypatch.setattr(runner.subprocess, "check_output", lambda *a, **k: "test-revision\n")
+
+    class FakeSupervisor:
+        def __init__(self, *args):
+            self.cancelled = type("Cancelled", (), {"is_set": lambda self: False})()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    monkeypatch.setattr(runner, "Supervisor", FakeSupervisor)
+    executed = []
+    monkeypatch.setattr(runner, "execute", lambda commands, *a, **k: executed.extend(commands))
+
+    assert runner.main([str(path), "down"]) == 2
+    assert executed == [example.host("down")]
+    assert "Local launcher stop unconfirmed: stale pointer" in capsys.readouterr().err
+    report = json.loads(next((tmp_path / "outputs").glob("*/run.json")).read_text())
+    assert report["status"] == "failed"
 
 
 def test_parallel_failure_reaps_other_local_children(tmp_path):

@@ -1,10 +1,10 @@
 from types import SimpleNamespace
 
 import pytest
-from tests.xlerobot_owner.test_motor_diagnostics import setup
-from tests.xlerobot_owner.test_stop_fault_handoff import prepared
 
 from embodirun_xlerobot_owner import hardware
+from tests.xlerobot_owner.test_motor_diagnostics import setup
+from tests.xlerobot_owner.test_stop_fault_handoff import prepared
 
 
 def clocked(robot, bus, monkeypatch, *, until=0.65, alternating=False):

@@ -39,6 +39,8 @@ connect an external service, or build a task loop with the
 Explore [Recipes](examples/README.md) for multiple arms, alternative inference
 backends, and software-only examples. The [support matrix](docs/en/support-matrix.md)
 lists robot, simulator, and model integrations.
+Recipes use the shared `embodirun example` CLI; `examples/run.sh` remains a
+compatible entrypoint for source checkouts.
 
 ## Why EmbodiRun
 

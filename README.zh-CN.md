@@ -35,6 +35,8 @@
 
 [Recipe 索引](examples/README.md)提供多臂共享推理、其他推理后端及纯软件示例。
 机器人、仿真器与模型的支持情况见[支持矩阵](docs/zh/support-matrix.md)。
+Recipe 使用统一的 `embodirun example` 命令行入口；源码 checkout 仍可使用
+兼容的 `examples/run.sh`。
 
 ## 为什么选择 EmbodiRun
 

@@ -7,13 +7,12 @@ import pytest
 
 pytest.importorskip("aiohttp")
 
-from tests.xlerobot_owner.test_hardware import FakeBus, _config
-from tests.xlerobot_owner.test_motor_diagnostics import Packet
-from tests.xlerobot_owner.test_server import HEADERS, TOKEN, station
-
 from embodirun_xlerobot_owner.hardware import HEAD_TILT_NAME, WHEEL_NAMES, HardwareRobot
 from embodirun_xlerobot_owner.server import Platform
 from embodirun_xlerobot_owner.stop_fault_handoff import validate_snapshot
+from tests.xlerobot_owner.test_hardware import FakeBus, _config
+from tests.xlerobot_owner.test_motor_diagnostics import Packet
+from tests.xlerobot_owner.test_server import HEADERS, TOKEN, station
 
 
 def prepared(tmp_path, monkeypatch, *, legacy=False, torque_fault=False):

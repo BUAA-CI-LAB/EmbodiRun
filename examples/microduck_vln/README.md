@@ -66,42 +66,45 @@ creates no copies and never modifies the training adapter.
 
 ## Install and configure
 
-From the EmbodiRun root, prepare a dedicated environment with package access:
+From the EmbodiRun root, create a linked local recipe with your absolute
+external asset root, then install its dedicated environment:
 
 ```bash
-python3.12 -m venv .venv-microduck
-source .venv-microduck/bin/activate
-python -m pip install -e .
-python -m pip install -e './integrations/microduck_vln[full,test]'
-cp examples/microduck_vln/example.yaml examples/microduck_vln/example.local.yaml
+uv sync --frozen
+uv run --frozen embodirun example init microduck --assets /absolute/asset/root
+CONFIG=examples/local/microduck/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" setup
 ```
 
-Edit `example.local.yaml`: set `python` to the dedicated environment and
-`parameters.project_root`, `checkpoint`, `episodes`, and `manifest` to your
-assets. Paths resolve relative to the YAML file. The inference source defaults
-to the pinned submodule; use `parameters.inference_root` for another compatible
-checkout. It is added only to the inference child's import path.
+`init` copies the reference inventory and fills project, checkpoint and episode
+paths. `setup` installs Host from `uv.lock` and the optional integration from
+its declared version ranges in `.venv-microduck`; that integration is not fully
+locked by the Host lock. Edit `example.local.yaml` if your asset layout differs.
+The inference source defaults to the pinned submodule; use
+`parameters.inference_root` for another compatible checkout. It is added only
+to the inference child's import path.
 
 The model profile requires `transformers==4.51.3`; keep it separate from
 Transformers 5.x profiles. Provision packages and weights before running on an
-offline cluster. The launcher does not install packages or download weights.
+offline cluster. `setup` installs packages, but does not download weights or
+external assets.
 
 ## Run
 
-With the Host environment installed via `uv sync --frozen`:
+On the Linux GPU host:
 
 ```bash
-CONFIG=examples/microduck_vln/example.local.yaml
-bash examples/run.sh "$CONFIG" validate
-bash examples/run.sh "$CONFIG" plan
-bash examples/run.sh "$CONFIG" check
-bash examples/run.sh "$CONFIG" run
+CONFIG=examples/local/microduck/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" check
+uv run --frozen embodirun example "$CONFIG" run
 ```
 
 `validate` and `plan` are offline. `check` verifies assets, CUDA, EGL, ONNX,
 MPC and the encoder; `run` starts simulation and its inference child.
 All settings come from the YAML. Outputs are under
-`artifacts/examples/microduck-vln/<timestamp>-run/result/`.
+`examples/local/microduck/runs/<timestamp>-run/result/`.
 
 Set `parameters.slurm: "off"` on a GPU host, or `auto` to request one GPU
 outside an existing allocation. `cpus`, `time`, and optional `partition`
@@ -110,7 +113,7 @@ configure that request. To keep a run alive after SSH disconnects, set
 
 ```bash
 sbatch --gres=gpu:1 --cpus-per-task=4 --time=01:00:00 \
-  --wrap='bash examples/run.sh examples/microduck_vln/example.local.yaml run'
+  --wrap='uv run --frozen embodirun example examples/local/microduck/example.local.yaml run'
 ```
 
 Add your cluster's partition option if needed. Run `sbatch` from the repository
@@ -134,12 +137,14 @@ evaluation, select `data/train/eval_val2_40_valid.jsonl` and set
 `num_episodes: 40`. Episode IDs are metadata, not filenames.
 
 When deliberately changing an asset, checkpoint, or inference source, first
-check compatibility. Point `parameters.manifest` at a **new**
-`assets.local.json`, then provision its inventory:
+check compatibility. `init` already created `assets.local.json` from the
+reference inventory, so retain it for the reference inputs. For a changed
+asset set, point `parameters.manifest` at a **new, absent**
+`assets.revised.local.json`, then provision its inventory:
 
 ```bash
-bash examples/run.sh examples/microduck_vln/example.local.yaml provision
-bash examples/run.sh examples/microduck_vln/example.local.yaml check
+uv run --frozen embodirun example "$CONFIG" provision
+uv run --frozen embodirun example "$CONFIG" check
 ```
 
 Provisioning does not allocate a GPU and refuses to overwrite an existing

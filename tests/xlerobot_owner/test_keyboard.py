@@ -1,15 +1,16 @@
 import asyncio
+import shutil
 import subprocess
 import time
 from pathlib import Path
 
 import pytest
-from tests.xlerobot_owner.test_hardware import _config
-from tests.xlerobot_owner.test_server import HEADERS, station, wait_for
 
 from embodirun_xlerobot_owner.control import InputClock, MappingConfig
 from embodirun_xlerobot_owner.keyboard import KeyboardFrame
 from embodirun_xlerobot_owner.robot import DemoRobot
+from tests.xlerobot_owner.test_hardware import _config
+from tests.xlerobot_owner.test_server import HEADERS, station, wait_for
 
 
 def packet(seq=0, keys=(), **extra):
@@ -193,6 +194,9 @@ def test_base_only_hardware_arm_drive_stop_do_not_write_arm_registers(tmp_path):
 
 
 def test_browser_key_state_machine():
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("Node required for browser key state-machine test")
     source = Path(__file__).parents[2] / "integrations/xlerobot_owner/src/embodirun_xlerobot_owner/web/drive.js"
     script = """
 const assert = require('node:assert/strict');
@@ -209,7 +213,7 @@ k.stop(); assert.equal(k.keys.size, 0); assert.equal(k.active, false);
 k.key('KeyW', true, true); assert.equal(k.keys.size, 0);
 k.enable(); assert.equal(k.keys.size, 0); assert.equal(k.key('KeyX', true), false);
 """
-    subprocess.run(["node", "-e", script, str(source)], check=True)
+    subprocess.run([node, "-e", script, str(source)], check=True)
 
 
 @pytest.mark.asyncio
