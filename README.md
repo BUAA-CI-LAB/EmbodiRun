@@ -143,13 +143,14 @@ uv run --frozen embodirun example "$CONFIG" dry-run
 This XLeRobot rehearsal uses fixtures and opens no robot or model. Use the
 printed `Outputs:` directory for `run.json` and command logs; see
 [outputs and shutdown](examples/README.md#outputs-and-shutdown).
-MicroDuck has a different prerequisite path: its current `setup` installs the
-full optional environment and `check` without `--json` uses CUDA/EGL and external
-assets on a Linux GPU host. `check --json` only reports local paths; it does not
-verify CUDA/EGL. A dedicated Recipe lock is available for direct installation;
-the existing `setup` and Docker installer have not yet been connected to it.
-There is no MicroDuck software-only mode in the current CLI. Follow its Recipe
-before `run`, then use that Recipe's logs and `down` instructions.
+MicroDuck starts with `init` → `validate` → `plan` → `setup --mode software` →
+`check --mode software --json`; this checks configuration and installed metadata
+without scene assets or a GPU. Native setup and Docker use its dedicated Recipe
+lock. Default setup/check mode remains `simulation`: plain simulation `check`
+uses CUDA/EGL and external assets, while its JSON form checks metadata and local
+paths. Follow the [MicroDuck Recipe](docs/en/microduck-vln.md) before `run`,
+then use its logs and `down` instructions. Software checks do not establish
+model inference or navigation success.
 
 For an existing coding Agent, follow [independent first use](docs/en/first-use.md)
 and the [Agent workflow](docs/en/agent-workflow.md). Record actual commands,

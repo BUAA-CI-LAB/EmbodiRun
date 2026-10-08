@@ -62,7 +62,7 @@ EmbodiRun 增加了 YAML 配置、adapter/绑定约束、部署状态、服务�
 | 更新重启 | 使用同一源码版本变更，记录停机、准备、就绪以及保留/重建状态的成本。 |
 | 故障定位 | 注入同一个具体故障，分别记录找到原因和恢复至相同就绪条件的时间。 |
 
-**目前结果待测。** 本仓库没有现成的原生 LeRobot gRPC 到 EmbodiRun 推理接口的兼容 adapter，
+**完整同模型结果仍待测。** 本仓库没有现成的原生 LeRobot gRPC 到 EmbodiRun 推理接口的兼容 adapter，
 也没有完整匹配的对照配置。正式同模型比较前，需要选定支持的策略/设备，取得 checkpoint 与输入，
 实现协议及特征映射，并核对输出和动作限位是否等价。这些是明确的剩余工作，
 现有引擎对比 Recipe 不能提供缺失的 adapter。
@@ -70,7 +70,18 @@ EmbodiRun 增加了 YAML 配置、adapter/绑定约束、部署状态、服务�
 
 较小的现有流程比较**同一个真实 Control 服务、`simulated.joints` 与假相机**的直接启动和 Host 管理。
 它不需要模型资产，可测服务准备、就绪、关闭和软件故障定位。
-此范围不能得出模型加载、warmup、换后端或真机结论；采集空模板也不代表已经完成任何一次成本实测。
+此范围不能得出模型加载、warmup、换后端或真机结论。
+
+[Agent 在 Thor 的实测报告](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/benchmarks/deployment-runtime/results/2026-10-08-thor-software/report.md)
+记录了源码 `3fe4df9`、Python 3.12.3 环境准备完成后，使用同一份 Control 配置的三组交替
+Direct/Host 启动。六次都返回了新鲜模拟观测，并在关闭后确认端口关闭。
+两种入口都在一秒轮询的第二次探针时获得观测，约 0.002 秒的差异不能支持性能收益结论。
+Host 命令退出单独计时；Direct 由操作者请求 SIGINT，实际退出为 -2。
+另一次归任务所有的端口占用故障，两种入口都实际失败并恢复；该阶段的后台负载与启动静置窗口不同。
+
+准备过程需要转传 Git 源码、锁内 wheel、指定任务副本的实际 revision，并选择 managed Python。
+这是有辅助的软件证据；目标机无缓存网络安装、独立人类上手和六项完整同模型成本仍未完成。
+资源占用与人类主动操作时间均未采集，空模板仍供后续测量使用。
 
 ## 准备同原生 LeRobot 后端的对照
 

@@ -1,8 +1,9 @@
 # Deployment and Runtime work
 
 Measure the work required to obtain and maintain a ready deployment. This
-directory supplies a procedure and **empty collection/report templates**, not
-measured results. The model-engine chart elsewhere in this repository measures
+directory supplies a procedure, **empty collection/report templates**, and a
+[prepared software lifecycle report](results/2026-10-08-thor-software/report.md).
+The model-engine chart elsewhere in this repository measures
 a different question. Read the [responsibility comparison](../../docs/en/runtime-value.md)
 ([中文](../../docs/zh/runtime-value.md)) before selecting a workload.
 
@@ -10,7 +11,7 @@ a different question. Read the [responsibility comparison](../../docs/en/runtime
 
 | Scope | Paired routes | Available evidence |
 |---|---|---|
-| Software service management | Direct process startup versus Host management of the same Control service, `simulated.joints`, and fake camera | Existing executable service and Host commands; measurement not yet run. No inference, CUDA, learned-policy, or physical-robot conclusion. |
+| Software service management | Direct process startup versus Host management of the same Control service, `simulated.joints`, and fake camera | [Three prepared startup pairs and a separate occupied-port fault/recovery](results/2026-10-08-thor-software/report.md) executed by an Agent on Thor. One-second probes cannot establish millisecond performance differences. No inference, CUDA, learned-policy, or physical-robot conclusion. |
 | Full policy deployment | Upstream LeRobot deployment versus EmbodiRun, using the same model/backend/hardware and observations | Pending assets, matched configuration, and protocol adapter. No full comparison commands or results are claimed here. |
 
 LeRobot v0.6.1's remote policy server speaks gRPC. EmbodiRun's current model
@@ -145,9 +146,12 @@ a temporary initialized-state fixture rather than preparing a deployment.
 
 ### Prepare the common service
 
-These commands have not been executed on the measurement target for this
-documentation change. They describe the existing command surface, with runtime
-results still pending.
+An [assisted execution at revision `3fe4df9`](results/2026-10-08-thor-software/report.md)
+prepared this service on Thor and measured its subsequent startup/stop. It
+required source, dependency and Python-selection assistance; it was not an
+independent first-use acceptance or an uncached network-install success. The
+commands below describe the existing command surface; record your actual
+source revision, environment and preparation failures.
 
 From the repository root:
 
@@ -166,9 +170,10 @@ If `ss` lists a listener, record `needs_attention` and stop this trial before
 isolates managed sources/environments; `--state-dir` alone does not do that.
 
 ```bash
-uv sync --frozen
+uv sync --frozen --python 3.12
 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" validate
-uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" init --root "$RESULTS/managed"
+UV_PYTHON=3.12 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" init --root "$RESULTS/managed"
+"$RESULTS/managed/shared-device-fake/sources/deploy/.venv-host/bin/python" --version
 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" sync --source .
 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" up
 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" describe \
@@ -177,6 +182,14 @@ uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" observe \
   --runtime fake-device --caller-id runtime-comparison --session-id preparation --include-robot --json
 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" down
 ```
+
+`init` retrieves the configured Git revision before the later `sync --source .`
+overlay. It needs source-network access or explicitly recorded source
+preparation. Selecting the caller's Python does not also select the managed
+Host environment; this no-SDK fake-device reference requests 3.12 through the
+process-local `UV_PYTHON` and verifies the actual managed interpreter. Other
+Recipes can specify different SDK/Python requirements. Record source/ref,
+wheel-transfer or Python-selection assistance as preparation work.
 
 This first pass creates the generated service configuration. Archive its real
 preparation time and operator actions as **Host preparation**, including any
@@ -197,6 +210,7 @@ CONTROL_ENV=/absolute/deploy-environment/from-the-task-state
 SERVICE_ID=control-service-id-from-the-task-state
 CONTROL_SOURCE="$NODE_ROOT/overlays/deploy/current"
 CONTROL_CONFIG="$NODE_ROOT/generated/$SERVICE_ID.control.json"
+CONTROL_LOG="$NODE_ROOT/logs/$SERVICE_ID.log"
 ```
 
 ### Compare direct and Host startup
@@ -241,7 +255,8 @@ uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" up --wait-time
 ```
 
 Use the same HTTP probes and record readiness separately from command exit.
-`up` prints the per-service log path; preserve that log. Finish with:
+Preserve the per-service log at `$CONTROL_LOG`; a startup failure also reports
+its log path. Finish with:
 
 ```bash
 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" down
@@ -265,7 +280,7 @@ as wall time; preserve the original failure sample before recovering.
 | `backend_change` | Start with backend A ready. Stop, apply the same A→B change, install required packages, restart, warm up and obtain the same observation/action readiness. Record changed files, downtime and rejected/failed attempts. | Unavailable with no model. Full scope needs both backend implementations and equivalent policy settings. |
 | `device_extension` | Start with one ready device; add a second equivalent device on the same specified node placement. Keep per-device input and inference workload fixed. Record config/source edits, setup, readiness of both, resources and failures. | A software extension needs an explicitly reviewed second simulated-device configuration; none is supplied as a measured result. Physical expansion needs authorized devices. |
 | `update_restart` | Start with version A ready; apply the same actual source change A→B, stop services, update, prepare only what is needed and restart. Record stopped time, ready time, state retention and any recovery. | Executable after selecting a real revision pair. A no-op restart does not measure an update. |
-| `failure_diagnosis` | With both routes stopped, start a task-owned HTTP process on port 8100, then attempt each route's normal startup. Preserve stderr/service logs and failed startup time. Record when the operator identifies the port collision, stops the task-owned process and obtains the same ready observation. | A concrete no-model software fault; diagnosis and recovery await execution. For full scope, select an equivalent model/device fault and preserve its safety checks. |
+| `failure_diagnosis` | With both routes stopped, start a task-owned HTTP process on port 8100, then attempt each route's normal startup. Preserve stderr/service logs and failed startup time. Record when the operator identifies the port collision, stops the task-owned process and obtains the same ready observation. | A no-model port fault/recovery was [executed once per route](results/2026-10-08-thor-software/report.md); human diagnosis time remains unmeasured. Full same-model six-cost comparisons remain pending and need an equivalent model/device fault with retained safety checks. |
 
 For the port fault, first confirm both task services are stopped and port 8100
 is free. In a separate terminal on the measurement host, start the task-owned

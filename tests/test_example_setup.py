@@ -131,19 +131,16 @@ def test_profile_setup_does_not_need_assets_and_uses_one_dependency_source(tmp_p
     assert command[2] == "microduck"
     for profile in ("snack", "microduck"):
         commands = install_commands(profile, tmp_path / profile)
+        assert len(commands) == 1
         assert "--frozen" in commands[0]
         assert commands[0][commands[0].index("--python") + 1] == "3.12"
-        if profile == "snack":
-            assert len(commands) == 1
-            assert commands[0][commands[0].index("--project") + 1] == str(
-                runner.ROOT / "examples/xlerobot_snack_delivery"
-            )
-            assert commands[0][-2:] == ["--extra", "hardware"]
-            software = install_commands(profile, tmp_path / profile, mode="software")
-            assert "--extra" not in software[0]
-            assert software[0][software[0].index("--project") + 1] == commands[0][commands[0].index("--project") + 1]
-        else:
-            assert str(runner.ROOT / "integrations") in commands[1][-1]
+        project = "xlerobot_snack_delivery" if profile == "snack" else "microduck_vln"
+        assert commands[0][commands[0].index("--project") + 1] == str(runner.ROOT / "examples" / project)
+        assert commands[0][-2:] == ["--extra", "hardware" if profile == "snack" else "simulation"]
+        software = install_commands(profile, tmp_path / profile, mode="software")
+        assert len(software) == 1
+        assert "--extra" not in software[0]
+        assert software[0][software[0].index("--project") + 1] == commands[0][commands[0].index("--project") + 1]
 
 
 def test_duplicate_launch_does_not_remove_first_owners_socket(tmp_path):

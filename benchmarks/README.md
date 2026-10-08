@@ -50,7 +50,10 @@ calibration data local, and record unavailable metadata explicitly.
 
 [Deployment and Runtime work](deployment-runtime/README.md) supplies six paired
 procedures, an existing-command software service comparison, and empty CSV,
-environment and report templates. Results remain pending. It separates direct
+environment and report templates. An Agent has executed
+[three prepared Control startup pairs and a separate port fault/recovery](deployment-runtime/results/2026-10-08-thor-software/report.md)
+on Thor; these coarse software samples do not establish a performance benefit.
+It separates direct
 versus Host management of the same simulated Control service from the full
 same-model LeRobot comparison, which still needs assets and a compatible adapter.
 中文职责说明：[Runtime 的职责与部署成本](../docs/zh/runtime-value.md)。
@@ -59,7 +62,7 @@ same-model LeRobot comparison, which still needs assets and a compatible adapter
 
 | Benchmark | Workload | Status |
 |---|---|---|
-| [Deployment and Runtime work](deployment-runtime/README.md) | Same-service preparation, readiness, updates and diagnosis; six full-policy deployment costs | Procedure and empty templates available; results pending |
+| [Deployment and Runtime work](deployment-runtime/README.md) | Same-service preparation, readiness, updates and diagnosis; six full-policy deployment costs | [Prepared software lifecycle samples](deployment-runtime/results/2026-10-08-thor-software/report.md) available; full same-model LeRobot costs remain pending |
 | Client scaling | 1, 2, 4, and 8 clients sharing one service; `--max-batch 1` and opt-in π0.5 batching | 🟨 待补充 |
 | Physical-node scaling | 1, 2, and 4 inference hosts with a fixed checkpoint and recorded client placement | 🟨 待补充 |
 | Archived transport results | Public raw replay reports and a table/figure generator | 🟨 待补充 |

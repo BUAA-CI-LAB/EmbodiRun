@@ -131,12 +131,13 @@ DM0.5 与 StreamVLN 当前逐请求执行。MicroDuck 使用其专用集成中�
 
 | 阶段 | 所需输入与证据 |
 |---|---|
-| 配置 | `init microduck`、`validate`、`plan` 无需 GPU；执行前填入真实路径。 |
-| 安装 | Python 3.12 / uv 0.12.x；直接 `uv sync --project examples/microduck_vln --frozen` 的基础与 `simulation` profile 共用 Recipe 锁。现有 `setup` 和 Docker 仍按集成版本范围安装。 |
-| 本地检查 | `check --json` 仅报告项目/推理/checkpoint/episode/清单路径，CUDA/EGL 与模型就绪仍未验证。 |
-| 完整预检 | `check`（不带 `--json`）需要 Linux CUDA/NVIDIA EGL、外部 MuJoCo 场景及机器人网格、行走 ONNX、合并 SFT-v3 权重和任务数据；验证场景/MPC/编码器，不运行学习模型 VLN 推理。 |
+| 配置 | `init microduck` → `validate` → `plan` 无需 GPU 或资源；`plan` 只预览仿真命令，不启动子进程。 |
+| 安装 | Python 3.12 / uv 0.12.x；native `setup`、直接 `uv sync --project examples/microduck_vln --frozen` 与 Docker 共用 Recipe 锁。`--mode software` 选择基础依赖；默认的 `--mode simulation` 增加仿真 extra。Setup 不下载模型或场景。 |
+| 软件检查 | `check --mode software` 可带或不带 `--json`，只读取配置与已安装包元数据。CUDA/EGL、资源、依赖导入和模型执行仍未验证。该 Recipe 未实现 fixture `dry-run`。 |
+| 仿真本地检查 | `check --mode simulation --json` 读取已安装包元数据、项目/checkpoint/episode/清单路径与推理源码入口，CUDA/EGL 与模型就绪仍未验证。 |
+| 完整预检 | 普通 `check --mode simulation` 需要 Linux CUDA/NVIDIA EGL、外部 MuJoCo 场景及机器人网格、行走 ONNX、适配的合并 SFT-v3 权重和任务数据；验证场景/MPC/编码器，不运行学习模型 VLN 推理。 |
 | 运行 | 实际推理与录制 episode；任务成功与进程结束状态分别检查。 |
-| 复现剩余工作 | 将现有安装器与 Docker 接入 Recipe 锁；验证新目标主机安装、Native/Docker 一致性及独立首次上手。完整 GPU/模型运行仍待验证。 |
+| 复现证据 | 新目标主机安装、Native/Docker 包一致性与独立首次上手分别记录；软件检查或锁解析不能证明完整 GPU/模型执行。 |
 
 Transformers 4.51.3 应与 5.x profile 分开。此前 A800 参考环境不能证明另一种 GPU 或架构已通过验证。
 另见 [Runtime 成本](runtime-value.md)中待测的部署对照。

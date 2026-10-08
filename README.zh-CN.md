@@ -130,11 +130,12 @@ uv run --frozen embodirun example "$CONFIG" dry-run
 
 这组 XLeRobot 命令使用 fixture，不打开机器人或模型；打印的 `Outputs:` 目录包含 `run.json`
 和命令日志，详见[输出与停止](examples/README.md#outputs-and-shutdown)。
-MicroDuck 的前提不同：当前 `setup` 安装完整可选环境，`check`（不带 `--json`）在 Linux GPU 主机上使用
-CUDA/EGL 和外部资源；`check --json` 只报告本地路径，不验证 CUDA/EGL。
-该 Recipe 已提供直接安装使用的独立依赖锁；现有 `setup` 和 Docker 安装器尚未接入。
-当前 CLI 没有 MicroDuck 纯软件模式。
-按该 Recipe 完成前提后再 `run`，并使用其中的日志和 `down` 说明。
+MicroDuck 先走 `init` → `validate` → `plan` → `setup --mode software` →
+`check --mode software --json`，无需场景资源或 GPU，只检查配置与已安装包元数据。
+Native setup 和 Docker 共用该 Recipe 的独立依赖锁。setup/check 默认仍是 `simulation`：
+普通仿真检查使用 CUDA/EGL 与外部资源，JSON 形式读取元数据和本地路径。
+按 [MicroDuck Recipe](docs/zh/microduck-vln.md) 完成前提后再 `run`，并使用其中的日志和 `down` 说明。
+软件检查不能证明模型推理或导航成功。
 
 让已有编程 Agent 上手时，使用[独立首次上手](docs/zh/first-use.md)与
 [Agent 工作流](docs/zh/agent-workflow.md)，记录实际命令、缺失前提与求助过程；只读文档不算运行验证。

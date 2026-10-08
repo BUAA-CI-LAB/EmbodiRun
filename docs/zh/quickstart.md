@@ -25,6 +25,16 @@ uv sync --frozen
 后续命令及其他终端中的 Agent 调用沿用同一 `STATE`。
 `--root` 隔离托管环境和源码，`--state-dir` 隔离 Host 记录。
 
+新 `init` 先按 `metadata.deploy-commit`（本示例为 `main`）从部署 Git 仓库获取托管源码，再安装环境。
+即使本地 checkout 已安装，仍需 GitHub 访问、有效的 Git TLS 信任和未缓存依赖的下载条件。
+之后的 `sync --source .` 不会替代这次初始准备。初始化失败时，保留命令、退出码及 stdout/stderr 再重试，
+不要继续 `up`。记录实际源码版本、缓存复用，以及维护者提供的镜像、包或配置修复；
+有协助的重试不能算独立首次上手验收或无缓存的完整安装。
+
+本次本地 `simulated.joints` 示例在 `init` 时用 `UV_PYTHON=3.12` 选择托管 Host Python，
+也可填写已核验的 Python 3.12 解释器绝对路径。Checkout CLI 的解释器不会自动决定该环境的 Python；
+初始化后从托管环境中读取并记录实际版本。
+
 ```bash
 CONFIG=examples/shared-device-fake.yaml
 TRIAL="$PWD/artifacts/first-use-01"
@@ -33,7 +43,8 @@ mkdir -p "$PWD/artifacts"
 mkdir "$TRIAL"
 
 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" validate
-uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" init --root "$TRIAL/managed"
+UV_PYTHON=3.12 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" init --root "$TRIAL/managed"
+"$TRIAL/managed/shared-device-fake/sources/deploy/.venv-host/bin/python" --version
 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" sync --source .
 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" up
 

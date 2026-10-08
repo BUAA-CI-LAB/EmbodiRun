@@ -44,8 +44,9 @@ deployment files. It does not overwrite existing configuration. Choose
 hosts, calibration, checkpoint paths, and task settings before deployment.
 For SO-101 and XLeRobot, `embodirun example "$CONFIG" check` lists local
 missing prerequisites without opening devices. It does not establish live
-hardware or model readiness. MicroDuck's `check` additionally runs a GPU/EGL
-scene preflight on the target Linux host.
+hardware or model readiness. MicroDuck's software `check` reads configuration
+and installed metadata; its default simulation `check` without `--json`
+additionally runs a GPU/EGL scene preflight on the target Linux host.
 
 Manifest paths resolve relative to the YAML file. Deployment device and model
 paths belong to the node where they are used. The complete field and command
@@ -77,27 +78,30 @@ uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml dry
 
 ## Run the simulator
 
-Start with the locked configuration-only profile from the repository root:
+Start with the software path from the repository root:
 
 ```bash
+uv sync --frozen --python 3.12
+uv run --frozen embodirun example init microduck
+CONFIG="$PWD/examples/local/microduck/example.local.yaml"
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" setup --mode software
 RECIPE_ENV="$PWD/.venv-microduck"
-UV_PROJECT_ENVIRONMENT="$RECIPE_ENV" uv sync \
-  --project examples/microduck_vln --frozen --python 3.12 --no-default-groups
-"$RECIPE_ENV/bin/embodirun" example init microduck --assets /absolute/asset/root
-CONFIG=examples/local/microduck/example.local.yaml
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" validate
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" plan
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --json
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --mode software --json
 ```
 
-`check --json` reports local path prerequisites only. `check` without `--json`
-continues into asset/GPU/rendering preflight after the local checks pass; it
-does not run learned-model inference. Follow [MicroDuck setup](microduck-vln.md)
-to provide the scene/checkpoint, install the locked `simulation` extra on Linux
-and execute `check` and `run`. The CLI has no MicroDuck `--mode software` option;
-the existing `setup` and Docker installer have not yet adopted the new lock.
-The YAML selects
-local or Slurm execution, episodes, seed, action limit, and video frame rate.
+Software `check` works with or without `--json` and leaves assets, CUDA/EGL,
+dependency imports and model execution unverified. No scene or inference process
+starts. `plan` only previews a simulation command; MicroDuck has no fixture
+`dry-run`. Both setup modes use the Recipe lock, as do its Docker targets.
+Follow [MicroDuck setup](microduck-vln.md) to provide the external scene,
+compatible checkpoint, episodes, inventory and pinned inference source, then
+use `setup --mode simulation` on Linux. Simulation `check --json` reads installed
+metadata and local paths; simulation `check` without `--json` continues into
+asset/GPU/rendering preflight. The default setup/check mode is `simulation`.
+Preflight does not run learned-model inference. The YAML selects local or Slurm
+execution, episodes, seed, action limit and video frame rate.
 The inference child stops when the run exits; `down` from another terminal
 with the same checkout/configuration requests this foreground launcher's shutdown.
 
@@ -111,5 +115,8 @@ delivery events and proposals.
 
 Use the [inference transport benchmark](inference-transport.md) for repeated
 latency measurements.
-The separate [Runtime cost procedure](runtime-value.md) supplies unexecuted
-deployment comparison instructions and empty collection templates.
+The separate [Runtime cost procedure](runtime-value.md) links an Agent's report
+of three prepared-software startup/stop pairs and a separate occupied-port
+fault/recovery per route, alongside empty collection templates. Full same-model
+native LeRobot comparison, the six deployment-cost procedures and human
+diagnosis time remain unmeasured.

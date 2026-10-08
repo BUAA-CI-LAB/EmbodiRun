@@ -37,7 +37,8 @@ uv run --frozen embodirun example "$CONFIG" plan
 随后填写设备路径、SSH 主机、标定、检查点路径和任务设置。
 `examples/local/` 会被 Git 忽略。SO-101 和 XLeRobot 的 `check`
 只列出本地缺失前提，不打开设备；它不能证明机器人、相机、模型或停止反馈已就绪。
-MicroDuck 的 `check` 还会在目标 Linux 主机执行 GPU/EGL 场景预检。
+MicroDuck 软件模式的 `check` 读取配置与已安装包元数据；默认仿真模式的 `check`
+（不带 `--json`）还会在目标 Linux 主机执行 GPU/EGL 场景预检。
 
 示例配置中的相对路径以 YAML 所在目录为基准；部署配置中的设备和模型路径则以对应节点为准。
 完整字段和命令见 [examples/README.md](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/README.md)。
@@ -67,24 +68,26 @@ uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml dry
 
 ## 在仿真中运行
 
-先在仓库根目录安装锁定的配置环境：
+先在仓库根目录走软件流程：
 
 ```bash
+uv sync --frozen --python 3.12
+uv run --frozen embodirun example init microduck
+CONFIG="$PWD/examples/local/microduck/example.local.yaml"
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" setup --mode software
 RECIPE_ENV="$PWD/.venv-microduck"
-UV_PROJECT_ENVIRONMENT="$RECIPE_ENV" uv sync \
-  --project examples/microduck_vln --frozen --python 3.12 --no-default-groups
-"$RECIPE_ENV/bin/embodirun" example init microduck --assets /absolute/asset/root
-CONFIG=examples/local/microduck/example.local.yaml
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" validate
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" plan
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --json
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --mode software --json
 ```
 
-`check --json` 只报告本地路径前提。`check`（不带 `--json`）在本地检查通过后继续执行资源/GPU/渲染预检，
-但不运行学习模型推理。完整运行前，按照 [MicroDuck 环境搭建](microduck-vln.md) 提供场景/checkpoint，
-在 Linux 上安装锁定的 `simulation` extra，再执行 `check` 和 `run`。
-CLI 没有 MicroDuck `--mode software` 选项，现有 `setup` 和 Docker 安装器尚未接入新锁。YAML 选择
-本地或 Slurm 执行、episode 数、随机种子、动作限制和视频帧率。
+软件模式的 `check` 可带或不带 `--json`，外部资源、CUDA/EGL、依赖导入和模型执行仍未验证，
+不会启动场景或推理进程。`plan` 只预览仿真命令；MicroDuck 没有 fixture `dry-run`。
+两种 setup 模式及 Docker target 共用 Recipe 锁。完整运行前，按 [MicroDuck 环境搭建](microduck-vln.md)
+提供外部场景、适配 checkpoint、episode、资源清单及固定推理来源，再在 Linux 上执行
+`setup --mode simulation`。仿真模式的 `check --json` 读取已安装包元数据和本地路径；
+仿真模式的 `check`（不带 `--json`）继续执行资源/GPU/渲染预检。setup/check 默认是 `simulation`。
+场景预检不运行学习模型推理。YAML 选择本地或 Slurm 执行、episode 数、随机种子、动作限制和视频帧率。
 运行退出时，推理子进程会停止；另一终端沿用同一 checkout/配置，通过 `down` 请求关闭该前台 launcher。
 
 ## 查看日志与结果
@@ -95,4 +98,6 @@ SO-101 为每个运行时保存命令日志；MicroDuck 和 XLeRobot 的 `result
 
 使用 [推理传输基准测试](inference-transport.md) 进行重复的
 延迟测量。
-[Runtime 成本流程](runtime-value.md)另提供尚未执行的部署对照说明与采集空模板。
+[Runtime 成本流程](runtime-value.md)另提供 Agent 已执行的三组环境准备后软件启停、
+每种入口一次单独的端口占用故障/恢复报告，以及采集空模板。
+完整同模型原生 LeRobot 对照、六类部署成本与人类诊断时间仍未测。

@@ -48,17 +48,32 @@ Control 凭证文件已从 Git、Docker 上下文排除。checkout 的 Host 环�
 | `setup --mode software` | 不含 owner 或 PyTorch 的小运行环境 | `check --mode software --json`，再执行 fixture `dry-run` |
 | `setup --mode hardware` | 完整 owner extra，含锁定 LeRobot、CPU PyTorch、相机和录制依赖 | `check --mode hardware --json`，再由操作员核验 |
 
-省略 `--mode` 时，`setup` / `check` 默认是 hardware。硬件检查将安装的 LeRobot 包父目录
+XLeRobot 省略 `--mode` 时，`setup` / `check` 默认是 hardware。硬件检查将安装的 LeRobot 包父目录
 报告为 `environment.sdk_src`，可填入 `hardware.local.json` 的 `sdk_src`；自备 SDK checkout
 需单独核验版本。安装依赖不会填好标定、设备、路线或提供模型检查点，推理服务单独运行。
-MicroDuck 使用独立 GPU 集成，按其声明的版本范围安装，完整依赖树不由根 `uv.lock` 锁定。
+MicroDuck 默认使用独立的 `.venv-microduck` 环境。Native setup 与容器目标都使用
+`examples/microduck_vln/uv.lock`、Python 3.12 和 uv 0.12.x。
+`setup --mode software` 安装小型 CLI/集成环境；`check --mode software --json`
+检查环境与配置，不需要资源、GPU 或运行中的场景。`setup --mode simulation` 安装同一锁的
+`simulation` extra，加入仿真与推理依赖。MicroDuck 省略 mode 时默认 simulation；
+安装依赖不会提供资源，也不能证明 CUDA/EGL 或模型就绪。见 [MicroDuck Recipe](microduck-vln.md)。
+
+在 Ubuntu 24.04 aarch64 上，MicroDuck 软件验证的 native 环境（Python 3.12.3）
+与 Docker 环境（Python 3.12.14）安装了相同的 14 个锁定包。两者都使用 Python 3.12，
+补丁版本不同；两个入口的普通检查与 JSON 检查都通过。首次无缓存 native 在线 setup
+达到外部设置的 180 秒测试上限（受控中断，退出 130），随后使用本轮新下载 wheel 辅助，
+正常 frozen setup 通过。空缓存 Docker build 达到外部设置的 600 秒测试上限
+（受控中断，退出 130），同一生产 Dockerfile 的缓存续建通过（退出 0）。
+这些结果不能证明无缓存首次安装能快速完成，也不是独立用户首次复现验收。
+一次全新 native 完整 profile 安装也在完成前达到 600 秒测试上限；包导入与 CUDA/EGL
+探针未执行，本轮没有构建完整 Docker 目标，场景和模型仍待验收。
 
 初始 `uv sync` 或 `docker compose build` 在 Recipe CLI 前失败时，尚无 Recipe 的
 `Outputs:` 或 `run.json`。将终端 stdout/stderr 保存到自行选择的日志文件，记录完整命令与退出码。
 Recipe setup 期间查看 `Outputs:` 目录内的 `command-0.log`。保留首条失败和退出码，
 修复原因后重试同一模式。日志明确报 native uv HTTP read timeout 时，可临时执行
 `UV_HTTP_TIMEOUT=300 uv run --frozen embodirun example "$CONFIG" setup --mode software`
-（失败的是 hardware 命令时重试 hardware）。宿主变量不会自动进入 `docker compose build`。
+（按原失败模式重试：XLeRobot 用 `hardware`，完整 MicroDuck 用 `simulation`）。宿主变量不会自动进入 `docker compose build`。
 记录下载缓存与重试情况；软件演练耗时不能代表完整 owner 安装耗时。
 
 XLeRobot `check` 是只读本地检查。即使报告 `passed`，真实标定、相机图像、模型输出、
@@ -142,12 +157,15 @@ uv sync --frozen --extra wireless
 git submodule update --init third_party/embodiinfer
 ```
 
-仓库 `Dockerfile` 提供 `host`、`xlerobot-software`、`xlerobot`、`microduck` 四个目标。
+### 容器 {#containers}
+
+仓库 `Dockerfile` 提供 `host`、`xlerobot-software`、`xlerobot`、`microduck-software`、`microduck` 五个目标。
 在目标 Linux 主机构建；构建 `microduck` 前先初始化上述固定子模块：
 
 ```bash
 docker compose build host
 docker compose build xlerobot-software
+docker compose build microduck-software
 docker compose --profile hardware build xlerobot
 docker compose --profile gpu build microduck
 ```
@@ -170,6 +188,22 @@ docker compose run --rm --user "$(id -u):$(id -g)" xlerobot-software /workspace/
 标定或检查点。XLeRobot 软件/硬件镜像与 native setup 使用同份 Recipe 项目和锁；
 通用 `host` 仍使用根项目的 Host 依赖树。
 
+MicroDuck 软件镜像采用相同的离线配置流程，不需要 GPU runtime、仿真依赖、资源或检查点：
+
+```bash
+mkdir -p examples/local
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software init microduck --output /workspace/microduck
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software /workspace/microduck/example.local.yaml validate
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software /workspace/microduck/example.local.yaml plan
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software /workspace/microduck/example.local.yaml check --mode software --json
+```
+
+镜像构建时已经安装所选环境，容器内跳过 native `setup`。
+完整 `microduck` 镜像安装同一锁的 `simulation` extra 和固定版本推理源码。
+准备仿真时，通过 `MICRODUCK_ASSETS` 提供外部资源根目录，并用 `--assets /assets`
+初始化另一份 Recipe；见 [Recipe 的 Docker 步骤](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/microduck_vln/README.md#docker)。
+资源挂载保持只读。软件检查通过不能证明 CUDA/EGL、资源兼容性、模型推理或 episode rollout 已验收。
+
 native manifest 转 Docker 前先备份。顶层 `python` 优先于镜像的
 `EMBODIRUN_SCENE_PYTHON`，宿主解释器路径在容器中不可用。
 仅去掉 Docker 副本的 `python`，让镜像选择 `/opt/venv/bin/python`，保留其他配置和标定。
@@ -183,7 +217,7 @@ task 与 routes 及其路径引用，保留原始文件。
 自备 SDK 时显式挂载并核验版本。模型推理单独运行。
 GPU profile 使用已配置的 NVIDIA 容器运行时（Thor 的 NVIDIA CSV 模式
 要求 `runtime: nvidia`）并需要外部资源。默认 Compose 命令只显示
-帮助。四个服务通过 Compose 项目内的 `/tmp` named volume 共享私有 launcher Unix socket。
+帮助。五个服务通过 Compose 项目内的 `/tmp` named volume 共享私有 launcher Unix socket。
 后开的 `docker compose run` 使用与运行中 launcher 相同的 Compose 项目、宿主 UID/GID
 和配置，就可通过 Recipe `down` 联系它；从同一 checkout 操作，或每次使用相同的 `-p NAME`。
 该 volume 用于 launcher IPC，不是依赖缓存；私有目录/socket 权限与清理确认仍然保留。

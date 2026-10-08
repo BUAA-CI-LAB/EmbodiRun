@@ -1,0 +1,5 @@
+usage: embodirun-control-serve [-h] --config CONFIG [--state-dir STATE_DIR]
+                               [--token-file TOKEN_FILE]
+                               [--recording-dir RECORDING_DIR]
+                               [--recording-id RECORDING_ID]
+embodirun-control-serve: error: [Errno 98] Address already in use

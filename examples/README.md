@@ -118,11 +118,11 @@ and episode manifest.
 | Command | SO-101 rollout | XLeRobot | MicroDuck |
 |---|---|---|---|
 | `validate` / `plan` | Offline configuration / command preview | Same | Same; assets need not be installed |
-| `setup` | Host `init`, then sync this checkout | `--mode software` for the small runtime; `--mode hardware` for full owner, both from the Recipe lock | Install Host from `uv.lock` and MicroDuck integration |
+| `setup` | Host `init`, then sync this checkout | `--mode software` for the small runtime; `--mode hardware` for full owner, both from the Recipe lock | Locked Recipe base via `--mode software`; simulation extra via `--mode simulation` (default) |
 | `up --allow-hardware` | Start model and robot services | Start owner and Control in the foreground | Inference starts with `run` |
 | `run` | Concurrent bounded rollouts; requires `--allow-hardware` | Supervised delivery; requires `--allow-hardware` | Launch simulation and inference |
 | `dry-run` | — | Fixture-only task rehearsal | — |
-| `check` | Report local placeholders and node-owned prerequisites | Read-only diagnostics for `--mode software` or `--mode hardware`; `--json` includes issues and next actions | `--json`: local paths only; without `--json`: continue into CUDA/EGL/asset preflight after paths pass |
+| `check` | Report local placeholders and node-owned prerequisites | Read-only diagnostics for `--mode software` or `--mode hardware`; `--json` includes issues and next actions | Software: configuration and installed metadata; simulation `--json`: metadata, local paths and inference source entrypoint; plain simulation: continue into CUDA/EGL/asset preflight |
 | `down` | Stop this deployment | Ask this recipe's foreground launcher to stop | Ask this recipe's foreground launcher to stop |
 
 XLeRobot `setup` / `check` default to hardware mode when `--mode` is omitted.
@@ -132,9 +132,13 @@ exits 0 with `status: "passed"` or 2 with `needs_attention`; resolve the listed
 `verified` from `unverified` so its scope remains visible.
 
 `check` is a prerequisite check, not proof that a robot, model, camera, or stop
-feedback is ready. MicroDuck `check --json` never performs scene/GPU preflight.
-The MicroDuck scene preflight without `--json` uses GPU resources; run it on
-the target Linux GPU host. Hardware examples require calibrated devices, a working emergency stop, and an
+feedback is ready. MicroDuck `setup` / `check` default to `simulation`; choose
+`--mode software` explicitly for offline configuration and metadata checks.
+Software `check` works with or without `--json` and starts no launcher, scene
+or inference process. Simulation `check --json` leaves CUDA/EGL and model
+readiness unverified; plain `check --mode simulation` continues into scene
+preflight on the target Linux GPU host after its local prerequisites pass.
+Hardware examples require calibrated devices, a working emergency stop, and an
 operator. `--allow-hardware` permits startup or motion; it does not skip action
 limits or XLeRobot's confirmation gates. Stop one deployment before starting
 another that uses the same robot or ports.

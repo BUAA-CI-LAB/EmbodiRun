@@ -13,47 +13,54 @@ MPC 和 ONNX 行走策略负责执行 R2R 导航动作，同时录制第一、�
 
 ## 运行示例
 
-先在仓库根目录安装锁定的轻量环境，并生成联动配置：
+先在仓库根目录走软件流程，无需场景资源、推理子模块、Torch 或 GPU：
 
 ```bash
+uv sync --frozen --python 3.12
+uv run --frozen embodirun example init microduck
+CONFIG="$PWD/examples/local/microduck/example.local.yaml"
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" setup --mode software
 RECIPE_ENV="$PWD/.venv-microduck"
-UV_PROJECT_ENVIRONMENT="$RECIPE_ENV" uv sync \
-  --project examples/microduck_vln --frozen --python 3.12 --no-default-groups
-"$RECIPE_ENV/bin/embodirun" example init microduck --assets /absolute/asset/root
-CONFIG=examples/local/microduck/example.local.yaml
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" validate
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" plan
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --json
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --mode software --json
 ```
 
-基础 profile 支持配置和帮助命令，无需 Torch、MuJoCo 或模型资源；`check --json` 会报告
-缺失的外部路径。运行完整示例时，在 Linux GPU 目标上提供资源并安装完整依赖。
-在仓库根目录执行下面的完整代码块，新终端也重新设置变量。代码使用默认环境和配置；
-如果使用自定义路径，请改为准备阶段使用的同一环境目录与配置文件的绝对路径。
-自定义场景解释器通过 `EMBODIRUN_SCENE_PYTHON` 或配置中的 `python` 指定；
-显式 YAML `python` 优先，应保持它与所选环境一致：
+`init` 保留已有目录；再次试用时使用 `--output /absolute/new/directory`，并沿用新生成的配置路径。
+`validate` 和 `plan` 离线运行；`plan` 只预览仿真命令，不执行它。
+软件模式的 `check`（带或不带 `--json`）读取配置与已安装包的元数据，
+CUDA/EGL、外部资源、依赖导入与模型执行仍未验证。该 Recipe 没有 fixture `dry-run`。
+
+完整仿真需要 Linux GPU 目标，并在清单中填写外部场景根目录、适配的合并 SFT-v3 checkpoint、
+episode 与资源清单。`setup` 安装依赖，不下载这些资源。
+在仓库根目录执行下面的代码块，新终端也重新设置变量。代码使用默认环境和配置；
+自定义路径请沿用之前环境目录与配置文件的绝对路径。
+自定义场景解释器通过 `EMBODIRUN_SCENE_PYTHON` 或配置中的 `python` 指定；显式 YAML `python`
+优先，应保持它与所选环境一致：
 
 ```bash
 RECIPE_ENV="$PWD/.venv-microduck"
 CONFIG="$PWD/examples/local/microduck/example.local.yaml"
 git submodule update --init third_party/embodiinfer
-UV_PROJECT_ENVIRONMENT="$RECIPE_ENV" uv sync \
-  --project examples/microduck_vln --frozen --python 3.12 --no-default-groups \
-  --extra simulation
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" run
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" setup --mode simulation
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --mode simulation --json && \
+  "$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --mode simulation && \
+  "$RECIPE_ENV/bin/embodirun" example "$CONFIG" run
 ```
 
-`validate` 和 `plan` 离线运行。`check --json` 只报告本地路径前提，CUDA/EGL 与场景/模型就绪仍未验证。
-`check`（不带 `--json`）在本地前提通过后，继续在 Linux GPU 目标上执行完整
-资源/CUDA/EGL/ONNX/MPC/视频编码器预检。预检通过不证明学习模型推理或导航成功；
+`setup` 与 `check` 默认是 `simulation`；软件流程每次显式使用 `--mode software`。
+仿真模式的 `check --json` 读取已安装包元数据、本地资源路径及推理源码入口，
+CUDA/EGL 与场景/模型就绪仍未验证。仿真模式的 `check`（不带 `--json`）在本地前提通过后，
+继续执行资源/CUDA/EGL/ONNX/MPC/视频编码器预检。预检通过不证明学习模型推理或导航成功；
 `run` 才启动仿真 episode 和本轮持有的推理子进程。
 
-直接安装的两个 profile 共用 `examples/microduck_vln/pyproject.toml` 和 `uv.lock`。
-当前 `setup` 与 Docker target 仍使用按集成版本范围安装的旧安装器，尚未接入这个锁；
-CLI 也仍没有 MicroDuck `--mode software` 选项。新目标主机安装、Native/Docker 一致性
-与 GPU/模型验证仍待完成。Transformers 4.51.3 环境应与 5.x 模型环境分开。
-实际执行记录见[独立首次上手](first-use.md)。
+Native `setup`、直接 `uv sync` 与 `microduck-software` / `microduck` Docker target
+共用 `examples/microduck_vln/pyproject.toml` 和 `uv.lock`。
+软件模式选择基础 profile，仿真模式增加 `--extra simulation`。
+新目标主机安装、Native/Docker 一致性与 GPU/模型执行分别记录验证结果；
+锁解析或软件检查通过不能证明后几项。Docker 命令见示例指南。
+Transformers 4.51.3 环境应与 5.x 模型环境分开。
+按[独立首次上手](first-use.md)记录实际执行。
 
 Recipe 打印 `Outputs:`，运行目录包含 `run.json`、命令日志与 `result/`；
 其中可查看 `preflight.json`、`run.log`、`inference.log`。`run` 退出时清理其子进程。

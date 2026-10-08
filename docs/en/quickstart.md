@@ -30,6 +30,21 @@ existing listener. Keep the same `STATE` value for all commands, including Agent
 calls in another terminal. `--root` isolates managed environments and sources;
 `--state-dir` isolates the Host record.
 
+A fresh `init` fetches managed source from the deployment Git repository at
+`metadata.deploy-commit` (`main` in this example), then installs its environment.
+It needs GitHub access, working Git TLS trust and access to any uncached
+dependencies even after the local checkout is installed. `sync --source .` runs afterward and
+does not replace that initial preparation. If initialization fails, save the
+command, exit code and stdout/stderr before retrying; do not continue to `up`.
+Record actual source revisions, cache reuse and any maintainer-supplied mirror,
+packages or configuration repairs; an assisted retry is not independent
+first-use acceptance or an uncached end-to-end installation.
+
+For this local `simulated.joints` example, choose the managed Host Python with
+`UV_PYTHON=3.12` on `init`, or a verified absolute Python 3.12 interpreter path.
+The checkout CLI's interpreter does not select that environment's Python;
+record the actual version from the managed environment after initialization.
+
 ```bash
 CONFIG=examples/shared-device-fake.yaml
 TRIAL="$PWD/artifacts/first-use-01"
@@ -38,7 +53,8 @@ mkdir -p "$PWD/artifacts"
 mkdir "$TRIAL"
 
 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" validate
-uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" init --root "$TRIAL/managed"
+UV_PYTHON=3.12 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" init --root "$TRIAL/managed"
+"$TRIAL/managed/shared-device-fake/sources/deploy/.venv-host/bin/python" --version
 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" sync --source .
 uv run --frozen embodirun --state-dir "$STATE" --config "$CONFIG" up
 

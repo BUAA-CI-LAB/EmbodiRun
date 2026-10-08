@@ -14,55 +14,63 @@ local GPU and Slurm modes, custom episode files, output schemas and troubleshoot
 
 ## Run the example
 
-Install the small locked environment first and prepare the linked configuration
-from the repository root:
+Start with the software path from the repository root. It needs no scene assets,
+inference submodule, Torch or GPU:
 
 ```bash
+uv sync --frozen --python 3.12
+uv run --frozen embodirun example init microduck
+CONFIG="$PWD/examples/local/microduck/example.local.yaml"
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" setup --mode software
 RECIPE_ENV="$PWD/.venv-microduck"
-UV_PROJECT_ENVIRONMENT="$RECIPE_ENV" uv sync \
-  --project examples/microduck_vln --frozen --python 3.12 --no-default-groups
-"$RECIPE_ENV/bin/embodirun" example init microduck --assets /absolute/asset/root
-CONFIG=examples/local/microduck/example.local.yaml
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" validate
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" plan
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --json
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --mode software --json
 ```
 
-The base profile supports configuration and help without Torch, MuJoCo or model
-assets. Missing external paths are reported by `check --json`. To run the full
-example, supply the assets and use a Linux GPU target. Run the following from
-the checkout root, including in a new terminal. The assignments use the default
-environment and manifest; for custom paths, replace them with the same absolute
-environment directory and manifest used during preparation. Select a custom
-scene environment with `EMBODIRUN_SCENE_PYTHON` or the manifest's `python` field;
-an explicit YAML `python` takes precedence, so keep it consistent with that
-environment:
+`init` preserves an existing directory; use `--output /absolute/new/directory`
+and that manifest path for another trial. `validate` and `plan` are offline;
+`plan` previews a simulation command without executing it. Software `check`,
+with or without `--json`, reads configuration and installed package metadata.
+CUDA/EGL, external assets, dependency imports and model execution remain
+unverified. This Recipe has no fixture `dry-run`.
+
+For full simulation, use a Linux GPU target and fill in the manifest's external
+scene root, compatible merged SFT-v3 checkpoint, episodes and asset inventory.
+`setup` installs dependencies; it does not download these resources. Run the
+following from the checkout root, including in a new terminal. The assignments
+use the default environment and manifest; for custom paths, use the same
+absolute environment directory and manifest as before. Select a custom scene
+environment with `EMBODIRUN_SCENE_PYTHON` or the manifest's `python` field; an
+explicit YAML `python` takes precedence, so keep it consistent:
 
 ```bash
 RECIPE_ENV="$PWD/.venv-microduck"
 CONFIG="$PWD/examples/local/microduck/example.local.yaml"
 git submodule update --init third_party/embodiinfer
-UV_PROJECT_ENVIRONMENT="$RECIPE_ENV" uv sync \
-  --project examples/microduck_vln --frozen --python 3.12 --no-default-groups \
-  --extra simulation
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check
-"$RECIPE_ENV/bin/embodirun" example "$CONFIG" run
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" setup --mode simulation
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --mode simulation --json && \
+  "$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --mode simulation && \
+  "$RECIPE_ENV/bin/embodirun" example "$CONFIG" run
 ```
 
-`validate` and `plan` are offline. `check --json` reports local path prerequisites
-and leaves CUDA/EGL and scene/model readiness unverified. `check` without
-`--json` continues into the full asset/CUDA/EGL/ONNX/MPC/video-encoder preflight
-on the Linux GPU target after the local prerequisites pass. A passed preflight
-does not prove learned-model inference or navigation success; `run` starts those
-simulation episodes and its owned inference child.
+`setup` and `check` default to `simulation`; use `--mode software` explicitly
+for the software path. Simulation `check --json` reads installed metadata,
+local resource paths and the inference source entrypoint; it leaves CUDA/EGL
+and scene/model readiness unverified. Simulation `check` without `--json`
+continues into asset/CUDA/EGL/ONNX/MPC/video-encoder preflight after those local
+checks pass. A passed preflight does not prove learned-model inference or
+navigation success; `run` starts simulation episodes and its owned inference
+child.
 
-The direct install uses `examples/microduck_vln/pyproject.toml` and `uv.lock` for
-both profiles. The existing `setup` and Docker target still use the earlier
-installer with integration version ranges; they have not been connected to
-this lock. The CLI still has no MicroDuck `--mode software` option. Fresh target
-installation, native/Docker parity and GPU/model validation remain pending.
+Native `setup`, direct `uv sync` and the `microduck-software` / `microduck`
+Docker targets use `examples/microduck_vln/pyproject.toml` and `uv.lock`.
+Software selects the base profile; simulation adds `--extra simulation`.
+Fresh target installation, native/Docker parity and GPU/model execution are
+separate validation results; a resolved lock or successful software check does
+not establish them. Docker commands are in the example guide.
 Keep this Transformers 4.51.3 environment separate from Transformers 5.x model profiles.
-See [independent first use](first-use.md) for the actual-execution record.
+Use [independent first use](first-use.md) to record the actual execution.
 
 The Recipe prints `Outputs:`; under its run directory, inspect `run.json`,
 command logs and `result/` files, including `preflight.json`, `run.log` and

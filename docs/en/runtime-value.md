@@ -80,7 +80,7 @@ procedures, collection fields, and an empty report template.
 | Update and restart | The same source-version change; measure stopped time, preparation, readiness, and retained/reinitialized state. |
 | Diagnose a failure | The same deliberate failure, time to identify its cause, and time to restore the same ready condition. |
 
-**Results are pending.** The current repository has no ready native LeRobot
+**Full same-model results are pending.** The current repository has no ready native LeRobot
 gRPC-to-EmbodiRun inference adapter or matched full comparison configuration.
 Before a full model comparison, select a supported policy/device, obtain the
 checkpoint and inputs, implement the required protocol and feature mapping,
@@ -93,8 +93,23 @@ The smaller available procedure compares direct startup and Host management of
 the **same real Control service with `simulated.joints` and a fake camera**.
 It can measure service preparation, readiness, shutdown, and software failure
 diagnosis without model assets. Model loading, warmup, backend changes, and
-physical-device conclusions remain unavailable in that scope. No recorded
-software or full-model cost results are supplied by the empty templates.
+physical-device conclusions remain unavailable in that scope.
+
+An [Agent-run Thor report](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/benchmarks/deployment-runtime/results/2026-10-08-thor-software/report.md)
+records three alternating Direct/Host startup pairs using prepared source,
+Python 3.12.3 environment and the same generated Control configuration at
+revision `3fe4df9`. All six returned a fresh simulated observation and stopped
+with the endpoint closed. Both routes became observable on the second one-second
+probe, so the roughly 0.002-second difference supports no performance-benefit
+claim. Host command exit was recorded separately; intentional Direct SIGINT
+exited -2. A separate owned-port fault failed on both routes and recovered.
+Its later background-load conditions differ from the quiet startup window.
+
+Preparation needed relayed Git source/locked wheels, an explicit task revision,
+and managed-Python selection. This is assisted software evidence; uncached
+target installation, independent human first use and the six full-model costs
+remain open. Resource and active human-time fields are unavailable. Empty
+templates remain available for further measurements.
 
 ## Prepare a comparison with the native LeRobot backend
 

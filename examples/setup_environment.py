@@ -14,11 +14,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PYTHON_VERSION = "3.12"
 SNACK_PROJECT = ROOT / "examples/xlerobot_snack_delivery"
+MICRODUCK_PROJECT = ROOT / "examples/microduck_vln"
 PROFILES = {
-    "host": (".venv", None),
-    "snack": (".venv-xlerobot-snack", "xlerobot_owner[hardware,camera,recording,web]"),
-    "microduck": (".venv-microduck", "microduck_vln[full]"),
+    "host": ".venv",
+    "snack": ".venv-xlerobot-snack",
+    "microduck": ".venv-microduck",
 }
+RECIPE_PROJECTS = {"snack": SNACK_PROJECT, "microduck": MICRODUCK_PROJECT}
 
 
 class _SetupCancelled(Exception):
@@ -57,7 +59,7 @@ def _run_install(command: list[str], env: dict[str, str]) -> None:
 
 def environment_path(kind: str) -> Path:
     """Return the default isolated environment for a scene."""
-    return ROOT / PROFILES[kind][0]
+    return ROOT / PROFILES[kind]
 
 
 def environment_for_python(python: str) -> Path:
@@ -73,30 +75,46 @@ def environment_for_python(python: str) -> Path:
     return environment
 
 
-def install_commands(kind: str, environment: Path, *, minimal: bool = False, mode: str = "hardware") -> list[list[str]]:
-    """Use the recipe lock for XLeRobot and retain the other integration profiles."""
+def recipe_mode(kind: str, mode: str | None = None) -> str:
+    """Select the recipe's default profile and explain unsupported modes."""
+    modes = {"snack": ("software", "hardware"), "microduck": ("software", "simulation")}
+    if kind not in modes:
+        if mode not in {None, "hardware"}:
+            raise ValueError("--mode is available only for XLeRobot and MicroDuck setup/check")
+        return "hardware"
+    choices = modes[kind]
+    selected = choices[-1] if mode is None else mode
+    if selected not in choices:
+        name = "MicroDuck" if kind == "microduck" else "XLeRobot"
+        raise ValueError(f"{name} setup/check mode must be {' or '.join(choices)} (default: {choices[-1]})")
+    return selected
+
+
+def install_commands(
+    kind: str, environment: Path, *, minimal: bool = False, mode: str | None = None
+) -> list[list[str]]:
+    """Install each profile from its own lock into the caller-selected environment."""
+    if kind not in PROFILES:
+        raise ValueError(f"Unknown install profile: {kind}")
+    mode = recipe_mode(kind, mode)
     uv = shutil.which("uv")
     if uv is None:
         raise RuntimeError("Install uv 0.12.x, then repeat setup; see docs/en/installation.md")
-    if mode not in {"software", "hardware"}:
-        raise ValueError("setup mode must be software or hardware")
-    if kind != "snack" and mode != "hardware":
-        raise ValueError("--mode software is available only for the XLeRobot recipe")
-    if kind == "snack":
+    if kind in RECIPE_PROJECTS:
         command = [
             uv,
             "sync",
             "--project",
-            str(SNACK_PROJECT),
+            str(RECIPE_PROJECTS[kind]),
             "--python",
             PYTHON_VERSION,
             "--frozen",
             "--no-default-groups",
         ]
-        if mode == "hardware" and not minimal:
-            command.extend(["--extra", "hardware"])
+        if mode != "software" and not minimal:
+            command.extend(["--extra", mode])
         return [command]
-    commands = [
+    return [
         [
             uv,
             "sync",
@@ -110,39 +128,31 @@ def install_commands(kind: str, environment: Path, *, minimal: bool = False, mod
             "host",
         ]
     ]
-    integration = PROFILES[kind][1]
-    if integration and not minimal:
-        command = [uv, "pip", "install"]
-        command.extend(
-            [
-                "--python",
-                str(environment / "bin/python"),
-                "-e",
-                str(ROOT / "integrations" / integration),
-            ]
-        )
-        commands.append(command)
-    return commands
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("profile", choices=PROFILES)
     parser.add_argument("--environment", type=Path)
-    parser.add_argument("--minimal", action="store_true", help="install only the locked Host dependencies")
-    parser.add_argument("--mode", choices=("software", "hardware"), help="XLeRobot install mode (default: hardware)")
+    parser.add_argument("--minimal", action="store_true", help="install only the profile's locked base dependencies")
+    parser.add_argument(
+        "--mode",
+        help="XLeRobot: software/hardware (default hardware); MicroDuck: software/simulation (default simulation)",
+    )
     args = parser.parse_args(argv)
-    if args.profile != "snack" and args.mode is not None:
-        parser.error("--mode is available only for the XLeRobot snack profile")
-    mode = args.mode or "hardware"
+    if args.profile not in RECIPE_PROJECTS and args.mode is not None:
+        parser.error("--mode is available only for XLeRobot and MicroDuck profiles")
+    try:
+        mode = recipe_mode(args.profile, args.mode)
+    except ValueError as error:
+        parser.error(str(error))
     environment = (args.environment or environment_path(args.profile)).expanduser().absolute()
     env = {**os.environ, "UV_PROJECT_ENVIRONMENT": str(environment)}
     signal.signal(signal.SIGTERM, _cancel_setup)
     try:
         print(f"Stage: install {mode if not args.minimal else 'software'} environment", flush=True)
         print(f"Python target: {environment / 'bin/python'}", flush=True)
-        if args.profile == "snack":
-            print(f"Dependency lock: {SNACK_PROJECT / 'uv.lock'}", flush=True)
+        print(f"Dependency lock: {RECIPE_PROJECTS.get(args.profile, ROOT) / 'uv.lock'}", flush=True)
         for command in install_commands(args.profile, environment, minimal=args.minimal, mode=mode):
             _run_install(command, env)
     except (_SetupCancelled, KeyboardInterrupt):
