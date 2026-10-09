@@ -1,4 +1,49 @@
-# Runnable examples
+# Recipes and runnable examples
+
+Choose a task below, then follow its Recipe for dependencies, configuration,
+execution, outputs, and shutdown. Run launcher commands from the repository
+root after `uv sync --frozen`.
+
+When testing an unmerged PR, first check out its head branch; the default
+`main` checkout may not contain the documented PR commands.
+
+## VLA · Manipulation
+
+| Recipe | Configuration | Purpose |
+|---|---|---|
+| [SO-101 grasping](so101_grasping.md) | [EmbodiInfer HTTP](engine_comparison/embodiinfer-http.yaml) | One arm, two cameras, and π0.5. |
+| [Engine and transport variants](engine_comparison/README.md) | [Configuration profiles](engine_comparison/) | Run SO-101 with EmbodiInfer HTTP, WirelessComm, or SGLang HTTP. |
+| [Multiple SO-101 arms](multi_robot_serving/README.md) | [Shared-service manifest](multi_robot_serving/example.yaml) | Independent robot sessions sharing one model service. |
+
+For dual-arm deployment, see the [Bi-SO-101 tutorial](../docs/en/pi05-bi-so101.md)
+and [configuration template](../configs/pi05/bi-so101-embodiinfer.yaml).
+
+## VLN · Navigation
+
+| Recipe | Configuration | Purpose |
+|---|---|---|
+| [MicroDuck + ActiveVLN](microduck_vln/README.md) | [MuJoCo manifest](microduck_vln/example.yaml) | Language-guided navigation with episode videos and metrics. |
+
+Prepare the scene assets, model checkpoint, and optional simulation environment
+as described in the Recipe.
+
+## Agent · Mobile manipulation
+
+| Recipe | Configuration | Purpose |
+|---|---|---|
+| [XLeRobot snack delivery](xlerobot_snack_delivery/README.md) | [Delivery manifest](xlerobot_snack_delivery/example.yaml) | Recorded base routes, RPent/Astra review, VLA grasping, and supervised handover. |
+
+The Recipe includes route preparation and a hardware-free task rehearsal.
+For custom agents, see the [public client](../agents/CLIENT.md) and
+[agent examples](../agents/README.md).
+
+Other robot and simulator integrations are listed in the
+[support matrix](../docs/en/support-matrix.md).
+中文场景介绍：[VLA](../docs/zh/demos/so101-grasping.md) ·
+[VLN](../docs/zh/demos/microduck-vln.md) ·
+[Agent](../docs/zh/demos/xlerobot-snack-delivery.md)。
+
+## Initialize a local Recipe
 
 Use the installed `embodirun example` command for all recipes. `examples/run.sh`
 uses the same Python runner for source checkouts. From the repository root:
@@ -22,13 +67,6 @@ Use `--output NEW_DIRECTORY` to choose a location; MicroDuck accepts
 `--assets ASSET_ROOT` to fill its project, checkpoint, and episode paths.
 `validate` and `plan` are offline. `plan` prints the command and output path
 without launching it.
-
-| Demo | Configuration | Setup and execution |
-|---|---|---|
-| Three SO-101 arms, one service | [multi_robot_serving/example.yaml](multi_robot_serving/example.yaml) | [Instructions](multi_robot_serving/README.md) |
-| SO-101 engine comparison | [engine_comparison/embodiinfer-http.yaml](engine_comparison/embodiinfer-http.yaml), [embodiinfer-wireless.yaml](engine_comparison/embodiinfer-wireless.yaml), [sglang-http.yaml](engine_comparison/sglang-http.yaml) | [Instructions](engine_comparison/README.md) |
-| XLeRobot snack delivery | [xlerobot_snack_delivery/example.yaml](xlerobot_snack_delivery/example.yaml) | [Instructions](xlerobot_snack_delivery/README.md) |
-| MicroDuck navigation | [microduck_vln/example.yaml](microduck_vln/example.yaml) | [Instructions](microduck_vln/README.md) |
 
 ## Configuration contract
 
@@ -80,11 +118,11 @@ and episode manifest.
 | Command | SO-101 rollout | XLeRobot | MicroDuck |
 |---|---|---|---|
 | `validate` / `plan` | Offline configuration / command preview | Same | Same; assets need not be installed |
-| `setup` | Host `init`, then sync this checkout | `--mode software` for the small runtime; `--mode hardware` for full owner, both from the Recipe lock | `--mode software` for CLI/integration checks; default `simulation` adds its locked simulator/inference extra |
+| `setup` | Host `init`, then sync this checkout | `--mode software` for the small runtime; `--mode hardware` for full owner, both from the Recipe lock | Locked Recipe base via `--mode software`; simulation extra via `--mode simulation` (default) |
 | `up --allow-hardware` | Start model and robot services | Start owner and Control in the foreground | Inference starts with `run` |
 | `run` | Concurrent bounded rollouts; requires `--allow-hardware` | Supervised delivery; requires `--allow-hardware` | Launch simulation and inference |
 | `dry-run` | — | Fixture-only task rehearsal | — |
-| `check` | Report local placeholders and node-owned prerequisites | Read-only diagnostics for `--mode software` or `--mode hardware`; `--json` includes issues and next actions | Software mode reads configuration/metadata; default simulation checks resources and runs scene preflight without `--json` |
+| `check` | Report local placeholders and node-owned prerequisites | Read-only diagnostics for `--mode software` or `--mode hardware`; `--json` includes issues and next actions | Software: configuration and installed metadata; simulation `--json`: metadata, local paths and inference source entrypoint; plain simulation: continue into CUDA/EGL/asset preflight |
 | `down` | Stop this deployment | Ask this recipe's foreground launcher to stop | Ask this recipe's foreground launcher to stop |
 
 XLeRobot `setup` / `check` default to hardware mode when `--mode` is omitted.
@@ -94,8 +132,13 @@ exits 0 with `status: "passed"` or 2 with `needs_attention`; resolve the listed
 `verified` from `unverified` so its scope remains visible.
 
 `check` is a prerequisite check, not proof that a robot, model, camera, or stop
-feedback is ready. The MicroDuck scene preflight uses GPU resources; run it on
-the target Linux GPU host. Hardware examples require calibrated devices, a working emergency stop, and an
+feedback is ready. MicroDuck `setup` / `check` default to `simulation`; choose
+`--mode software` explicitly for offline configuration and metadata checks.
+Software `check` works with or without `--json` and starts no launcher, scene
+or inference process. Simulation `check --json` leaves CUDA/EGL and model
+readiness unverified; plain `check --mode simulation` continues into scene
+preflight on the target Linux GPU host after its local prerequisites pass.
+Hardware examples require calibrated devices, a working emergency stop, and an
 operator. `--allow-hardware` permits startup or motion; it does not skip action
 limits or XLeRobot's confirmation gates. Stop one deployment before starting
 another that uses the same robot or ports.
@@ -133,11 +176,15 @@ For XLeRobot, the separate environment uses
 `examples/xlerobot_snack_delivery/pyproject.toml` and `uv.lock` for both software
 and full hardware setup. The full owner installs CPU PyTorch; the GPU model
 service is prepared separately. The root checkout Host environment includes
-the default development group. MicroDuck uses its own Recipe project and lock
-under `examples/microduck_vln/` for software and simulation modes.
+the default development group. MicroDuck's
+[direct installation](microduck_vln/README.md#install-and-configure) uses its
+own Recipe project and lock for a small configuration environment and the
+optional `simulation` profile. Its existing `setup` and Docker target still
+install integration version ranges; connecting them to this lock and testing
+fresh target-host parity remain unfinished.
 Do not copy an existing machine's virtual environment.
 
-Container targets `host`, `xlerobot-software`, `xlerobot`, `microduck-software`, and `microduck` are in
+Container targets `host`, `xlerobot-software`, `xlerobot`, and `microduck` are in
 the root `Dockerfile`. XLeRobot native and container profiles use the same
 Recipe lock; the software container already has its environment. See the
 [XLeRobot README](xlerobot_snack_delivery/README.md) for copyable Linux software
@@ -159,5 +206,8 @@ for a first software-only trial. The [deployment Agent guide](xlerobot_snack_del
 provides a starting prompt for your existing coding Agent. Record where the
 entrypoint was unclear, which local file you needed to edit, what a successful
 software run meant, and which missing paths or real information required help.
-Actual student feedback has not been collected. Independent Agent rehearsal,
-classroom feedback, model validation, and physical delivery are separate results.
+The [independent first-use guide](../docs/en/first-use.md)
+([中文](../docs/zh/first-use.md)) also covers the real Host software lifecycle.
+This directory supplies feedback instructions, not an executed independent
+trial. Independent Agent rehearsal, classroom feedback, model validation, and
+physical delivery are separate results.

@@ -1,0 +1,59 @@
+{
+  "count_unique_name_version": 13,
+  "raw_metadata_records": 14,
+  "duplicate_record": "embodirun 0.1.0 editable metadata enumerated twice; private raw JSON retained",
+  "packages": [
+    {
+      "name": "bcrypt",
+      "version": "5.0.0"
+    },
+    {
+      "name": "cffi",
+      "version": "2.1.1"
+    },
+    {
+      "name": "cryptography",
+      "version": "46.0.7"
+    },
+    {
+      "name": "embodirun",
+      "version": "0.1.0"
+    },
+    {
+      "name": "invoke",
+      "version": "3.0.3"
+    },
+    {
+      "name": "markdown-it-py",
+      "version": "4.2.0"
+    },
+    {
+      "name": "mdurl",
+      "version": "0.1.2"
+    },
+    {
+      "name": "paramiko",
+      "version": "4.0.0"
+    },
+    {
+      "name": "pycparser",
+      "version": "3.0"
+    },
+    {
+      "name": "Pygments",
+      "version": "2.21.0"
+    },
+    {
+      "name": "PyNaCl",
+      "version": "1.6.2"
+    },
+    {
+      "name": "PyYAML",
+      "version": "6.0.3"
+    },
+    {
+      "name": "rich",
+      "version": "14.3.4"
+    }
+  ]
+}

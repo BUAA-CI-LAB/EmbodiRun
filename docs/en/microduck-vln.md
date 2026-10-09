@@ -70,7 +70,7 @@ Fresh target installation, native/Docker parity and GPU/model execution are
 separate validation results; a resolved lock or successful software check does
 not establish them. Docker commands are in the example guide.
 Keep this Transformers 4.51.3 environment separate from Transformers 5.x model profiles.
-Record actual commands, cache state, assistance and outcomes separately from independent human first use.
+Use [independent first use](first-use.md) to record the actual execution.
 
 The Recipe prints `Outputs:`; under its run directory, inspect `run.json`,
 command logs and `result/` files, including `preflight.json`, `run.log` and

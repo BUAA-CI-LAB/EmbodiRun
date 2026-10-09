@@ -48,29 +48,40 @@ Control 凭证文件已从 Git、Docker 上下文排除。checkout 的 Host 环�
 | `setup --mode software` | 不含 owner 或 PyTorch 的小运行环境 | `check --mode software --json`，再执行 fixture `dry-run` |
 | `setup --mode hardware` | 完整 owner extra，含锁定 LeRobot、CPU PyTorch、相机和录制依赖 | `check --mode hardware --json`，再由操作员核验 |
 
-省略 `--mode` 时，`setup` / `check` 默认是 hardware。硬件检查将安装的 LeRobot 包父目录
+XLeRobot 省略 `--mode` 时，`setup` / `check` 默认是 hardware。硬件检查将安装的 LeRobot 包父目录
 报告为 `environment.sdk_src`，可填入 `hardware.local.json` 的 `sdk_src`；自备 SDK checkout
 需单独核验版本。安装依赖不会填好标定、设备、路线或提供模型检查点，推理服务单独运行。
-MicroDuck 使用 `examples/microduck_vln/` 下独立的 Python 3.12 / uv 0.12.x
-项目与锁。Native 和 Docker 的 `software` setup 选择小型 CLI/集成环境；
-默认的 `simulation` 模式增加锁定的仿真与推理 extra。软件检查无需资源或 GPU；
-完整仿真仍需兼容的外部资源，并另行验收 CUDA/EGL 与模型执行。
-见 [MicroDuck 指南](microduck-vln.md)。
+MicroDuck 默认使用独立的 `.venv-microduck` 环境。Native setup 与容器目标都使用
+`examples/microduck_vln/uv.lock`、Python 3.12 和 uv 0.12.x。
+`setup --mode software` 安装小型 CLI/集成环境；`check --mode software --json`
+检查环境与配置，不需要资源、GPU 或运行中的场景。`setup --mode simulation` 安装同一锁的
+`simulation` extra，加入仿真与推理依赖。MicroDuck 省略 mode 时默认 simulation；
+安装依赖不会提供资源，也不能证明 CUDA/EGL 或模型就绪。见 [MicroDuck Recipe](microduck-vln.md)。
+
+在 Ubuntu 24.04 aarch64 上，MicroDuck 软件验证的 native 环境（Python 3.12.3）
+与 Docker 环境（Python 3.12.14）安装了相同的 14 个锁定包。两者都使用 Python 3.12，
+补丁版本不同；两个入口的普通检查与 JSON 检查都通过。首次无缓存 native 在线 setup
+达到外部设置的 180 秒测试上限（受控中断，退出 130），随后使用本轮新下载 wheel 辅助，
+正常 frozen setup 通过。空缓存 Docker build 达到外部设置的 600 秒测试上限
+（受控中断，退出 130），同一生产 Dockerfile 的缓存续建通过（退出 0）。
+这些结果不能证明无缓存首次安装能快速完成，也不是独立用户首次复现验收。
+一次全新 native 完整 profile 安装也在完成前达到 600 秒测试上限；包导入与 CUDA/EGL
+探针未执行，本轮没有构建完整 Docker 目标，场景和模型仍待验收。
 
 独立的 Recipe software workflow 仅在相关源码、依赖或容器配置变更时运行，也支持手动触发。
 纯文档变更使用原有 CPU、lint 和文档任务。
-其任务不恢复 uv 缓存，从冻结锁安装两个 Recipe，并使用全新 Docker
-builder 构建生产软件目标。它以宿主 UID、关闭容器网络运行两个入口，比较 native/container
-包清单；XLeRobot 还通过两个入口执行 fixture 演练。打印的提示保留所选场景 Python，
-可在仓库外执行并支持带空格路径。这些检查覆盖软件上手流程；独立人工首次使用、
-真机与模型验收仍是后续工作。
+其任务不恢复 uv 缓存，从冻结锁安装 XLeRobot 和 MicroDuck，并使用全新
+Docker builder 构建生产软件目标。它以宿主 UID、关闭容器网络运行两个入口，比较
+native/container 包清单；XLeRobot 还通过两个入口执行 fixture 演练。打印的提示保留
+所选场景 Python，可在仓库外执行并支持带空格路径。这些检查覆盖软件上手流程；
+完整仿真、原生 LeRobot 成本对照和独立人工首次使用仍是后续验收工作。
 
 初始 `uv sync` 或 `docker compose build` 在 Recipe CLI 前失败时，尚无 Recipe 的
 `Outputs:` 或 `run.json`。将终端 stdout/stderr 保存到自行选择的日志文件，记录完整命令与退出码。
 Recipe setup 期间查看 `Outputs:` 目录内的 `command-0.log`。保留首条失败和退出码，
 修复原因后重试同一模式。日志明确报 native uv HTTP read timeout 时，可临时执行
 `UV_HTTP_TIMEOUT=300 uv run --frozen embodirun example "$CONFIG" setup --mode software`
-（失败的是 hardware 命令时重试 hardware）。宿主变量不会自动进入 `docker compose build`。
+（按原失败模式重试：XLeRobot 用 `hardware`，完整 MicroDuck 用 `simulation`）。宿主变量不会自动进入 `docker compose build`。
 记录下载缓存与重试情况；软件演练耗时不能代表完整 owner 安装耗时。
 
 XLeRobot `check` 是只读本地检查。即使报告 `passed`，真实标定、相机图像、模型输出、
@@ -144,10 +155,6 @@ uv sync --frozen --extra wireless
 
 ## 自动部署 {#managed-deployments}
 
-Recipe 容器需要 Docker Engine、Compose 和支持 BuildKit 的 Buildx。
-构建前检查 `docker buildx version` 与 `docker compose version`；
-Dockerfile 的缓存挂载无法使用旧版 builder。
-
 `embodirun init` 会在各节点的部署目录中准备指定版本的 EmbodiRun 和 EmbodiInfer 源码，
 再运行 `uv sync --frozen` 安装依赖。
 
@@ -157,6 +164,12 @@ Dockerfile 的缓存挂载无法使用旧版 builder。
 ```bash
 git submodule update --init third_party/embodiinfer
 ```
+
+### 容器 {#containers}
+
+安装 Docker Engine、Compose 插件，以及支持 BuildKit 的 Buildx。
+Dockerfile 的缓存挂载需要 BuildKit，旧版 builder 无法构建。
+构建前检查 `docker buildx version` 和 `docker compose version`。
 
 仓库 `Dockerfile` 提供 `host`、`xlerobot-software`、`xlerobot`、`microduck-software`、`microduck` 五个目标。
 在目标 Linux 主机构建；构建 `microduck` 前先初始化上述固定子模块：
@@ -187,9 +200,21 @@ docker compose run --rm --user "$(id -u):$(id -g)" xlerobot-software /workspace/
 标定或检查点。XLeRobot 软件/硬件镜像与 native setup 使用同份 Recipe 项目和锁；
 通用 `host` 仍使用根项目的 Host 依赖树。
 
-`microduck-software` 服务与 native MicroDuck 软件 setup 使用同份 Recipe 锁。
-执行 `init microduck`，再执行 `validate`、`plan` 与 `check --mode software --json`，
-无需 GPU runtime 或外部资源。[MicroDuck 指南](microduck-vln.md)链接了完整容器命令。
+MicroDuck 软件镜像采用相同的离线配置流程，不需要 GPU runtime、仿真依赖、资源或检查点：
+
+```bash
+mkdir -p examples/local
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software init microduck --output /workspace/microduck
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software /workspace/microduck/example.local.yaml validate
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software /workspace/microduck/example.local.yaml plan
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software /workspace/microduck/example.local.yaml check --mode software --json
+```
+
+镜像构建时已经安装所选环境，容器内跳过 native `setup`。
+完整 `microduck` 镜像安装同一锁的 `simulation` extra 和固定版本推理源码。
+准备仿真时，通过 `MICRODUCK_ASSETS` 提供外部资源根目录，并用 `--assets /assets`
+初始化另一份 Recipe；见 [Recipe 的 Docker 步骤](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/microduck_vln/README.md#docker)。
+资源挂载保持只读。软件检查通过不能证明 CUDA/EGL、资源兼容性、模型推理或 episode rollout 已验收。
 
 native manifest 转 Docker 前先备份。顶层 `python` 优先于镜像的
 `EMBODIRUN_SCENE_PYTHON`，宿主解释器路径在容器中不可用。

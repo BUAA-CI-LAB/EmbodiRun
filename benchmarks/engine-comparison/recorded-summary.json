@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "evidence_kind": "published-summary",
+  "source_document": "docs/en/demos/engine-e2e-contrast.md",
+  "raw_samples": null,
+  "source_revisions": null,
+  "conditions": {
+    "robot": "SO-101",
+    "control_host": "Raspberry Pi 4 Model B, 8 GB",
+    "inference_host": "Jetson AGX Thor Developer Kit",
+    "cuda": "13",
+    "network": "same Wi-Fi access point",
+    "checkpoint": "pi0.5 SO-101 four-arm checkpoint; exact artifact revision pending",
+    "cameras": 2,
+    "camera_resolution": [640, 480],
+    "denoising_steps": 10,
+    "chunk_steps": 50,
+    "control_hz": 20,
+    "chunks_per_run": 15,
+    "runs_per_configuration": 1,
+    "warmup": "camera frames; exact warmup count pending",
+    "statistic": "median"
+  },
+  "results": [
+    {"engine": "EmbodiInfer", "transport": "WirelessComm", "settings": "BF16, Inductor, prefix and denoising CUDA graphs, Triton attention", "inference_ms": 162, "communication_queueing_ms": 42, "playback_ms": 2455, "full_chunk_ms": 2660},
+    {"engine": "EmbodiInfer", "transport": "HTTP", "settings": "same engine settings as WirelessComm", "inference_ms": 170, "communication_queueing_ms": 45, "playback_ms": 2453, "full_chunk_ms": 2666},
+    {"engine": "SGLang", "transport": "HTTP", "settings": "upstream defaults; exact dtype and revision pending", "inference_ms": 194, "communication_queueing_ms": 65, "playback_ms": 2453, "full_chunk_ms": 2713},
+    {"engine": "Native LeRobot", "transport": "HTTP", "settings": "eager PI05Policy and processors; exact dtype and revision pending", "inference_ms": 1061, "communication_queueing_ms": 82, "playback_ms": 2453, "full_chunk_ms": 3592}
+  ]
+}

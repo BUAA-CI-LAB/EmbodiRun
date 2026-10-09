@@ -5,8 +5,8 @@
 <h3 align="center">从模型预测，到机器人行动。</h3>
 <p align="center">
   <a href="https://embodirun.readthedocs.io/zh-cn/latest/">文档</a> ·
-  <a href="#快速开始">快速开始</a> ·
-  <a href="#演示">演示</a> ·
+  <a href="#快速开始与-recipe">快速开始</a> ·
+  <a href="#三个场景">场景</a> ·
   <a href="#性能">性能</a> ·
   <a href="docs/zh/support-matrix.md">支持矩阵</a> ·
   <a href="README.md">English</a>
@@ -18,102 +18,81 @@
   <a href="https://embodirun.readthedocs.io/"><img src="https://readthedocs.org/projects/embodirun/badge/?version=latest" alt="Documentation"></a>
 </p>
 
-**EmbodiRun 是面向具身智能的部署与执行运行时。** 用 YAML 描述设备、推理服务和计算节点，
-由统一运行时管理观测—推理—动作循环。控制进程可以跑在机器人旁边，推理放在 GPU 主机上，也可以在同一台机器上运行。
+**EmbodiRun 是面向具身智能的部署与执行运行时。** 它将机器人观测送入模型或 Agent，
+执行返回的动作，并记录会话。用 YAML 描述设备、推理服务与计算节点，即可将控制进程放在机器人侧，
+将推理服务部署到 GPU 主机。
 
-你可以使用 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer) 推理引擎，接入外部模型服务，
-或让拥有独立规划循环的 Agent 调用机器人。
+使用 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer) 运行模型推理，
+接入外部服务，或通过 [Agent 客户端](agents/CLIENT.md)编排任务。
 
-## 演示
+## 三个场景
 
-| 三台机器人，共享一个推理服务 | SO-101 上的推理引擎对比 |
+| VLA · 机械臂抓取 | VLN · 语言导航 | Agent · 移动与抓取 |
+|---|---|---|
+| [![SO-101 抓取](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/multi_robot_serving.jpg)](docs/zh/demos/so101-grasping.md) | [![MuJoCo 中的 MicroDuck](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/microduck_simulation_one_click_demo.jpg)](docs/zh/demos/microduck-vln.md) | [![XLeRobot 零食递送](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/xlerobot_snack_delivery/xlerobot_snack_delivery_overview.jpg)](docs/zh/demos/xlerobot-snack-delivery.md) |
+| **SO-101 + π0.5：** 根据相机图像和关节状态，抓取方块并放入碗中。 | **MicroDuck + ActiveVLN：** 在 MuJoCo 场景中按语言指令导航。 | **移动底盘 + SO-101 双臂：** 结合录制路线、RPent/Astra 场景判断和 VLA 抓取，在操作员监督下完成零食递送。 |
+| [观看演示](docs/zh/demos/so101-grasping.md) · [Recipe](examples/so101_grasping.md) | [观看演示](docs/zh/demos/microduck-vln.md) · [Recipe](examples/microduck_vln/README.md) | [流程与架构](docs/zh/demos/xlerobot-snack-delivery.md) · [Recipe](examples/xlerobot_snack_delivery/README.md) |
+
+[Recipe 索引](examples/README.md)提供多臂共享推理、其他推理后端及纯软件示例。
+机器人、仿真器与模型的支持情况见[支持矩阵](docs/zh/support-matrix.md)。
+Recipe 使用统一的 `embodirun example` 命令行入口；源码 checkout 仍可使用
+兼容的 `examples/run.sh`。
+
+## 为什么选择 EmbodiRun
+
+| 特点 | 使用方式 |
 |---|---|
-| [![三台 SO-101 的录制](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/multi_robot_serving.jpg)](https://embodirun.readthedocs.io/en/latest/demos/multi-robot-serving/) | [![SO-101 引擎对比](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/engine_e2e_contrast.jpg)](https://embodirun.readthedocs.io/en/latest/demos/engine-e2e-contrast/) |
-| 三台 SO-101 共享一个 π0.5 推理服务，每台设备运行独立的 rollout 进程。 | Jetson AGX Thor 与 SO-101 上的 EmbodiInfer HTTP/WirelessComm、SGLang 和原生 LeRobot 对比。 |
+| **跨机部署** | 在 YAML 中描述节点、环境、设备和模型服务，由 Host 准备环境并启动服务。 |
+| **多机器人共享推理** | 各机器人保持独立会话与控制循环，共用模型服务；π0.5 可按需开启跨会话批处理。 |
+| **灵活选择通信方式** | 通过 HTTP 或 WirelessComm 连接服务，使用版本化观测与动作协议，保持一致的会话与步进处理。 |
+| **观测、执行与录制** | Agent、推理和录制共用相机与状态快照；执行前校验动作，支持执行仲裁与人工接管。 |
 
-| XLeRobot 帮你拿零食 | MicroDuck 语言导航 |
-|---|---|
-| [<img src="https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/xlerobot_snack_delivery/xlerobot_snack_delivery_overview.jpg" alt="XLeRobot 在桌边抓取薯片" width="356">](https://embodirun.readthedocs.io/zh-cn/latest/xlerobot-snack-delivery/) | [<img src="https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/microduck_simulation_one_click_demo.jpg" alt="MicroDuck 仿真双视角与执行日志" width="200">](https://embodirun.readthedocs.io/zh-cn/latest/microduck-vln/) |
-| Agent 通过 EmbodiRun 串起底盘移动、VLA 抓取与携物返程。 | 启动 MuJoCo 中的 ActiveVLN 导航任务，同时查看第一人称画面、第三人称运动与逐步执行日志。 |
-
-点击预览图观看视频，了解运行配置。
-
-[复现演示](docs/zh/examples.md)：使用统一 YAML 配置与 `embodirun example` 命令行入口（`examples/run.sh` 仍可使用）。
-
-## 为什么选择 EmbodiRun？
-
-控制贴近机器人，算力按需共享。
-
-<table>
-<tr>
-<td width="50%" valign="top">
-<h3>🌐 一份配置，跨机部署</h3>
-<p>机器人控制运行在边缘端，推理部署到 GPU 主机。一份 YAML 描述节点、环境、设备与绑定，Host CLI 负责环境准备和服务生命周期。</p>
-<a href="docs/zh/architecture.md">部署架构 →</a>
-</td>
-<td width="50%" valign="top">
-<h3>🦾 多台机器人，共享推理</h3>
-<p>多个独立设备循环连接同一个模型端点。每台机器人保留自己的会话与执行流程，共享同一推理服务。</p>
-<a href="docs/zh/demos/multi-robot-serving.md">查看三台 SO-101 如何共用推理服务 →</a>
-</td>
-</tr>
-<tr>
-<td valign="top">
-<h3>🔌 两种传输，一套契约</h3>
-<p>在 HTTP 与 WirelessComm 之间切换，无需改动面向模型的观测与动作协议，两种传输的会话与步进语义保持一致。</p>
-<a href="docs/zh/inference-transport.md">传输设计与性能测量 →</a>
-</td>
-<td valign="top">
-<h3>📷 一次采集，多方复用</h3>
-<p>相机与状态快照只采集一次，供推理、Agent 观测和录制共用。设备连接由运行时统一持有，各使用方无需重复打开硬件。</p>
-<a href="docs/zh/architecture.md">设备与观测管理 →</a>
-</td>
-</tr>
-<tr>
-<td valign="top">
-<h3>🧩 自带规划器，复用现成机器人 API</h3>
-<p>用零依赖的 Python 客户端获取观测、请求策略建议、执行动作、查询和取消任务。规划循环由你掌控，底层运行时可直接复用。</p>
-<a href="agents/CLIENT.md">Agent 客户端 →</a>
-</td>
-<td valign="top">
-<h3>🎛️ 策略输出，可控执行</h3>
-<p>动作校验、执行仲裁和人工接管位于策略输出与硬件执行之间。机器人适配器和策略绑定处理运动细节，让应用专注于任务。</p>
-<a href="docs/zh/safety.md">执行控制与硬件配置 →</a>
-</td>
-</tr>
-</table>
-
-## 工作原理
+## 从模型预测到机器人执行
 
 ![Host 部署 Control 与推理服务，Control 连接应用、机器人及模型服务](docs/assets/runtime-overview.svg)
 
-**Host** 准备环境并启动部署；**Control** 管理机器人连接、观测和动作执行；**Simulation** 提供仿真环境服务；
-**Inference** 把观测变成模型预测。这些服务可以分散在不同机器上。完整设计见[架构文档](docs/zh/architecture.md)。
+模型服务生成预测，Agent 选择任务步骤。EmbodiRun 通过共享观测、策略提议、执行任务和会话录制，
+将二者接到机器人上，使同一应用能够适配不同设备与服务部署方式。
+
+| 组件 | 职责 |
+|---|---|
+| **EmbodiRun** | 服务部署、机器人与仿真器观测、会话协调、动作校验、执行与录制。 |
+| [**EmbodiInfer**](https://github.com/BUAA-CI-LAB/EmbodiInfer) | 检查点加载、模型推理、优化、批处理与多 GPU 执行。 |
+| [**WirelessComm**](https://github.com/BUAA-CI-LAB/WirelessComm) | 控制服务与推理服务之间的可选通信传输。 |
+| **RPent / Astra / 自定义 Agent** | 通过 [Agent 客户端](agents/CLIENT.md)进行任务规划与场景判断。 |
+
+服务布局见[架构](docs/zh/architecture.md)，应用接入方式见 [Agent 工作流](docs/zh/agent-workflow.md)。
+[Runtime 职责与成本](docs/zh/runtime-value.md)核对了与 LeRobot、ROS 2 的关系，并列出待测的部署成本。
 
 ## 性能
 
-### SO-101 真机上的 π0.5
+![SO-101 推理与完整 chunk 延迟](docs/assets/performance/so101-engine-comparison.svg)
 
-在 Jetson AGX Thor 的录制对比中，推理延迟中位数从 **1,061 ms 降至 162 ms**，
-完整控制循环 chunk 从 **3,592 ms 缩短至 2,660 ms**。推理加速缩短了循环，而每个 chunk 的动作播放仍约为 2.45 秒。
-
-| 引擎 | 传输 | 推理延迟 | 完整 chunk 耗时 |
+| 引擎 | 传输 | 推理延迟 | 完整 chunk 时间 |
 |---|---|---:|---:|
 | **EmbodiInfer** | WirelessComm | **162 ms** | **2,660 ms** |
 | EmbodiInfer | HTTP | 170 ms | 2,666 ms |
 | SGLang | HTTP | 194 ms | 2,713 ms |
-| 原生 LeRobot | HTTP | 1,061 ms | 3,592 ms |
+| Native LeRobot | HTTP | 1,061 ms | 3,592 ms |
 
-每次运行统计 15 个 chunk 的中位数，使用相同 SO-101 权重、10 步去噪、两个相机，以及按 20 Hz 播放的 50 步动作块。
-EmbodiInfer 使用优化路径，SGLang 使用上游默认配置，LeRobot 使用 eager 执行。
-[演示报告](docs/zh/demos/engine-e2e-contrast.md)列出硬件、引擎配置与分段计时。
+在 Jetson AGX Thor 上运行 SO-101 抓取任务：相同检查点、双相机、10 个去噪步骤、
+50 步动作 chunk、20 Hz 回放；每组运行 15 个 chunk，表中为中位数。
+EmbodiInfer 使用 BF16、Inductor、CUDA graph 和 Triton attention；
+SGLang 使用上游默认设置，LeRobot 使用 eager 执行。
 
-传输性能见 [HTTP/WirelessComm 实验](docs/zh/inference-transport.md)，模型离线性能见
-[EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer#performance)。
+在这组配置下，EmbodiInfer 配合 WirelessComm 将完整 chunk 时间相对原生 LeRobot 缩短约 **26%**。
+其中，动作回放耗时约 2.45 秒。
 
-## 快速开始
+[条件与计时明细](docs/zh/demos/engine-e2e-contrast.md) ·
+[汇总数据与绘图脚本](benchmarks/engine-comparison/README.md) ·
+[HTTP / WirelessComm 测量](docs/zh/inference-transport.md) ·
+[模型推理基准](https://github.com/BUAA-CI-LAB/EmbodiInfer#performance)
 
-### 在本机体验运行时
+## 快速开始与 Recipe
+
+验证尚未合并的 PR 时，请先切换到该 PR 的 head 分支再安装；默认 `main` 不包含该 PR 的改动。
+
+### 运行本地示例
 
 使用 Python 3.10+ 和 [uv](https://docs.astral.sh/uv/) 0.12.x 从源码安装：
 
@@ -124,66 +103,58 @@ uv sync --frozen
 uv run python examples/run_shared_device_fake.py
 ```
 
-示例启动本地 Control 服务，以模拟关节和虚拟相机演示观测、执行、录制与取消，然后关闭服务。
-不需要机器人、模型权重或 GPU。
+示例启动本地 Control 服务，用模拟关节和虚拟相机演示观测、执行、录制与取消，完成后关闭服务。
+普通电脑即可运行，无需机器人、模型检查点或 GPU。
 
-### 接入机器人或仿真器
+### 运行场景任务
 
-继续阅读[快速开始](docs/zh/quickstart.md)了解部署 CLI。使用硬件前，先从[支持矩阵](docs/zh/support-matrix.md)选择组合，
-配置设备与标定，并阅读[安全说明](docs/zh/safety.md)。
+选择 Recipe，按步骤完成环境准备、配置、启动、查看输出与停止：
 
-## 支持概览
+- **VLA：** [SO-101 抓取](examples/so101_grasping.md)。
+- **VLN：** [MuJoCo 中的 MicroDuck 导航](examples/microduck_vln/README.md)。
+- **Agent：** [XLeRobot + RPent/Astra 零食递送](examples/xlerobot_snack_delivery/README.md)。
+- **其他组合：** [共享推理、其他后端与纯软件示例](examples/README.md)。
 
-实验性 MuJoCo 导航工作流见 [MicroDuck VLN 示例](docs/zh/microduck-vln.md)。
+首次 Recipe 演练使用 Python 3.12，通过统一入口执行：
 
-✓ **软件测试覆盖** · ◐ **实验性** · ○ **计划支持**
+```bash
+uv sync --frozen --python 3.12
+uv run --frozen embodirun example init xlerobot
+CONFIG=examples/local/xlerobot/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" setup --mode software
+uv run --frozen embodirun example "$CONFIG" check --mode software --json
+uv run --frozen embodirun example "$CONFIG" dry-run
+```
 
-<table>
-<tr>
-<th align="left">🧪 仿真器</th>
-<th align="left">🦾 机器人</th>
-<th align="left">🧠 模型</th>
-</tr>
-<tr>
-<td valign="top">
-<p>✓ <b>LIBERO</b></p>
-<p>◐ VLABench<br>◐ Habitat<br>◐ Isaac Sim</p>
-<a href="docs/zh/support-matrix.md#simulators">仿真器接入 →</a>
-</td>
-<td valign="top">
-<p>✓ <b>SO-101</b> · 含真机演示<br>✓ <b>Bi-SO-101</b><br>✓ <b>Franka FR3</b></p>
-<p>◐ ARX5<br>◐ Unitree Go2<br>◐ XLeRobot</p>
-<a href="docs/zh/support-matrix.md#robots">机器人接入 →</a>
-</td>
-<td valign="top">
-<p>✓ <b>π0.5</b></p>
-<p>◐ DM0.5 · ARX5 绑定<br>◐ StreamVLN · 导航<br>◐ LightNav-0 · 外部绑定</p>
-<a href="docs/zh/support-matrix.md#models">模型接入 →</a>
-</td>
-</tr>
-</table>
+这组 XLeRobot 命令使用 fixture，不打开机器人或模型；打印的 `Outputs:` 目录包含 `run.json`
+和命令日志，详见[输出与停止](examples/README.md#outputs-and-shutdown)。
+MicroDuck 先走 `init` → `validate` → `plan` → `setup --mode software` →
+`check --mode software --json`，无需场景资源或 GPU，只检查配置与已安装包元数据。
+Native setup 和 Docker 共用该 Recipe 的独立依赖锁。setup/check 默认仍是 `simulation`：
+普通仿真检查使用 CUDA/EGL 与外部资源，JSON 形式读取元数据和本地路径。
+按 [MicroDuck Recipe](docs/zh/microduck-vln.md) 完成前提后再 `run`，并使用其中的日志和 `down` 说明。
+软件检查不能证明模型推理或导航成功。
 
-以上是 EmbodiRun 各集成的状态；模型与设备的具体搭配见[部署组合](docs/zh/support-matrix.md#deployment-recipes)。
-推理引擎支持的完整模型列表见 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer#supported-models)。
+让已有编程 Agent 上手时，使用[独立首次上手](docs/zh/first-use.md)与
+[Agent 工作流](docs/zh/agent-workflow.md)，记录实际命令、缺失前提与求助过程；只读文档不算运行验证。
 
-**接入自己的应用：** 使用 [Python 客户端](agents/CLIENT.md)、实验性 [RPent 适配器](docs/zh/rpent-integration.md)，
-或连接[外部推理服务](docs/zh/http_api.md)。
+[部署快速开始](docs/zh/quickstart.md)介绍 CLI 与 YAML 配置。
+启用真机运动前，请完成标定并阅读[硬件安全指南](docs/zh/safety.md)。
 
-### 计划支持
+## 文档与规划
 
-- [ ] 🦾 **松灵 AgileX PiperX** — 机器人适配器与策略绑定。
-- [ ] 🧠 **SmolVLA** — 推理适配器与部署集成。
-- [ ] 🧠 **OpenVLA** — 原始模型接入，与已有的 OpenVLA-OFT 推理适配器区分。
-- [ ] 🧪 **更多仿真器** — 具体接入目标待选。
+| 内容 | 入口 |
+|---|---|
+| 安装与部署 | [安装](docs/zh/installation.md) · [快速开始](docs/zh/quickstart.md) · [配置](docs/zh/configuration.md) |
+| 应用接入 | [独立首次上手](docs/zh/first-use.md) · [Agent 工作流](docs/zh/agent-workflow.md) · [推理 API](docs/zh/http_api.md) · [Python API](docs/zh/api.md) |
+| 完整任务步骤 | [Recipes](examples/README.md) |
+| 部署模板 | [configs/](configs/) |
+| 测量与结果 | [benchmarks/](benchmarks/README.md) · [Runtime 成本](docs/zh/runtime-value.md) |
+| 已支持与计划支持的集成 | [支持矩阵与路线图](docs/zh/support-matrix.md) |
 
-实现步骤与各集成的归属见[路线图](docs/zh/support-matrix.md#roadmap)。
-
-## 文档
-
-[安装](docs/zh/installation.md) · [配置](docs/zh/configuration.md) · [人工控制](docs/zh/control.md) ·
-[安全](docs/zh/safety.md) · [Python API](docs/zh/api.md) · [实验](docs/zh/experiments.md)
-
-中文站点覆盖全部正文页面；治理与法律页（贡献指南、行为准则、许可证）保留英文原文。
+后续规划包括更多机器人 Recipe、自动数据采集流程、SmolVLA 与 OpenVLA 接入，以及部署和扩展性基准。
 
 ## 参与贡献
 

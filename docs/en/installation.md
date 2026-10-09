@@ -52,29 +52,45 @@ development group. The separate XLeRobot environment defaults to
 | `setup --mode software` | Small runtime environment without owner or PyTorch | `check --mode software --json`, then fixture `dry-run` |
 | `setup --mode hardware` | Full owner extra, including locked LeRobot, CPU PyTorch, cameras, and recording | `check --mode hardware --json`, then operator verification |
 
-`setup` / `check` default to hardware mode when `--mode` is omitted. Hardware
+XLeRobot `setup` / `check` default to hardware mode when `--mode` is omitted. Hardware
 check reports the installed LeRobot parent directory as `environment.sdk_src`;
 use it for `hardware.local.json`'s `sdk_src`. A custom SDK checkout needs its own
 version verification. Installing dependencies does not fill calibration,
 devices, routes, or a model checkpoint. Inference runs in a separate service.
-MicroDuck uses its own Python 3.12 / uv 0.12.x project and lock under
-`examples/microduck_vln/`. Native and Docker `software` setup select its small
-CLI/integration profile; `simulation` adds the locked simulator/inference extra
-and is the default. Software checks need no assets or GPU; full simulation
-still requires compatible external assets and separate CUDA/EGL/model acceptance.
-See the [MicroDuck guide](microduck-vln.md).
+MicroDuck defaults to a separate `.venv-microduck` environment. Native setup
+and its container targets use `examples/microduck_vln/uv.lock` with Python 3.12
+and uv 0.12.x. `setup --mode software` installs the small CLI/integration profile;
+`check --mode software --json` checks that environment and configuration without
+assets, a GPU, or a running scene. `setup --mode simulation` adds the locked
+`simulation` extra, including simulator and inference packages. MicroDuck
+defaults to `simulation` when mode is omitted; installing it does not supply
+assets or prove CUDA/EGL or model readiness. See the [MicroDuck Recipe](microduck-vln.md).
+
+MicroDuck software validation on Ubuntu 24.04 aarch64 installed the same 14
+locked packages natively (Python 3.12.3) and in Docker (Python 3.12.14).
+Both use Python 3.12, with different patch versions; both entrypoints passed
+plain and JSON checks. The initial uncached native online setup reached an
+external 180-second test limit (interrupted, exit 130); normal frozen setup
+then passed using freshly downloaded wheel assistance. The empty-cache
+Docker build reached an external 600-second test limit (interrupted, exit 130);
+the same production Dockerfile passed on a warm retry (exit 0). These results
+do not establish fast uncached installation or independent first use.
+One fresh full-profile native install also reached the 600-second test limit
+before completion: imports and CUDA/EGL probes were not run, and the full
+Docker target was not built in this validation round. Scene/model acceptance
+remains open.
 
 The separate Recipe software workflow runs for relevant source, dependency and
 container changes, or by manual dispatch. Documentation-only changes use the
 existing CPU, lint and documentation jobs.
-Its jobs install both Recipes from frozen locks without
-restored uv caches, build their production software targets in fresh Docker
-builders, run both entrypoints as the host UID with container networking disabled,
-and compare native/container package inventories. XLeRobot also runs its fixture
-rehearsal through both entrypoints. Printed hints preserve the selected scene
-Python and work outside the checkout, including paths with spaces. These checks
-cover software onboarding; independent human first use and physical/model
-acceptance remain follow-up work.
+Its jobs install XLeRobot and MicroDuck from frozen locks
+without restored uv caches, build their production software targets in fresh
+Docker builders, run both entrypoints as the host UID with container networking
+disabled, and compare native/container package inventories. XLeRobot also runs
+its fixture rehearsal through both entrypoints. Printed hints preserve the
+selected scene Python and work outside the checkout with space-containing paths.
+These checks cover software onboarding; full simulation, native LeRobot cost
+comparisons and independent human first use remain follow-up acceptance work.
 
 If the initial `uv sync` or `docker compose build` fails before the Recipe CLI
 starts, no Recipe `Outputs:` or `run.json` exists yet. Save the terminal
@@ -83,7 +99,7 @@ During Recipe setup, read `command-0.log` under the printed `Outputs:` directory
 the first failure and exit code, then retry the same mode after correcting the
 cause. For an explicit native uv HTTP read timeout, a retry can use
 `UV_HTTP_TIMEOUT=300 uv run --frozen embodirun example "$CONFIG" setup --mode software`
-(use hardware mode when that was the failed command). This host variable is
+(repeat the failed mode: `hardware` for XLeRobot or `simulation` for full MicroDuck). This host variable is
 not automatically passed to `docker compose build`. Record download cache use
 and retries; software rehearsal time does not measure a full owner installation.
 
@@ -162,10 +178,6 @@ not encrypt or authenticate the link; use it only on a trusted network.
 
 ## Managed deployments {#managed-deployments}
 
-Recipe containers require Docker Engine, Compose and Buildx with BuildKit support.
-Check `docker buildx version` and `docker compose version` before building;
-the Dockerfile's cache mounts cannot run with the legacy builder.
-
 `embodirun init` checks out the pinned EmbodiRun and EmbodiInfer revisions in
 each node's deployment directory and runs `uv sync --frozen` there.
 
@@ -176,7 +188,14 @@ for reproducibility. Initialize it only if you want the pinned tree:
 git submodule update --init third_party/embodiinfer
 ```
 
-The recipe container targets are `host`, `xlerobot-software`, `xlerobot`, `microduck-software`, and `microduck` in the
+### Containers {#containers}
+
+Install Docker Engine, the Compose plugin and Buildx with BuildKit support.
+The Dockerfile's cache mounts require BuildKit; the legacy builder cannot build it.
+Check `docker buildx version` and `docker compose version` before building.
+
+The recipe container targets are `host`, `xlerobot-software`, `xlerobot`,
+`microduck-software`, and `microduck` in the
 repository `Dockerfile`. Build them on the target Linux host, with the pinned
 submodule initialized before building `microduck`:
 
@@ -209,10 +228,24 @@ inference service, or RPent. It needs no GPU runtime, devices, SDK, calibration,
 or checkpoint. XLeRobot software/hardware images and native setup use the same
 recipe project and lock; generic `host` remains on the root Host dependency tree.
 
-The `microduck-software` service uses the same Recipe lock as native MicroDuck
-software setup. Use `init microduck`, then `validate`, `plan` and
-`check --mode software --json`; it needs no GPU runtime or external assets.
-The [MicroDuck guide](microduck-vln.md) links the complete container commands.
+MicroDuck's software image follows the same offline configuration flow, without
+GPU runtime, simulator packages, assets, or checkpoints:
+
+```bash
+mkdir -p examples/local
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software init microduck --output /workspace/microduck
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software /workspace/microduck/example.local.yaml validate
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software /workspace/microduck/example.local.yaml plan
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software /workspace/microduck/example.local.yaml check --mode software --json
+```
+
+The image already installed the selected profile during its build; skip native
+`setup` inside the container. The full `microduck` image adds the same lock's
+`simulation` extra and the pinned inference source. To prepare simulation,
+provide the external asset root through `MICRODUCK_ASSETS` and initialize a
+separate recipe with `--assets /assets`; see the [Recipe's Docker steps](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/microduck_vln/README.md#docker).
+The asset mount stays read-only. A successful software check does not verify
+CUDA/EGL, external asset compatibility, model inference, or an episode rollout.
 
 When reusing a native manifest in Docker, back it up first. Its top-level
 `python` overrides the image's `EMBODIRUN_SCENE_PYTHON`, so a host interpreter

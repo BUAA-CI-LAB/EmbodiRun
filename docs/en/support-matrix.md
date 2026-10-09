@@ -7,6 +7,23 @@ The roadmap tracks the next integrations separately from the current catalog.
 **◐ Experimental** — integration code is available; setup is platform-specific.<br>
 **○ Planned** — on the roadmap, not yet implemented.
 
+## Scenario guides
+
+| Scenario | Start here | Related setup |
+|---|---|---|
+| VLA | [SO-101 grasping](demos/so101-grasping.md) | [Multiple arms](demos/multi-robot-serving.md), [engine variants](demos/engine-e2e-contrast.md), [Bi-SO-101](pi05-bi-so101.md) |
+| VLN | [MicroDuck / ActiveVLN in MuJoCo](demos/microduck-vln.md) | Simulator and robot configurations below |
+| Agent | [XLeRobot snack delivery](demos/xlerobot-snack-delivery.md) | [Agent workflow](agent-workflow.md), [RPent integration](rpent-integration.md) |
+
+Full task instructions are in the [Recipe index](examples.md). The catalog
+below describes adapter support; follow the linked guide for platform-specific
+dependencies and calibration.
+
+π0.5 HTTP and WirelessComm services support cross-session batching with
+`--max-batch`, which defaults to 1. DM0.5 and StreamVLN currently execute one
+request at a time. MicroDuck uses its integration-specific ActiveVLN HTTP
+service.
+
 ## Current support
 
 <div class="grid cards support-grid" markdown>
@@ -21,6 +38,7 @@ The roadmap tracks the next integrations separately from the current catalog.
     **◐ VLABench**<br>
     Manipulation with π0.5.
 
+    **◐ MuJoCo / MicroDuck** — ActiveVLN navigation.<br>
     **◐ Habitat · Isaac Sim**<br>
     Navigation with StreamVLN.
 
@@ -109,16 +127,25 @@ The roadmap tracks the next integrations separately from the current catalog.
     [WirelessComm configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/http-wireless-inference/wireless.yaml)
     and [transport measurements](inference-transport.md).
 
-## MicroDuck recipe prerequisites {#microduck-prerequisites}
+## MicroDuck prerequisites {#microduck-prerequisites}
 
-The [MicroDuck guide](microduck-vln.md) separates the software and simulation paths.
-Native setup and both container targets share the Python 3.12 / uv 0.12.x
-Recipe lock. Software `init`, `validate`, `plan` and `check --mode software`
-need no GPU, model or scene. Simulation is the default setup/check mode and
-adds the locked optional dependencies; scene/checkpoint/episode assets,
-dependency imports, CUDA/EGL and model/navigation success require separate
-target validation. The full profile remains experimental. Software CI does
-not establish a new verified model/hardware combination.
+The [MicroDuck Recipe](microduck-vln.md) is a dedicated simulation launcher
+using the HTTP inference client; it does not register a Host/Control device.
+
+| Stage | Required inputs and evidence |
+|---|---|
+| Configuration | `init microduck` → `validate` → `plan` works without a GPU or assets. `plan` previews simulation; it starts no child process. |
+| Installation | Python 3.12 / uv 0.12.x; native `setup`, direct `uv sync --project examples/microduck_vln --frozen` and Docker share one Recipe lock. `--mode software` selects base dependencies; `--mode simulation` adds the simulation extra and is the default. Setup does not download models or scenes. |
+| Software check | `check --mode software`, with or without `--json`, reads configuration and installed metadata only. CUDA/EGL, assets, dependency imports and model execution remain unverified. No fixture `dry-run` is implemented. |
+| Simulation local check | `check --mode simulation --json` reads installed metadata, project/checkpoint/episodes/inventory paths and the inference source entrypoint. CUDA/EGL and model readiness remain unverified. |
+| Full preflight | Plain `check --mode simulation`: Linux CUDA/NVIDIA EGL, external MuJoCo scene and robot meshes, walking ONNX, compatible merged SFT-v3 weights and episode data; verifies the scene/MPC/encoder, not learned VLN inference. |
+| Run | Actual inference and recorded episodes; inspect per-episode success separately from completed process status. |
+| Reproducibility evidence | Record fresh target installation, native/Docker package parity and independent first use separately. A software check or lock resolution does not establish full GPU/model execution. |
+
+Keep Transformers 4.51.3 separate from Transformers 5.x profiles. The historical
+A800 reference environment is not evidence that a different GPU or architecture
+has been validated. See [Runtime costs](runtime-value.md) for the separately
+pending deployment comparison.
 
 ## XLeRobot recipe prerequisites {#xlerobot-recipe-prerequisites}
 
@@ -186,6 +213,20 @@ on the target. A container image alone does not establish hardware/GPU support.
     - [ ] Example deployments and closed-loop checks
 
 </div>
+
+### Planned Recipes and benchmarks
+
+| Area | Deliverable | Status |
+|---|---|---|
+| VLA | Complete Recipes for Bi-SO-101, Franka FR3, ARX X5, and manipulation simulators | 🟨 待补充 |
+| VLA | Dedicated single-arm SO-101 video and repeated task-success measurements | 🟨 待补充 |
+| VLN | Complete Recipes for Go2, Habitat, Isaac Sim, and LightNav-0/XLeRobot | 🟨 待补充 |
+| Agent | Automatic collection workflow and video, including task reset and dataset export | 🟨 待补充 |
+| Agent | Additional mobile-manipulation agent Recipes | 🟨 待补充 |
+| Performance | Deployment comparisons and client/node scaling curves | 🟨 待补充 |
+
+Benchmark workloads and data requirements are described in the
+[benchmark plan](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/benchmarks/README.md#planned-benchmarks).
 
 ## Agents and extensions
 

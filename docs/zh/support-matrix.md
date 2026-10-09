@@ -7,6 +7,20 @@
 **◐ 实验性支持** — 集成代码可用，需按平台配置。<br>
 **○ 计划支持** — 尚未实现。
 
+## 场景指南
+
+| 场景 | 入门 | 相关配置 |
+|---|---|---|
+| VLA | [SO-101 抓取](demos/so101-grasping.md) | [多臂共享推理](demos/multi-robot-serving.md)、[引擎变体](demos/engine-e2e-contrast.md)、[Bi-SO-101](pi05-bi-so101.md) |
+| VLN | [MuJoCo 中的 MicroDuck / ActiveVLN](demos/microduck-vln.md) | 下方的仿真器与机器人配置 |
+| Agent | [XLeRobot 零食递送](demos/xlerobot-snack-delivery.md) | [Agent 工作流](agent-workflow.md)、[RPent 集成](rpent-integration.md) |
+
+完整任务步骤见 [Recipe 索引](examples.md)。下方目录说明适配器支持状态，
+各平台的依赖与标定要求见对应指南。
+
+π0.5 HTTP 与 WirelessComm 服务通过 `--max-batch` 支持跨会话批处理，默认值为 1。
+DM0.5 与 StreamVLN 当前逐请求执行。MicroDuck 使用其专用集成中的 ActiveVLN HTTP 服务。
+
 ## 当前支持
 
 <div class="grid cards support-grid" markdown>
@@ -21,6 +35,7 @@
     **◐ VLABench**<br>
     π0.5 操作任务。
 
+    **◐ MuJoCo / MicroDuck** — ActiveVLN 导航。<br>
     **◐ Habitat · Isaac Sim**<br>
     使用 StreamVLN 进行导航。
 
@@ -109,13 +124,23 @@
     [WirelessComm 配置](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/http-wireless-inference/wireless.yaml)
     和[传输测量](inference-transport.md)。
 
-## MicroDuck Recipe 前提 {#microduck-prerequisites}
+## MicroDuck 前提 {#microduck-prerequisites}
 
-[MicroDuck 指南](microduck-vln.md)分别描述软件与仿真流程。Native setup 与两个容器目标
-共用 Python 3.12 / uv 0.12.x Recipe 锁。软件 `init`、`validate`、`plan` 与
-`check --mode software` 无需 GPU、模型或场景。默认的 setup/check 模式是 simulation，
-增加锁定的可选依赖；场景、checkpoint、episode、依赖导入、CUDA/EGL 与模型导航结果
-仍需在目标机器另行验证。完整 profile 仍为实验性；软件 CI 不构成新模型/硬件组合的验证。
+[MicroDuck Recipe](microduck-vln.md)通过 HTTP 推理客户端运行独立仿真 launcher，
+不注册 Host/Control 设备。
+
+| 阶段 | 所需输入与证据 |
+|---|---|
+| 配置 | `init microduck` → `validate` → `plan` 无需 GPU 或资源；`plan` 只预览仿真命令，不启动子进程。 |
+| 安装 | Python 3.12 / uv 0.12.x；native `setup`、直接 `uv sync --project examples/microduck_vln --frozen` 与 Docker 共用 Recipe 锁。`--mode software` 选择基础依赖；默认的 `--mode simulation` 增加仿真 extra。Setup 不下载模型或场景。 |
+| 软件检查 | `check --mode software` 可带或不带 `--json`，只读取配置与已安装包元数据。CUDA/EGL、资源、依赖导入和模型执行仍未验证。该 Recipe 未实现 fixture `dry-run`。 |
+| 仿真本地检查 | `check --mode simulation --json` 读取已安装包元数据、项目/checkpoint/episode/清单路径与推理源码入口，CUDA/EGL 与模型就绪仍未验证。 |
+| 完整预检 | 普通 `check --mode simulation` 需要 Linux CUDA/NVIDIA EGL、外部 MuJoCo 场景及机器人网格、行走 ONNX、适配的合并 SFT-v3 权重和任务数据；验证场景/MPC/编码器，不运行学习模型 VLN 推理。 |
+| 运行 | 实际推理与录制 episode；任务成功与进程结束状态分别检查。 |
+| 复现证据 | 新目标主机安装、Native/Docker 包一致性与独立首次上手分别记录；软件检查或锁解析不能证明完整 GPU/模型执行。 |
+
+Transformers 4.51.3 应与 5.x profile 分开。此前 A800 参考环境不能证明另一种 GPU 或架构已通过验证。
+另见 [Runtime 成本](runtime-value.md)中待测的部署对照。
 
 ## XLeRobot Recipe 前提 {#xlerobot-recipe-prerequisites}
 
@@ -180,6 +205,19 @@ Linux ARM64 依赖与可选集成需在目标机器检查；仅有容器镜像�
     - [ ] 示例部署与闭环检查
 
 </div>
+
+### 计划补充的 Recipe 与基准
+
+| 方向 | 内容 | 状态 |
+|---|---|---|
+| VLA | Bi-SO-101、Franka FR3、ARX X5 与操作仿真器的完整 Recipe | 🟨 待补充 |
+| VLA | SO-101 专用单臂视频与多次任务成功率测量 | 🟨 待补充 |
+| VLN | Go2、Habitat、Isaac Sim 与 LightNav-0/XLeRobot 的完整 Recipe | 🟨 待补充 |
+| Agent | 自动采集流程与视频，包含任务复位和数据集导出 | 🟨 待补充 |
+| Agent | 更多移动抓取 Agent Recipe | 🟨 待补充 |
+| 性能 | 部署框架对比及客户端／节点扩展曲线 | 🟨 待补充 |
+
+测量工作负载与数据要求见[基准规划](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/benchmarks/README.md#planned-benchmarks)。
 
 ## Agent 与扩展
 

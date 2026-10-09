@@ -5,8 +5,8 @@
 <h3 align="center">From model predictions to robot actions.</h3>
 <p align="center">
   <a href="https://embodirun.readthedocs.io/">Documentation</a> ·
-  <a href="#quick-start">Quick start</a> ·
-  <a href="#demos">Demos</a> ·
+  <a href="#quick-start-and-recipes">Quick start</a> ·
+  <a href="#three-scenarios">Scenarios</a> ·
   <a href="#performance">Performance</a> ·
   <a href="docs/en/support-matrix.md">Support matrix</a> ·
   <a href="README.zh-CN.md">简体中文</a>
@@ -18,92 +18,63 @@
   <a href="https://embodirun.readthedocs.io/"><img src="https://readthedocs.org/projects/embodirun/badge/?version=latest" alt="Documentation"></a>
 </p>
 
-**EmbodiRun is a deployment and execution runtime for embodied AI.** Describe
-your devices, inference services, and compute nodes in YAML, then run the
-observation–inference–action loop through a shared runtime. Keep control beside
-the robot and place inference on a GPU host, or run both on one machine.
+**EmbodiRun is a deployment and execution runtime for embodied AI.** Connect
+robot observations to a model or agent, execute its actions, and record the
+session. A YAML configuration describes the devices, inference services, and
+compute nodes, so control can run beside the robot while inference runs on a
+GPU host.
 
-Use [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer) as the inference
-engine, connect an external model service, or bring an agent with its own
-planning loop.
+Use [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer) for model inference,
+connect an external service, or build a task loop with the
+[Agent client](agents/CLIENT.md).
 
-## Demos
+## Three scenarios
 
-| Three robots, one inference service | Comparing inference engines on SO-101 |
+| VLA · Manipulation | VLN · Navigation | Agent · Mobile manipulation |
+|---|---|---|
+| [![SO-101 grasping](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/multi_robot_serving.jpg)](docs/en/demos/so101-grasping.md) | [![MicroDuck in MuJoCo](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/microduck_simulation_one_click_demo.jpg)](docs/en/demos/microduck-vln.md) | [![XLeRobot snack delivery](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/xlerobot_snack_delivery/xlerobot_snack_delivery_overview.jpg)](docs/en/demos/xlerobot-snack-delivery.md) |
+| **SO-101 + π0.5:** pick up a cube and place it in a bowl using camera images and joint state. | **MicroDuck + ActiveVLN:** follow a language instruction through a MuJoCo scene. | **Mobile base + SO-101 arms:** combine recorded routes, RPent/Astra scene review, and VLA grasping to deliver a snack under operator supervision. |
+| [Watch and learn](docs/en/demos/so101-grasping.md) · [Recipe](examples/so101_grasping.md) | [Watch and learn](docs/en/demos/microduck-vln.md) · [Recipe](examples/microduck_vln/README.md) | [Workflow and architecture](docs/en/demos/xlerobot-snack-delivery.md) · [Recipe](examples/xlerobot_snack_delivery/README.md) |
+
+Explore [Recipes](examples/README.md) for multiple arms, alternative inference
+backends, and software-only examples. The [support matrix](docs/en/support-matrix.md)
+lists robot, simulator, and model integrations.
+Recipes use the shared `embodirun example` CLI; `examples/run.sh` remains a
+compatible entrypoint for source checkouts.
+
+## Why EmbodiRun
+
+| Feature | What you can do |
 |---|---|
-| [![Three SO-101 recordings](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/multi_robot_serving.jpg)](https://embodirun.readthedocs.io/en/latest/demos/multi-robot-serving/) | [![Engine comparison on SO-101](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/engine_e2e_contrast.jpg)](https://embodirun.readthedocs.io/en/latest/demos/engine-e2e-contrast/) |
-| Three SO-101 arms using a shared π0.5 inference service, with one rollout process per device. | π0.5 on a Jetson AGX Thor with an SO-101 arm: EmbodiInfer over HTTP and WirelessComm, SGLang, and native LeRobot. |
+| **Deploy across machines** | Describe nodes, environments, devices, and model services in YAML; let Host prepare and launch the deployment. |
+| **Share inference across robots** | Run independent sessions and control loops against one model service, with optional π0.5 cross-session batching. |
+| **Choose your transport** | Connect through HTTP or WirelessComm with versioned observation/action contracts and consistent session and step handling. |
+| **Observe, execute, and record** | Reuse camera and state snapshots across agents, inference, and recording; validate actions and coordinate execution with manual takeover. |
 
-| Fetching a snack with XLeRobot | Language-guided navigation with MicroDuck |
-|---|---|
-| [<img src="https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/xlerobot_snack_delivery/xlerobot_snack_delivery_overview.jpg" alt="XLeRobot at the snack table" width="356">](https://embodirun.readthedocs.io/en/latest/demos/xlerobot-snack-delivery/) | [<img src="https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/microduck_simulation_one_click_demo.jpg" alt="MicroDuck simulation views and execution log" width="200">](https://embodirun.readthedocs.io/en/latest/demos/microduck-vln/) |
-| An agent connects base motion, VLA grasping, and the return trip through EmbodiRun. | Launch a MuJoCo navigation run with ActiveVLN, first- and third-person views, and step-by-step execution logs. |
-
-Click a preview to watch the video and explore the setup.
-
-[Reproduce the demos](docs/en/examples.md) with versioned YAML configurations and
-the shared `embodirun example` CLI (`examples/run.sh` remains available).
-
-## Why EmbodiRun?
-
-Keep control close to the robot. Share compute where it counts.
-
-<table>
-<tr>
-<td width="50%" valign="top">
-<h3>🌐 One config, multiple machines</h3>
-<p>Place robot control on the edge and inference on a GPU host. One YAML describes the nodes, environments, devices, and bindings; the Host CLI handles preparation and service lifecycle.</p>
-<a href="docs/en/architecture.md">Deployment architecture →</a>
-</td>
-<td width="50%" valign="top">
-<h3>🦾 Multiple robots, shared inference</h3>
-<p>Connect independent device loops to a shared model endpoint. Each robot keeps its own session and execution flow while using the same inference service.</p>
-<a href="docs/en/demos/multi-robot-serving.md">See three SO-101 arms in action →</a>
-</td>
-</tr>
-<tr>
-<td valign="top">
-<h3>🔌 Two transports, one contract</h3>
-<p>Choose HTTP or WirelessComm for inference without changing the model-facing observation and action contract. Session and step semantics stay consistent across transports.</p>
-<a href="docs/en/inference-transport.md">Transport design and measurements →</a>
-</td>
-<td valign="top">
-<h3>📷 Capture once, reuse across consumers</h3>
-<p>Shared camera and state snapshots feed inference, agent observations, and recording. The runtime owns device connections, so each consumer does not need to open the hardware again.</p>
-<a href="docs/en/architecture.md">Device and observation ownership →</a>
-</td>
-</tr>
-<tr>
-<td valign="top">
-<h3>🧩 Your planner, a ready robot API</h3>
-<p>Observe, request policy proposals, execute actions, inspect jobs, and cancel through a dependency-free Python client. Bring your own planning loop; reuse the runtime underneath.</p>
-<a href="agents/CLIENT.md">Agent client →</a>
-</td>
-<td valign="top">
-<h3>🎛️ Execution with operator control</h3>
-<p>Action validation, execution arbitration, and manual takeover sit between policy output and hardware. Robot adapters and policy bindings keep motion details out of application code.</p>
-<a href="docs/en/safety.md">Execution controls and hardware setup →</a>
-</td>
-</tr>
-</table>
-
-## How it works
+## From predictions to execution
 
 ![Host deploys Control and inference; Control connects applications to robots and model services](docs/assets/runtime-overview.svg)
 
-**Host** prepares and launches the deployment. **Control** owns robot connections,
-observations, and action execution; **Simulation** serves simulator environments.
-**Inference** turns observations into predictions. These services can run on
-separate machines. See [Architecture](docs/en/architecture.md) for the full design.
+Model services produce predictions; agents choose task steps. EmbodiRun connects
+both to the robot through shared observations, policy proposals, execution jobs,
+and session recording. This lets the same application work with different
+devices and service placements.
+
+| Component | Role |
+|---|---|
+| **EmbodiRun** | Service deployment, robot and simulator observations, session coordination, action validation, execution, and recording. |
+| [**EmbodiInfer**](https://github.com/BUAA-CI-LAB/EmbodiInfer) | Checkpoint loading, model inference, optimization, batching, and multi-GPU execution. |
+| [**WirelessComm**](https://github.com/BUAA-CI-LAB/WirelessComm) | Optional transport for communication between control and inference services. |
+| **RPent / Astra / your agent** | Task planning and scene review through the [Agent client](agents/CLIENT.md). |
+
+See [Architecture](docs/en/architecture.md) for the service layout and the
+[Agent workflow](docs/en/agent-workflow.md) for application integration.
+[Runtime responsibilities and costs](docs/en/runtime-value.md) compares this
+scope with LeRobot and ROS 2 and identifies the deployment measurements still needed.
 
 ## Performance
 
-### π0.5 on a real SO-101 arm
-
-On a Jetson AGX Thor, the recorded comparison reduced median inference latency
-from **1,061 ms to 162 ms** and the complete control-loop chunk from
-**3,592 ms to 2,660 ms**. Faster inference shortens the loop; action playback
-still accounts for about 2.45 seconds per chunk.
+![SO-101 inference and full-chunk latency](docs/assets/performance/so101-engine-comparison.svg)
 
 | Engine | Transport | Inference latency | Full chunk time |
 |---|---|---:|---:|
@@ -112,18 +83,26 @@ still accounts for about 2.45 seconds per chunk.
 | SGLang | HTTP | 194 ms | 2,713 ms |
 | Native LeRobot | HTTP | 1,061 ms | 3,592 ms |
 
-Medians over 15 chunks per run, with the same SO-101 checkpoint, 10 denoising
-steps, two cameras, and 50-step action chunks at 20 Hz. EmbodiInfer uses its
-optimized path, SGLang uses upstream defaults, and LeRobot uses eager execution.
-The [demo report](docs/en/demos/engine-e2e-contrast.md) describes the hardware,
-engine settings, and timing breakdown.
+SO-101 grasping on Jetson AGX Thor: the same checkpoint, two cameras, 10 denoising
+steps, and 50-step chunks at 20 Hz; medians over 15 chunks per run. EmbodiInfer
+uses BF16, Inductor, CUDA graphs, and Triton attention; SGLang uses upstream
+defaults and LeRobot uses eager execution.
 
-For transport measurements, see the [HTTP/WirelessComm experiment](docs/en/inference-transport.md).
-For model-only benchmarks, see [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer#performance).
+In this configuration, EmbodiInfer with WirelessComm reduces the full chunk
+time by about **26%** compared with native LeRobot. Action playback accounts for
+about 2.45 seconds of each chunk.
 
-## Quick start
+[Conditions and timing breakdown](docs/en/demos/engine-e2e-contrast.md) ·
+[Summary data and chart generator](benchmarks/engine-comparison/README.md) ·
+[HTTP / WirelessComm measurements](docs/en/inference-transport.md) ·
+[Model inference benchmarks](https://github.com/BUAA-CI-LAB/EmbodiInfer#performance)
 
-### Try the runtime on your laptop
+## Quick start and Recipes
+
+When testing an unmerged PR, check out its head branch before installing;
+the default `main` checkout does not include that PR's changes.
+
+### Run a local example
 
 Install from source with Python 3.10+ and [uv](https://docs.astral.sh/uv/) 0.12.x:
 
@@ -131,84 +110,69 @@ Install from source with Python 3.10+ and [uv](https://docs.astral.sh/uv/) 0.12.
 git clone https://github.com/BUAA-CI-LAB/EmbodiRun.git
 cd EmbodiRun
 uv sync --frozen
-```
-
-Try the local simulated-device walkthrough:
-
-```bash
 uv run python examples/run_shared_device_fake.py
 ```
 
-It starts a local Control service with simulated joints and a fake camera,
-exercises observation, execution, recording, and cancellation, and shuts the
-service down. No robot, model checkpoint, or GPU is required.
+The example starts a local Control service with simulated joints and a fake
+camera, walks through observation, execution, recording, and cancellation, then
+shuts down. It runs on a laptop without a robot, checkpoint, or GPU.
 
-### Connect your robot or simulator
+### Run a task
 
-Continue with [Quick start](docs/en/quickstart.md) to use the deployment CLI.
-For hardware, choose a combination from the [support matrix](docs/en/support-matrix.md),
-configure its devices and calibration, and read [Safety](docs/en/safety.md)
-before execution.
+Choose a Recipe for environment setup, configuration, launch commands, outputs,
+and shutdown:
 
-## Support at a glance
+- **VLA:** [SO-101 grasping](examples/so101_grasping.md).
+- **VLN:** [MicroDuck navigation in MuJoCo](examples/microduck_vln/README.md).
+- **Agent:** [XLeRobot snack delivery with RPent/Astra](examples/xlerobot_snack_delivery/README.md).
+- **Variants:** [Shared inference, other backends, and software examples](examples/README.md).
 
-✓ **Software-tested** · ◐ **Experimental** · ○ **Planned**
+For a first Recipe rehearsal, use Python 3.12 and the unified CLI:
 
-<table>
-<tr>
-<th align="left">🧪 Simulators</th>
-<th align="left">🦾 Robots</th>
-<th align="left">🧠 Models</th>
-</tr>
-<tr>
-<td valign="top">
-<p>✓ <b>LIBERO</b></p>
-<p>◐ VLABench<br>◐ Habitat<br>◐ Isaac Sim</p>
-<a href="docs/en/support-matrix.md#simulators">Simulator setup →</a>
-</td>
-<td valign="top">
-<p>✓ <b>SO-101</b> · real-robot demos<br>✓ <b>Bi-SO-101</b><br>✓ <b>Franka FR3</b></p>
-<p>◐ ARX5<br>◐ Unitree Go2<br>◐ XLeRobot</p>
-<a href="docs/en/support-matrix.md#robots">Robot setup →</a>
-</td>
-<td valign="top">
-<p>✓ <b>π0.5</b></p>
-<p>◐ DM0.5 · ARX5 binding<br>◐ StreamVLN · navigation<br>◐ LightNav-0 · external binding</p>
-<a href="docs/en/support-matrix.md#models">Model connections →</a>
-</td>
-</tr>
-</table>
+```bash
+uv sync --frozen --python 3.12
+uv run --frozen embodirun example init xlerobot
+CONFIG=examples/local/xlerobot/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" setup --mode software
+uv run --frozen embodirun example "$CONFIG" check --mode software --json
+uv run --frozen embodirun example "$CONFIG" dry-run
+```
 
-These are EmbodiRun integration statuses. Choose a model–device pairing in the
-[deployment recipes](docs/en/support-matrix.md#deployment-recipes).
-For an experimental MuJoCo navigation workflow, see the
-[MicroDuck VLN recipe](docs/en/microduck-vln.md).
-For the inference engine's broader model catalog, see
-[EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer#supported-models).
+This XLeRobot rehearsal uses fixtures and opens no robot or model. Use the
+printed `Outputs:` directory for `run.json` and command logs; see
+[outputs and shutdown](examples/README.md#outputs-and-shutdown).
+MicroDuck starts with `init` → `validate` → `plan` → `setup --mode software` →
+`check --mode software --json`; this checks configuration and installed metadata
+without scene assets or a GPU. Native setup and Docker use its dedicated Recipe
+lock. Default setup/check mode remains `simulation`: plain simulation `check`
+uses CUDA/EGL and external assets, while its JSON form checks metadata and local
+paths. Follow the [MicroDuck Recipe](docs/en/microduck-vln.md) before `run`,
+then use its logs and `down` instructions. Software checks do not establish
+model inference or navigation success.
 
-**Bring your own application:** use the [Python client](agents/CLIENT.md),
-the experimental [RPent adapter](docs/en/rpent-integration.md), or connect an
-[external inference service](docs/en/http_api.md).
+For an existing coding Agent, follow [independent first use](docs/en/first-use.md)
+and the [Agent workflow](docs/en/agent-workflow.md). Record actual commands,
+missing prerequisites and help received; a document review alone is not a run.
 
-### Planned support
+The [deployment quick start](docs/en/quickstart.md) explains the CLI and YAML
+configuration. Before enabling robot motion, complete calibration and read the
+[hardware safety guide](docs/en/safety.md).
 
-- [ ] 🦾 **AgileX PiperX** — robot adapter and policy binding.
-- [ ] 🧠 **SmolVLA** — inference adapter and deployment integration.
-- [ ] 🧠 **OpenVLA** — base-model support, separate from the existing OpenVLA-OFT inference adapter.
-- [ ] 🧪 **More simulators** — next targets to be selected.
+## Documentation and roadmap
 
-Implementation steps and integration ownership are tracked in the
-[roadmap](docs/en/support-matrix.md#roadmap).
-
-## Documentation
-
-| Task | Guide |
+| Looking for | Start here |
 |---|---|
-| Install and run | [Installation](docs/en/installation.md) · [Quick start](docs/en/quickstart.md) |
-| Configure a deployment | [Configuration](docs/en/configuration.md) |
-| Operate devices | [Control](docs/en/control.md) · [Safety](docs/en/safety.md) |
-| Extend the runtime | [Architecture](docs/en/architecture.md) · [Python API](docs/en/api.md) |
-| Review evidence | [Support matrix](docs/en/support-matrix.md) · [Experiments](docs/en/experiments.md) |
+| Installation and deployment | [Installation](docs/en/installation.md) · [Quick start](docs/en/quickstart.md) · [Configuration](docs/en/configuration.md) |
+| Application integration | [Independent first use](docs/en/first-use.md) · [Agent workflow](docs/en/agent-workflow.md) · [Inference API](docs/en/http_api.md) · [Python API](docs/en/api.md) |
+| Complete task instructions | [Recipes](examples/README.md) |
+| Deployment templates | [configs/](configs/) |
+| Measurements and results | [benchmarks/](benchmarks/README.md) · [Runtime costs](docs/en/runtime-value.md) |
+| Supported and planned integrations | [Support matrix and roadmap](docs/en/support-matrix.md) |
+
+The roadmap covers additional robot Recipes, an automatic data-collection
+workflow, SmolVLA and OpenVLA integration, and deployment and scaling benchmarks.
 
 ## Contributing
 

@@ -60,7 +60,7 @@ Native `setup`、直接 `uv sync` 与 `microduck-software` / `microduck` Docker 
 新目标主机安装、Native/Docker 一致性与 GPU/模型执行分别记录验证结果；
 锁解析或软件检查通过不能证明后几项。Docker 命令见示例指南。
 Transformers 4.51.3 环境应与 5.x 模型环境分开。
-记录实际命令、缓存状态、协助和结果，并与独立人工首次使用分别报告。
+按[独立首次上手](first-use.md)记录实际执行。
 
 Recipe 打印 `Outputs:`，运行目录包含 `run.json`、命令日志与 `result/`；
 其中可查看 `preflight.json`、`run.log`、`inference.log`。`run` 退出时清理其子进程。

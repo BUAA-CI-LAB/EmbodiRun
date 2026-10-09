@@ -7,6 +7,12 @@
 每个实验都说明了其输入，以及使用回放、仿真
 还是实体设备。
 
+## 推理引擎对比
+
+[SO-101 对比](demos/engine-e2e-contrast.md)测量 EmbodiInfer、SGLang 与原生 LeRobot 的推理延迟和完整动作块耗时，
+并提供[汇总数据与绘图脚本](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/benchmarks/engine-comparison)。
+基准命令与后续测量规划见[基准索引](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/benchmarks/README.md)。
+
 ## 实验目录
 
 | 实验 | 研究问题 | 主要结果 |
