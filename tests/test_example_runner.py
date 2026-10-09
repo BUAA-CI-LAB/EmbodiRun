@@ -1,8 +1,13 @@
 """Exercise example dispatch and safety gates without hardware or optional SDKs."""
 
+import contextlib
 import json
 import os
+import signal
+import socket
+import subprocess
 import sys
+import threading
 import time
 
 import pytest
@@ -243,6 +248,93 @@ def test_parallel_failure_reaps_other_local_children(tmp_path):
     assert time.monotonic() - started < 10
     with pytest.raises(ProcessLookupError):
         os.kill(int(pid_path.read_text()), 0)
+
+
+@pytest.mark.parametrize("outcome", ["complete", "failure", "down"])
+def test_command_cleanup_releases_a_stubborn_descendant_listener(tmp_path, outcome):
+    from examples.lifecycle import Supervisor, stop_owned
+
+    ready = tmp_path / "descendant.json"
+    descendant = r"""
+import json, os, pathlib, signal, socket, sys
+signal.signal(signal.SIGTERM, signal.SIG_IGN)
+signal.signal(signal.SIGINT, signal.SIG_IGN)
+listener = socket.socket()
+listener.bind(('127.0.0.1', 0))
+listener.listen()
+pathlib.Path(sys.argv[1]).write_text(json.dumps({'pid': os.getpid(), 'port': listener.getsockname()[1]}))
+while True:
+    connection, _ = listener.accept()
+    connection.close()
+"""
+    wait_ready = (
+        "import pathlib, time; ready=pathlib.Path(" + repr(str(ready)) + "); deadline=time.monotonic()+5\n"
+        "while not ready.exists() and time.monotonic()<deadline: time.sleep(.01)\n"
+        "assert ready.exists(), 'descendant did not start'\n"
+    )
+    leader = (
+        "import subprocess, sys\nsubprocess.Popen([sys.executable, '-c', "
+        + repr(descendant)
+        + ", "
+        + repr(str(ready))
+        + "])\n"
+        + wait_ready
+        + ("time.sleep(60)" if outcome != "complete" else "")
+    )
+    commands = [[sys.executable, "-c", leader]]
+    other = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+    stopper = None
+    stop_errors = []
+    try:
+        if outcome == "failure":
+            commands.append([sys.executable, "-c", wait_ready + "raise SystemExit(1)"])
+            with pytest.raises(RuntimeError, match="rollout failed"):
+                runner.execute(commands, dict(os.environ), tmp_path, parallel=True, interactive=False)
+        elif outcome == "down":
+
+            def request_stop():
+                try:
+                    deadline = time.monotonic() + 5
+                    while not ready.exists() and time.monotonic() < deadline:
+                        time.sleep(0.01)
+                    assert ready.exists(), "descendant did not start"
+                    stop_owned(tmp_path)
+                except BaseException as error:
+                    stop_errors.append(error)
+
+            with Supervisor(tmp_path, "run") as supervisor:
+                stopper = threading.Thread(target=request_stop, daemon=True)
+                stopper.start()
+                with pytest.raises(KeyboardInterrupt):
+                    runner.execute(
+                        commands, dict(os.environ), tmp_path, parallel=False, interactive=False, supervisor=supervisor
+                    )
+            stopper.join(timeout=5)
+            assert not stopper.is_alive()
+            assert not stop_errors
+        else:
+            runner.execute(commands, dict(os.environ), tmp_path, parallel=False, interactive=False)
+
+        assert other.poll() is None, "cleanup stopped a process outside its owned session"
+        port = json.loads(ready.read_text())["port"]
+        deadline = time.monotonic() + 2
+        while True:
+            try:
+                with socket.create_connection(("127.0.0.1", port), timeout=0.1):
+                    pass
+            except OSError:
+                break
+            if time.monotonic() >= deadline:
+                pytest.fail("launcher cleanup left its descendant listener running")
+            time.sleep(0.01)
+    finally:
+        other.terminate()
+        other.wait(timeout=5)
+        if ready.exists():
+            with contextlib.suppress(ProcessLookupError):
+                os.kill(json.loads(ready.read_text())["pid"], signal.SIGKILL)
+        if stopper is not None:
+            stopper.join(timeout=5)
 
 
 def test_slurm_allocation_uses_yaml_and_is_not_nested(tmp_path, monkeypatch):
