@@ -29,10 +29,10 @@ planning loop.
 
 ## Demos
 
-| Three robots, one inference service | Comparing inference engines on SO-101 |
+| Multiple devices, shared or independent inference | Comparing inference engines on SO-101 |
 |---|---|
 | [![Three SO-101 recordings](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/multi_robot_serving.jpg)](https://embodirun.readthedocs.io/en/latest/demos/multi-robot-serving/) | [![Engine comparison on SO-101](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/engine_e2e_contrast.jpg)](https://embodirun.readthedocs.io/en/latest/demos/engine-e2e-contrast/) |
-| Three SO-101 arms using a shared π0.5 inference service, with one rollout process per device. | π0.5 on a Jetson AGX Thor with an SO-101 arm: EmbodiInfer over HTTP and WirelessComm, SGLang, and native LeRobot. |
+| Multiple SO-101 arms can share a π0.5 inference service while each device keeps its own rollout process; devices can also use independent backends. | π0.5 on a Jetson AGX Thor with an SO-101 arm: EmbodiInfer over HTTP and WirelessComm, SGLang, and native LeRobot. |
 
 | Fetching a snack with XLeRobot | Language-guided navigation with MicroDuck |
 |---|---|
@@ -42,7 +42,7 @@ planning loop.
 Click a preview to watch the video and explore the setup.
 
 [Reproduce the demos](docs/en/examples.md) with versioned YAML configurations and
-the shared `examples/run.sh` launcher.
+the shared `embodirun example` CLI (`examples/run.sh` remains available).
 
 ## Why EmbodiRun?
 
@@ -56,8 +56,8 @@ Keep control close to the robot. Share compute where it counts.
 <a href="docs/en/architecture.md">Deployment architecture →</a>
 </td>
 <td width="50%" valign="top">
-<h3>🦾 Multiple robots, shared inference</h3>
-<p>Connect independent device loops to a shared model endpoint. Each robot keeps its own session and execution flow while using the same inference service.</p>
+<h3>🦾 Independent, shared, or mixed inference</h3>
+<p>Connect independent device loops to separate endpoints, a shared model endpoint, or a mixture of both. Each device keeps its own session and execution flow.</p>
 <a href="docs/en/demos/multi-robot-serving.md">See three SO-101 arms in action →</a>
 </td>
 </tr>

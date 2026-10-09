@@ -124,9 +124,11 @@ case "$pytorch_index" in
     *) fail "--pytorch-index must be auto, default, or an HTTP(S) URL" ;;
 esac
 
-for requirement in "${requirement_files[@]}"; do
-    [[ -f "$requirement" ]] || fail "requirement file not found: $requirement"
-done
+if ((${#requirement_files[@]})); then
+    for requirement in "${requirement_files[@]}"; do
+        [[ -f "$requirement" ]] || fail "requirement file not found: $requirement"
+    done
+fi
 
 readonly ENV_ROOT="${EMBODIRUN_ENV_ROOT:-${RLINF_ENV_ROOT:-$DEFAULT_ENV_ROOT}}"
 export UV_CACHE_DIR="${UV_CACHE_DIR:-$ENV_ROOT/uvcache}"
@@ -286,11 +288,13 @@ run "$MANAGED_UV" venv --python "$python_version" "$venv_path"
 
 install_pytorch
 
-for requirement in "${requirement_files[@]}"; do
-    run "$MANAGED_UV" pip install \
-        --python "$venv_path/bin/python" \
-        --requirement "$requirement"
-done
+if ((${#requirement_files[@]})); then
+    for requirement in "${requirement_files[@]}"; do
+        run "$MANAGED_UV" pip install \
+            --python "$venv_path/bin/python" \
+            --requirement "$requirement"
+    done
+fi
 
 run "$MANAGED_UV" pip install \
     --python "$venv_path/bin/python" \

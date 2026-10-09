@@ -1,0 +1,34 @@
+[project]
+name = "embodirun-xlerobot-snack-recipe"
+version = "0.1.0"
+description = "Locked software rehearsal and local XLeRobot owner environment"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "embodirun",
+    "paramiko>=3.4,<5",
+    "PyYAML>=6,<7",
+    "rich>=13,<15",
+]
+
+[project.optional-dependencies]
+hardware = [
+    "embodirun-xlerobot-owner[hardware,camera,recording,web]",
+    "torch",
+    "torchvision",
+]
+
+[tool.uv]
+package = false
+required-version = ">=0.12.0,<0.13"
+default-groups = []
+
+[tool.uv.sources]
+embodirun = { path = "../..", editable = true }
+embodirun-xlerobot-owner = { path = "../../integrations/xlerobot_owner", editable = true }
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+torchvision = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

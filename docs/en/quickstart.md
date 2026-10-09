@@ -11,6 +11,9 @@ uv sync --frozen
 ```
 
 See [`installation.md`](installation.md) for capability groups and extras.
+For a linked, editable demo configuration, run
+`uv run --frozen embodirun example init xlerobot` and follow
+[the recipe guide](examples.md).
 
 ## 1. No robot required
 

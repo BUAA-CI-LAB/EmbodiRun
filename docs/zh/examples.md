@@ -1,6 +1,6 @@
 # 复现演示
 
-四个演示均通过 `examples/run.sh` 启动，并使用带格式版本号的 YAML 配置。
+四个演示均通过 `embodirun example` 启动，并使用带格式版本号的 YAML 配置。
 部署配置描述设备和服务，示例配置指定任务、执行限制和输出目录。
 
 | 演示 | 示例目录 | 运行内容 |
@@ -16,17 +16,22 @@
 
 ```bash
 uv sync --frozen
-bash examples/run.sh examples/multi_robot_serving/example.yaml validate
-bash examples/run.sh examples/multi_robot_serving/example.yaml plan
+uv run --frozen embodirun example init so101
+CONFIG=examples/local/so101/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
 ```
 
 `validate` 在本地检查字段和部署引用；`plan` 打印一次运行
 将要执行的命令。
 
-将选定的 YAML 及其引用的部署复制到同一目录下的 `*.local.yaml`。
-更新 `parameters.deployment` 中的引用，然后填写
-设备路径、SSH 主机、标定、检查点路径和任务设置。
-本地 YAML/JSON 文件会被 Git 忽略。
+`init` 一次生成独立的本地目录，示例配置与引用的部署文件已联动，
+且不会覆盖已有目录。其他模板可选 `xlerobot`、`microduck`、
+`embodiinfer-http`、`embodiinfer-wireless` 和 `sglang-http`。
+随后填写设备路径、SSH 主机、标定、检查点路径和任务设置。
+`examples/local/` 会被 Git 忽略。SO-101 和 XLeRobot 的 `check`
+只列出本地缺失前提，不打开设备；它不能证明机器人、相机、模型或停止反馈已就绪。
+MicroDuck 的 `check` 还会在目标 Linux 主机执行 GPU/EGL 场景预检。
 
 示例配置中的相对路径以 YAML 所在目录为基准；部署配置中的设备和模型路径则以对应节点为准。
 完整字段和命令见 [examples/README.md](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/README.md)。
@@ -36,32 +41,35 @@ bash examples/run.sh examples/multi_robot_serving/example.yaml plan
 按照所选示例的标定与环境说明操作后：
 
 ```bash
-CONFIG=examples/multi_robot_serving/example.local.yaml
-bash examples/run.sh "$CONFIG" setup
-bash examples/run.sh "$CONFIG" up --allow-hardware
-bash examples/run.sh "$CONFIG" run --allow-hardware
-bash examples/run.sh "$CONFIG" down
+CONFIG=examples/local/so101/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" setup
+uv run --frozen embodirun example "$CONFIG" check
+uv run --frozen embodirun example "$CONFIG" up --allow-hardware
+uv run --frozen embodirun example "$CONFIG" run --allow-hardware
+uv run --frozen embodirun example "$CONFIG" down
 ```
 
 SO-101 服务可连续运行多个任务，每次任务之间手动复位场景，全部完成后用 `down` 停止服务。
-XLeRobot 的 `up` 在前台运行；另开终端执行任务，结束后回到服务终端按 Ctrl-C 停止。
+XLeRobot 的 `up` 在前台运行；另开终端执行任务，结束后使用 `down` 或在服务终端按 Ctrl-C 停止。
 启用运动前，确保操作员在场并验证急停。
 
 无需硬件的任务预演：
 
 ```bash
-bash examples/run.sh examples/xlerobot_snack_delivery/example.yaml dry-run
+uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml dry-run
 ```
 
 ## 在仿真中运行
 
-按照 [MicroDuck 环境搭建](microduck-vln.md) 安装其可选环境
-并准备场景与检查点。填写 `example.local.yaml`，然后运行：
+按照 [MicroDuck 环境搭建](microduck-vln.md) 准备外部场景与检查点，
+在 Linux GPU 主机执行：
 
 ```bash
-CONFIG=examples/microduck_vln/example.local.yaml
-bash examples/run.sh "$CONFIG" check
-bash examples/run.sh "$CONFIG" run
+uv run --frozen embodirun example init microduck --assets /absolute/asset/root
+CONFIG=examples/local/microduck/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" setup
+uv run --frozen embodirun example "$CONFIG" check
+uv run --frozen embodirun example "$CONFIG" run
 ```
 
 `check` 校验资源以及 GPU/渲染环境。YAML 选择

@@ -18,13 +18,15 @@ After preparing the dedicated optional environment and external assets:
 
 ```bash
 git submodule update --init third_party/embodiinfer
-cp examples/microduck_vln/example.yaml examples/microduck_vln/example.local.yaml
-# Edit the YAML with asset paths, Python environment, and resource selection.
-bash examples/run.sh examples/microduck_vln/example.local.yaml check
-bash examples/run.sh examples/microduck_vln/example.local.yaml run
+uv sync --frozen
+uv run --frozen embodirun example init microduck --assets /absolute/asset/root
+CONFIG=examples/local/microduck/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" setup
+uv run --frozen embodirun example "$CONFIG" check
+uv run --frozen embodirun example "$CONFIG" run
 ```
 
-The example runs in simulation and uses locally prepared checkpoints, datasets,
+`check` runs GPU/EGL preflight on the Linux target. The example runs in simulation and uses locally prepared checkpoints, datasets,
 and scene assets. The source guide also shows how to submit it with `sbatch`.
 
 ## Reference configuration

@@ -4,6 +4,11 @@ Benchmarks measure a defined part of the system with repeatable inputs and
 machine-readable results. For end-to-end robot and simulator tasks, use
 [examples](../examples/README.md).
 
+The V1 deployment and operations comparison uses the
+[deployment-readiness template](deployment-readiness.md). Keep raw output and
+the plotting command with every reported number; unmeasured fields remain
+pending.
+
 ## Inference transport
 
 [inference-transport](inference-transport/README.md) compares HTTP and
