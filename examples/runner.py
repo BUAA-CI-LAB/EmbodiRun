@@ -27,9 +27,9 @@ from embodirun.bindings import binding_definition
 from embodirun.deployment.config import load_config
 from embodirun.deployment.config.loader import _load_yaml
 from embodirun.deployment.plan import build_plan
-from examples.configuration import check_report, init_main
+from examples.configuration import _recipe_command, check_report, init_main
 from examples.lifecycle import Supervisor, stop_owned
-from examples.setup_environment import environment_for_python, environment_path
+from examples.setup_environment import environment_for_python, environment_path, recipe_mode
 
 ROOT = Path(__file__).resolve().parents[1]
 HOST = [sys.executable, "-c", "from embodirun.services.host.cli.cli import main; raise SystemExit(main())"]
@@ -199,7 +199,7 @@ def load_example(path: Path) -> Example:
 
 
 def commands(
-    example: Example, action: str, output: Path, *, mode: str = "hardware"
+    example: Example, action: str, output: Path, *, mode: str | None = None
 ) -> tuple[list[list[str]], dict[str, str]]:
     """Build argv without invoking a shell or importing optional GPU packages."""
     p = example.parameters
@@ -212,8 +212,7 @@ def commands(
             "--environment",
             str(example.environment),
         ]
-        if example.kind == "snack":
-            command.extend(["--mode", mode])
+        command.extend(["--mode", recipe_mode(example.kind, mode)])
         return [command], env
     if example.kind == "rollout":
         if action == "setup":
@@ -382,12 +381,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("config", type=Path)
     parser.add_argument("command", choices=COMMANDS)
     parser.add_argument("--allow-hardware", action="store_true", help="permit hardware service startup or motion")
-    parser.add_argument("--mode", choices=("software", "hardware"), help="setup/check mode (default: hardware)")
+    parser.add_argument(
+        "--mode",
+        help="setup/check: XLeRobot software/hardware (default hardware), MicroDuck software/simulation (default simulation)",
+    )
     parser.add_argument("--json", action="store_true", help="emit one machine-readable local check report")
     args = parser.parse_args(argv)
     stop_error: RuntimeError | None = None
     output: Path | None = None
     report_path: Path | None = None
+    example: Example | None = None
+    mode: str | None = None
     try:
         if args.mode is not None and args.command not in {"setup", "check"}:
             raise ValueError("--mode is available for setup and check")
@@ -401,8 +405,9 @@ def main(argv: list[str] | None = None) -> int:
                 raise ValueError("unknown recipe kind")
         else:
             example = load_example(args.config)
-        if args.mode is not None and example.kind != "snack":
-            raise ValueError("--mode is available only for XLeRobot recipe setup/check")
+        if args.mode is not None and example.kind not in {"snack", "microduck"}:
+            raise ValueError("--mode is available only for XLeRobot and MicroDuck recipe setup/check")
+        mode = recipe_mode(example.kind, args.mode)
         if args.command == "down":
             try:
                 stop_owned(example.output)
@@ -415,7 +420,7 @@ def main(argv: list[str] | None = None) -> int:
                 print("Owned launcher cleanup finished. Verify physical stop feedback before leaving hardware.")
                 return 0
         if args.command == "check":
-            report = check_report(example, mode=args.mode or "hardware")
+            report = check_report(example, mode=mode)
             if args.json:
                 print(json.dumps(report, indent=2))
                 return 2 if report["issues"] else 0
@@ -426,8 +431,13 @@ def main(argv: list[str] | None = None) -> int:
             if report["issues"]:
                 print("Result: needs attention. Correct the listed inputs and repeat this check.", file=sys.stderr)
                 return 2
-            if example.kind != "microduck":
-                print("Result: local prerequisites passed; live robot/model readiness was not tested.")
+            if example.kind != "microduck" or mode == "software":
+                if example.kind == "microduck":
+                    print(
+                        "Result: software configuration/environment metadata passed; scene/CUDA/model was not tested."
+                    )
+                else:
+                    print("Result: local prerequisites passed; live robot/model readiness was not tested.")
                 for action in report["next_actions"]:
                     print(f"Next: {action}")
                 return 0
@@ -437,9 +447,15 @@ def main(argv: list[str] | None = None) -> int:
         action = "run" if args.command == "plan" else args.command
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
         output = example.output / f"{stamp}-{action}"
-        argv_list, overrides = commands(example, action, output, mode=args.mode or "hardware")
+        argv_list, overrides = commands(example, action, output, mode=mode)
         if args.command == "plan":
-            print(json.dumps({"commands": argv_list, "environment": overrides, "output": str(output)}, indent=2))
+            plan = {"commands": argv_list, "environment": overrides, "output": str(output)}
+            if example.kind == "snack":
+                plan["notes"] = [
+                    "Hardware command preview only; no process is started. Use dry-run for fixture rehearsal.",
+                    "Actual up/run needs --allow-hardware after calibration and emergency-stop checks.",
+                ]
+            print(json.dumps(plan, indent=2))
             return 0
         if example.kind in {"rollout", "snack"} and action in {"up", "run"} and not args.allow_hardware:
             raise ValueError(f"{action} needs --allow-hardware after calibration and emergency-stop checks")
@@ -462,7 +478,7 @@ def main(argv: list[str] | None = None) -> int:
         env = {k: v for k, v in os.environ.items() if example.kind != "microduck" or not k.startswith("MICRODUCK_")}
         env.update(overrides)
         output.mkdir(parents=True, exist_ok=False, mode=0o700)
-        print(f"Stage: {action}" + (f" ({args.mode or 'hardware'})" if action == "setup" else ""), flush=True)
+        print(f"Stage: {action}" + (f" ({mode})" if action == "setup" else ""), flush=True)
         if example.kind in {"snack", "microduck"}:
             print(f"Scene Python: {example.python}", flush=True)
         print(f"Outputs: {output}", flush=True)
@@ -522,37 +538,14 @@ def main(argv: list[str] | None = None) -> int:
             finally:
                 report_path.write_text(json.dumps(report, indent=2) + "\n")
         print(f"Result: {report['status']}. Report: {report_path}", flush=True)
+        if action == "setup" and example.kind in {"snack", "microduck"}:
+            print(f"Next: {_recipe_command(example.path, 'check', '--mode', mode, '--json')}", flush=True)
         if example.kind == "snack":
-            if action == "setup":
-                print(
-                    "Next: "
-                    + shlex.join(
-                        [
-                            "embodirun",
-                            "example",
-                            str(example.path),
-                            "check",
-                            "--mode",
-                            args.mode or "hardware",
-                        ]
-                    ),
-                    flush=True,
-                )
-            elif action == "dry-run":
+            if action == "dry-run":
                 print("Software rehearsal finished; hardware execution and task success remain unverified.", flush=True)
                 print(f"Task result: {output / 'result/status.json'}", flush=True)
                 print(
-                    "Next for robot preparation: "
-                    + shlex.join(
-                        [
-                            "embodirun",
-                            "example",
-                            str(example.path),
-                            "setup",
-                            "--mode",
-                            "hardware",
-                        ]
-                    ),
+                    "Next for robot preparation: " + _recipe_command(example.path, "setup", "--mode", "hardware"),
                     flush=True,
                 )
             elif action == "run":
@@ -568,8 +561,8 @@ def main(argv: list[str] | None = None) -> int:
                 json.dumps(
                     {
                         "recipe": str(args.config.expanduser().absolute()),
-                        "kind": None,
-                        "mode": args.mode or "hardware",
+                        "kind": example.kind if example is not None else None,
+                        "mode": mode if mode is not None else args.mode,
                         "status": "needs_attention",
                         "issues": [
                             {
@@ -590,12 +583,15 @@ def main(argv: list[str] | None = None) -> int:
         print(f"example: {error}", file=sys.stderr)
         if output is not None:
             print(f"Result: failed. Logs and report: {output}", file=sys.stderr)
-            retry = ["embodirun", "example", str(args.config), args.command]
+            retry = [args.command]
             if args.mode:
                 retry.extend(["--mode", args.mode])
             if args.allow_hardware:
                 retry.append("--allow-hardware")
-            print(f"Next: correct the reported error, then retry {shlex.join(retry)}", file=sys.stderr)
+            print(
+                f"Next: correct the reported error, then retry {_recipe_command(args.config.absolute(), *retry)}",
+                file=sys.stderr,
+            )
         return 2
     except KeyboardInterrupt:
         print(f"Result: interrupted. Inspect {output or args.config} before retrying.", file=sys.stderr)

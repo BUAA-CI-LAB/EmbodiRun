@@ -2,6 +2,7 @@
 
 import json
 import os
+import shlex
 import signal
 import subprocess
 import sys
@@ -10,7 +11,7 @@ import time
 import pytest
 import yaml
 from examples import lifecycle, runner
-from examples.configuration import TEMPLATES, check_requirements, initialize
+from examples.configuration import TEMPLATES, _recipe_command, check_requirements, initialize
 from examples.lifecycle import Supervisor, stop_owned
 from examples.setup_environment import install_commands
 
@@ -125,25 +126,39 @@ def test_deployment_cli_still_requires_config():
     assert error.value.code == 2
 
 
+@pytest.mark.parametrize("installed_cli", [True, False])
+def test_printed_recipe_hint_preserves_a_transient_scene_python(tmp_path, monkeypatch, installed_cli):
+    caller = tmp_path / "caller environment/bin/python"
+    caller.parent.mkdir(parents=True)
+    if installed_cli:
+        caller.with_name("embodirun").touch()
+    scene = str(tmp_path / "scene environment/bin/python")
+    monkeypatch.setattr(sys, "executable", str(caller))
+    monkeypatch.setenv("EMBODIRUN_SCENE_PYTHON", scene)
+    hint = shlex.split(_recipe_command(tmp_path / "recipe with spaces/example.yaml", "check", "--mode", "software"))
+    assert hint[:3] == ["env", f"EMBODIRUN_SOURCE_ROOT={runner.ROOT}", f"EMBODIRUN_SCENE_PYTHON={scene}"]
+    if installed_cli:
+        assert hint[3] == str(caller.with_name("embodirun"))
+    else:
+        assert hint[3:9] == ["uv", "run", "--frozen", "--project", str(runner.ROOT), "embodirun"]
+
+
 def test_profile_setup_does_not_need_assets_and_uses_one_dependency_source(tmp_path):
     example = runner.load_example(runner.ROOT / "examples/microduck_vln/example.yaml")
     command = runner.commands(example, "setup", tmp_path)[0][0]
     assert command[2] == "microduck"
     for profile in ("snack", "microduck"):
         commands = install_commands(profile, tmp_path / profile)
+        assert len(commands) == 1
         assert "--frozen" in commands[0]
         assert commands[0][commands[0].index("--python") + 1] == "3.12"
-        if profile == "snack":
-            assert len(commands) == 1
-            assert commands[0][commands[0].index("--project") + 1] == str(
-                runner.ROOT / "examples/xlerobot_snack_delivery"
-            )
-            assert commands[0][-2:] == ["--extra", "hardware"]
-            software = install_commands(profile, tmp_path / profile, mode="software")
-            assert "--extra" not in software[0]
-            assert software[0][software[0].index("--project") + 1] == commands[0][commands[0].index("--project") + 1]
-        else:
-            assert str(runner.ROOT / "integrations") in commands[1][-1]
+        project = "xlerobot_snack_delivery" if profile == "snack" else "microduck_vln"
+        assert commands[0][commands[0].index("--project") + 1] == str(runner.ROOT / "examples" / project)
+        assert commands[0][-2:] == ["--extra", "hardware" if profile == "snack" else "simulation"]
+        software = install_commands(profile, tmp_path / profile, mode="software")
+        assert len(software) == 1
+        assert "--extra" not in software[0]
+        assert software[0][software[0].index("--project") + 1] == commands[0][commands[0].index("--project") + 1]
 
 
 def test_duplicate_launch_does_not_remove_first_owners_socket(tmp_path):

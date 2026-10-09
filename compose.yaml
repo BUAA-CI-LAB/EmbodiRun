@@ -40,6 +40,18 @@ services:
     # Add explicit devices and read-only SDK/calibration mounts in compose.local.yaml.
     # No privileged mode or automatic hardware startup.
     command: [--help]
+  microduck-software:
+    build:
+      context: .
+      target: microduck-software
+    image: embodirun-examples:microduck-software
+    init: true
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./examples/local:/workspace
+      - launcher-tmp:/tmp
+    command: [--help]
   microduck:
     profiles: [gpu]
     build:

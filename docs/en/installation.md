@@ -57,8 +57,21 @@ check reports the installed LeRobot parent directory as `environment.sdk_src`;
 use it for `hardware.local.json`'s `sdk_src`. A custom SDK checkout needs its own
 version verification. Installing dependencies does not fill calibration,
 devices, routes, or a model checkpoint. Inference runs in a separate service.
-MicroDuck uses a separate GPU integration installed from its declared version
-ranges; its full dependency tree is not locked by the root `uv.lock`.
+MicroDuck uses its own Python 3.12 / uv 0.12.x project and lock under
+`examples/microduck_vln/`. Native and Docker `software` setup select its small
+CLI/integration profile; `simulation` adds the locked simulator/inference extra
+and is the default. Software checks need no assets or GPU; full simulation
+still requires compatible external assets and separate CUDA/EGL/model acceptance.
+See the [MicroDuck guide](microduck-vln.md).
+
+The Recipe software CI jobs install both Recipes from frozen locks without
+restored uv caches, build their production software targets in fresh Docker
+builders, run both entrypoints as the host UID with container networking disabled,
+and compare native/container package inventories. XLeRobot also runs its fixture
+rehearsal through both entrypoints. Printed hints preserve the selected scene
+Python and work outside the checkout, including paths with spaces. These checks
+cover software onboarding; independent human first use and physical/model
+acceptance remain follow-up work.
 
 If the initial `uv sync` or `docker compose build` fails before the Recipe CLI
 starts, no Recipe `Outputs:` or `run.json` exists yet. Save the terminal
@@ -146,6 +159,10 @@ not encrypt or authenticate the link; use it only on a trusted network.
 
 ## Managed deployments {#managed-deployments}
 
+Recipe containers require Docker Engine, Compose and Buildx with BuildKit support.
+Check `docker buildx version` and `docker compose version` before building;
+the Dockerfile's cache mounts cannot run with the legacy builder.
+
 `embodirun init` checks out the pinned EmbodiRun and EmbodiInfer revisions in
 each node's deployment directory and runs `uv sync --frozen` there.
 
@@ -156,13 +173,14 @@ for reproducibility. Initialize it only if you want the pinned tree:
 git submodule update --init third_party/embodiinfer
 ```
 
-The recipe container targets are `host`, `xlerobot-software`, `xlerobot`, and `microduck` in the
+The recipe container targets are `host`, `xlerobot-software`, `xlerobot`, `microduck-software`, and `microduck` in the
 repository `Dockerfile`. Build them on the target Linux host, with the pinned
 submodule initialized before building `microduck`:
 
 ```bash
 docker compose build host
 docker compose build xlerobot-software
+docker compose build microduck-software
 docker compose --profile hardware build xlerobot
 docker compose --profile gpu build microduck
 ```
@@ -188,6 +206,11 @@ inference service, or RPent. It needs no GPU runtime, devices, SDK, calibration,
 or checkpoint. XLeRobot software/hardware images and native setup use the same
 recipe project and lock; generic `host` remains on the root Host dependency tree.
 
+The `microduck-software` service uses the same Recipe lock as native MicroDuck
+software setup. Use `init microduck`, then `validate`, `plan` and
+`check --mode software --json`; it needs no GPU runtime or external assets.
+The [MicroDuck guide](microduck-vln.md) links the complete container commands.
+
 When reusing a native manifest in Docker, back it up first. Its top-level
 `python` overrides the image's `EMBODIRUN_SCENE_PYTHON`, so a host interpreter
 path will not work in the container. Remove only `python` from the Docker copy
@@ -206,7 +229,7 @@ or explicitly mount and verify a custom SDK. Model inference stays separate.
 The GPU profile uses a configured
 NVIDIA container runtime (`runtime: nvidia`, required by Thor's NVIDIA CSV mode)
 and external assets. The Compose defaults only show
-help. The four services share a Compose-project named volume at `/tmp` for
+help. The five services share a Compose-project named volume at `/tmp` for
 private launcher Unix sockets. A later `docker compose run` can use Recipe
 `down` when it uses the same Compose project, host UID/GID, and configuration
 as the active launcher. Use the same checkout or the same explicit `-p NAME`

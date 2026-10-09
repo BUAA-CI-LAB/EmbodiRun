@@ -51,7 +51,17 @@ Control 凭证文件已从 Git、Docker 上下文排除。checkout 的 Host 环�
 省略 `--mode` 时，`setup` / `check` 默认是 hardware。硬件检查将安装的 LeRobot 包父目录
 报告为 `environment.sdk_src`，可填入 `hardware.local.json` 的 `sdk_src`；自备 SDK checkout
 需单独核验版本。安装依赖不会填好标定、设备、路线或提供模型检查点，推理服务单独运行。
-MicroDuck 使用独立 GPU 集成，按其声明的版本范围安装，完整依赖树不由根 `uv.lock` 锁定。
+MicroDuck 使用 `examples/microduck_vln/` 下独立的 Python 3.12 / uv 0.12.x
+项目与锁。Native 和 Docker 的 `software` setup 选择小型 CLI/集成环境；
+默认的 `simulation` 模式增加锁定的仿真与推理 extra。软件检查无需资源或 GPU；
+完整仿真仍需兼容的外部资源，并另行验收 CUDA/EGL 与模型执行。
+见 [MicroDuck 指南](microduck-vln.md)。
+
+Recipe software CI 任务不恢复 uv 缓存，从冻结锁安装两个 Recipe，并使用全新 Docker
+builder 构建生产软件目标。它以宿主 UID、关闭容器网络运行两个入口，比较 native/container
+包清单；XLeRobot 还通过两个入口执行 fixture 演练。打印的提示保留所选场景 Python，
+可在仓库外执行并支持带空格路径。这些检查覆盖软件上手流程；独立人工首次使用、
+真机与模型验收仍是后续工作。
 
 初始 `uv sync` 或 `docker compose build` 在 Recipe CLI 前失败时，尚无 Recipe 的
 `Outputs:` 或 `run.json`。将终端 stdout/stderr 保存到自行选择的日志文件，记录完整命令与退出码。
@@ -132,6 +142,10 @@ uv sync --frozen --extra wireless
 
 ## 自动部署 {#managed-deployments}
 
+Recipe 容器需要 Docker Engine、Compose 和支持 BuildKit 的 Buildx。
+构建前检查 `docker buildx version` 与 `docker compose version`；
+Dockerfile 的缓存挂载无法使用旧版 builder。
+
 `embodirun init` 会在各节点的部署目录中准备指定版本的 EmbodiRun 和 EmbodiInfer 源码，
 再运行 `uv sync --frozen` 安装依赖。
 
@@ -142,12 +156,13 @@ uv sync --frozen --extra wireless
 git submodule update --init third_party/embodiinfer
 ```
 
-仓库 `Dockerfile` 提供 `host`、`xlerobot-software`、`xlerobot`、`microduck` 四个目标。
+仓库 `Dockerfile` 提供 `host`、`xlerobot-software`、`xlerobot`、`microduck-software`、`microduck` 五个目标。
 在目标 Linux 主机构建；构建 `microduck` 前先初始化上述固定子模块：
 
 ```bash
 docker compose build host
 docker compose build xlerobot-software
+docker compose build microduck-software
 docker compose --profile hardware build xlerobot
 docker compose --profile gpu build microduck
 ```
@@ -170,6 +185,10 @@ docker compose run --rm --user "$(id -u):$(id -g)" xlerobot-software /workspace/
 标定或检查点。XLeRobot 软件/硬件镜像与 native setup 使用同份 Recipe 项目和锁；
 通用 `host` 仍使用根项目的 Host 依赖树。
 
+`microduck-software` 服务与 native MicroDuck 软件 setup 使用同份 Recipe 锁。
+执行 `init microduck`，再执行 `validate`、`plan` 与 `check --mode software --json`，
+无需 GPU runtime 或外部资源。[MicroDuck 指南](microduck-vln.md)链接了完整容器命令。
+
 native manifest 转 Docker 前先备份。顶层 `python` 优先于镜像的
 `EMBODIRUN_SCENE_PYTHON`，宿主解释器路径在容器中不可用。
 仅去掉 Docker 副本的 `python`，让镜像选择 `/opt/venv/bin/python`，保留其他配置和标定。
@@ -183,7 +202,7 @@ task 与 routes 及其路径引用，保留原始文件。
 自备 SDK 时显式挂载并核验版本。模型推理单独运行。
 GPU profile 使用已配置的 NVIDIA 容器运行时（Thor 的 NVIDIA CSV 模式
 要求 `runtime: nvidia`）并需要外部资源。默认 Compose 命令只显示
-帮助。四个服务通过 Compose 项目内的 `/tmp` named volume 共享私有 launcher Unix socket。
+帮助。五个服务通过 Compose 项目内的 `/tmp` named volume 共享私有 launcher Unix socket。
 后开的 `docker compose run` 使用与运行中 launcher 相同的 Compose 项目、宿主 UID/GID
 和配置，就可通过 Recipe `down` 联系它；从同一 checkout 操作，或每次使用相同的 `-p NAME`。
 该 volume 用于 launcher IPC，不是依赖缓存；私有目录/socket 权限与清理确认仍然保留。

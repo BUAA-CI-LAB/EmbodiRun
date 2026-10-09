@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shlex
 import shutil
 import subprocess
@@ -14,6 +15,7 @@ from typing import Any
 import yaml
 
 from embodirun.deployment.config.loader import _load_yaml
+from examples.setup_environment import recipe_mode
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATES = {
@@ -99,6 +101,10 @@ def init_main(argv: list[str]) -> int:
         print(f"Install rehearsal environment: {_recipe_command(path, 'setup', '--mode', 'software')}")
         print(f"Check rehearsal inputs: {_recipe_command(path, 'check', '--mode', 'software', '--json')}")
         print(f"Software rehearsal: {_recipe_command(path, 'dry-run')}")
+    elif args.template == "microduck":
+        print(f"Install software environment: {_recipe_command(path, 'setup', '--mode', 'software')}")
+        print(f"Check software inputs: {_recipe_command(path, 'check', '--mode', 'software', '--json')}")
+        print("Software checks do not require scene assets or a GPU; simulation setup/check is separate.")
     else:
         print(f"Next after validation: {_recipe_command(path, 'check')}")
     return 0
@@ -116,7 +122,14 @@ def placeholders(value: Any, location: str = "") -> list[str]:
 
 
 def _recipe_command(path: Path, *args: str) -> str:
-    return shlex.join(["embodirun", "example", str(path), *args])
+    entrypoint = Path(sys.executable).absolute().with_name("embodirun")
+    environment = [f"EMBODIRUN_SOURCE_ROOT={ROOT}"]
+    if scene_python := os.environ.get("EMBODIRUN_SCENE_PYTHON"):
+        environment.append(f"EMBODIRUN_SCENE_PYTHON={scene_python}")
+    command = (
+        [str(entrypoint)] if entrypoint.is_file() else ["uv", "run", "--frozen", "--project", str(ROOT), "embodirun"]
+    )
+    return shlex.join(["env", *environment, *command, "example", str(path), *args])
 
 
 def _environment_details(python: str, packages: list[str]) -> dict[str, Any]:
@@ -141,10 +154,9 @@ print(json.dumps({'version': list(sys.version_info[:3]), 'packages': versions, '
     return json.loads(result.stdout)
 
 
-def check_report(example: Any, *, mode: str = "hardware") -> dict[str, Any]:
+def check_report(example: Any, *, mode: str | None = None) -> dict[str, Any]:
     """Check installed metadata and local inputs without connecting to services/devices."""
-    if mode not in {"software", "hardware"}:
-        raise ValueError("check mode must be software or hardware")
+    mode = recipe_mode(example.kind, mode)
     p = example.parameters
     issues: list[dict[str, str]] = []
     report: dict[str, Any] = {
@@ -154,9 +166,11 @@ def check_report(example: Any, *, mode: str = "hardware") -> dict[str, Any]:
         "status": "passed",
         "issues": issues,
         "verified": ["Manifest and task configuration structure"],
-        "unverified": ["Live model/service availability", "Physical device connection, calibration and stop feedback"],
+        "unverified": ["Live model/service availability"],
         "next_actions": [],
     }
+    if example.kind != "microduck":
+        report["unverified"].append("Physical device connection, calibration and stop feedback")
 
     def issue(code: str, location: str, message: str, action: str) -> None:
         issues.append({"code": code, "location": location, "message": message, "next_action": action})
@@ -168,13 +182,13 @@ def check_report(example: Any, *, mode: str = "hardware") -> dict[str, Any]:
 
     setup = (
         _recipe_command(example.path, "setup", "--mode", mode)
-        if example.kind == "snack"
+        if example.kind == "snack" or (example.kind == "microduck" and mode == "software")
         else _recipe_command(example.path, "setup")
     )
     report["environment"] = {"python": example.python}
     if not Path(example.python).is_file() or shutil.which(example.python) is None:
         issue("python_missing", "python", f"Python is unavailable: {example.python}", setup)
-    elif example.kind == "snack":
+    elif example.kind in {"snack", "microduck"}:
         try:
             report["environment"]["path"] = str(example.environment)
         except ValueError as error:
@@ -185,7 +199,26 @@ def check_report(example: Any, *, mode: str = "hardware") -> dict[str, Any]:
                 f"Correct python in {example.path} or EMBODIRUN_SCENE_PYTHON to name a venv/bin/python, then repeat setup.",
             )
         packages = ["embodirun", "PyYAML", "paramiko", "rich"]
-        if mode == "hardware":
+        if example.kind == "microduck":
+            packages.append("embodirun-microduck")
+            if mode == "simulation":
+                packages += [
+                    "numpy",
+                    "Pillow",
+                    "mujoco",
+                    "onnxruntime",
+                    "casadi",
+                    "imageio-ffmpeg",
+                    "torch",
+                    "torchvision",
+                    "transformers",
+                    "tokenizers",
+                    "huggingface-hub",
+                    "safetensors",
+                    "einops",
+                    "accelerate",
+                ]
+        elif mode == "hardware":
             packages += [
                 "embodirun-xlerobot-owner",
                 "aiohttp",
@@ -209,7 +242,8 @@ def check_report(example: Any, *, mode: str = "hardware") -> dict[str, Any]:
             details = _environment_details(example.python, packages)
             report["environment"].update(details)
             if details["version"][:2] != [3, 12]:
-                issue("python_version", "python", "The XLeRobot recipe uses Python 3.12.", setup)
+                name = "MicroDuck" if example.kind == "microduck" else "XLeRobot"
+                issue("python_version", "python", f"The {name} recipe uses Python 3.12.", setup)
             missing = [name for name, version in details["packages"].items() if version is None]
             if missing:
                 issue("dependencies_missing", "python", f"Missing installed packages: {', '.join(missing)}", setup)
@@ -360,26 +394,48 @@ def check_report(example: Any, *, mode: str = "hardware") -> dict[str, Any]:
                             f"Inspect camera enumeration and correct {hardware_path}.cameras.{role}.",
                         )
     else:
-        report["unverified"].append("CUDA/EGL availability and MicroDuck scene/model preflight")
-        for key in ("project_root", "inference_root", "checkpoint", "episodes", "manifest"):
-            path = example.resolve(p[key])
-            if not path.exists():
+        report["unverified"] += [
+            "CUDA/EGL availability and MicroDuck scene/model preflight",
+            "External scene/checkpoint/episode assets and inference source compatibility",
+            "Learned-model inference and navigation success",
+        ]
+        if mode == "simulation":
+            for key in ("project_root", "inference_root", "checkpoint", "episodes", "manifest"):
+                path = example.resolve(p[key])
+                if not path.exists():
+                    issue(
+                        "asset_missing",
+                        f"{example.path}.parameters.{key}",
+                        f"asset does not exist: {path}",
+                        f"Supply this asset and correct {example.path}.parameters.{key}.",
+                    )
+            inference_root = example.resolve(p["inference_root"])
+            if inference_root.exists() and not (inference_root / "embodiinfer/__init__.py").is_file():
+                initialize_source = shlex.join(
+                    ["git", "-C", str(ROOT), "submodule", "update", "--init", "third_party/embodiinfer"]
+                )
                 issue(
-                    "asset_missing",
-                    f"{example.path}.parameters.{key}",
-                    f"asset does not exist: {path}",
-                    f"Supply this asset and correct {example.path}.parameters.{key}.",
+                    "inference_source_missing",
+                    f"{example.path}.parameters.inference_root",
+                    f"EmbodiInfer entrypoint is missing: {inference_root / 'embodiinfer/__init__.py'}",
+                    f"Initialize the pinned source with {initialize_source}, or select a compatible inference_root.",
                 )
     report["status"] = "needs_attention" if issues else "passed"
     report["next_actions"] = list(dict.fromkeys(item["next_action"] for item in issues))
     if not issues:
-        report["next_actions"] = [
-            _recipe_command(example.path, "dry-run")
-            if example.kind == "snack" and mode == "software"
-            else _recipe_command(example.path, "check")
-            if example.kind == "microduck"
-            else "Review the unverified device/model prerequisites with the operator before hardware startup."
-        ]
+        if example.kind == "microduck" and mode == "software":
+            report["next_actions"] = [
+                "For a simulation run, supply external assets and the pinned inference source, then use "
+                + _recipe_command(example.path, "setup", "--mode", "simulation")
+            ]
+        else:
+            report["next_actions"] = [
+                _recipe_command(example.path, "dry-run")
+                if example.kind == "snack" and mode == "software"
+                else _recipe_command(example.path, "check", "--mode", "simulation")
+                if example.kind == "microduck"
+                else "Review the unverified device/model prerequisites with the operator before hardware startup."
+            ]
     return report
 
 

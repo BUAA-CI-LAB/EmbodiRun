@@ -21,15 +21,17 @@ The service binds an OS-assigned loopback port with a per-run credential.
 
 ## Prerequisites
 
-- Linux, Bash, a CUDA GPU and working NVIDIA/EGL drivers. The previous simulation
+- Offline configuration checks need Linux, Bash, Python 3.12 and uv 0.12.x.
+  The software profile needs no GPU, simulator, inference source, assets or checkpoint.
+- Simulation additionally needs a CUDA GPU and working NVIDIA/EGL drivers. The previous simulation
   profile used one A800 80 GB GPU and four CPU cores; no physical robot is involved.
-- A dedicated Python environment. Python 3.12 is the reference profile; optional
-  package metadata supports Python 3.10+ where its dependencies are available.
-- EmbodiInfer at this repository's pinned `third_party/embodiinfer` submodule revision.
-- A separately provisioned MicroDuck asset project and SFT-v3 merged checkpoint.
+- A dedicated Python 3.12 environment for the native Recipe; the Docker images
+  include their own environment.
+- For simulation, EmbodiInfer at this repository's pinned `third_party/embodiinfer` submodule revision.
+- For simulation, a separately provisioned MicroDuck asset project and SFT-v3 merged checkpoint.
   Assets, checkpoints, datasets and recorded media are not included here.
 
-Initialize the public inference submodule from the repository root:
+Before simulation or building the full image, initialize the public inference submodule from the repository root:
 
 ```bash
 git submodule update --init third_party/embodiinfer
@@ -66,43 +68,194 @@ creates no copies and never modifies the training adapter.
 
 ## Install and configure
 
-From the EmbodiRun root, create a linked local recipe with your absolute
-external asset root, then install its dedicated environment:
+The Recipe has its own [`pyproject.toml`](pyproject.toml) and
+[`uv.lock`](uv.lock), using Python 3.12 and uv 0.12.x. Native `setup` and Docker
+use this same lock. From the EmbodiRun root, prepare the Host CLI, create linked
+local files and install the software profile:
 
 ```bash
-uv sync --frozen
-uv run --frozen embodirun example init microduck --assets /absolute/asset/root
-CONFIG=examples/local/microduck/example.local.yaml
-uv run --frozen embodirun example "$CONFIG" setup
-```
-
-`init` copies the reference inventory and fills project, checkpoint and episode
-paths. `setup` installs Host from `uv.lock` and the optional integration from
-its declared version ranges in `.venv-microduck`; that integration is not fully
-locked by the Host lock. Edit `example.local.yaml` if your asset layout differs.
-The inference source defaults to the pinned submodule; use
-`parameters.inference_root` for another compatible checkout. It is added only
-to the inference child's import path.
-
-The model profile requires `transformers==4.51.3`; keep it separate from
-Transformers 5.x profiles. Provision packages and weights before running on an
-offline cluster. `setup` installs packages, but does not download weights or
-external assets.
-
-## Run
-
-On the Linux GPU host:
-
-```bash
+uv sync --frozen --python 3.12
+uv run --frozen embodirun example init microduck
 CONFIG=examples/local/microduck/example.local.yaml
 uv run --frozen embodirun example "$CONFIG" validate
 uv run --frozen embodirun example "$CONFIG" plan
-uv run --frozen embodirun example "$CONFIG" check
-uv run --frozen embodirun example "$CONFIG" run
+uv run --frozen embodirun example "$CONFIG" setup --mode software
+uv run --frozen embodirun example "$CONFIG" check --mode software --json
 ```
 
-`validate` and `plan` are offline. `check` verifies assets, CUDA, EGL, ONNX,
-MPC and the encoder; `run` starts simulation and its inference child.
+The Host CLI uses the root lock; `setup` installs the separate MicroDuck environment
+at `.venv-microduck`. Software mode installs Host's CLI dependencies and the base
+MicroDuck integration, without PyTorch or MuJoCo. `check --mode software`, with or
+without `--json`, checks Python 3.12, package presence and configuration, and
+reports installed package versions. Version selection comes from frozen setup;
+this metadata check does not compare every package against `uv.lock`.
+It does not start a launcher, simulator or inference
+process. Scene inputs and their compatibility remain in `unverified`; missing
+scene paths do not fail this software check. This flow does not run a simulation rehearsal.
+
+The software flow was verified on Ubuntu 24.04 aarch64: native Python 3.12.3
+and container Python 3.12.14 installed the same 14 locked packages, and
+`embodirun` / `run.sh` returned matching software reports. Both use Python 3.12;
+their patch versions differ. Native verification used freshly downloaded wheel
+assistance after the first uncached online setup reached an external 180-second
+test limit (exit 130). The container flow passed with the production Dockerfile
+on a warm retry (exit 0), after its new-builder, empty-cache build reached an
+external 600-second test limit (exit 130). These results do not establish fast
+uncached installation or independent first use.
+
+CI continuously checks the software scope with the production native installer
+and Dockerfile. It runs `init`, `validate`, `plan` and software checks through
+both entrypoints, copies printed commands outside the checkout without inherited
+Recipe variables, checks caller-owned files and compares locked package inventories.
+To repeat the check after software setup, select the installed Recipe Python:
+
+```bash
+"$RECIPE_ENV/bin/python" scripts/check_recipe_software.py --recipe microduck
+```
+
+This checks software onboarding. Full simulation/model execution, native LeRobot
+deployment comparisons and independent human first use remain follow-up work.
+
+`init` copies the reference inventory; `--assets /absolute/asset/root` fills
+project, checkpoint and episode paths but does not check that those external
+inputs exist. Without that option, edit the generated placeholders before
+simulation. If the local recipe directory already exists, reuse it or choose
+a new directory with `init --output`; existing edits are preserved.
+
+From the checkout root on the Linux GPU host, add the full simulator and
+inference dependencies from the same lock before running the scene. Set the
+manifest path again in a new terminal; if you chose a custom directory,
+replace it with the original path:
+
+```bash
+CONFIG=examples/local/microduck/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" setup --mode simulation
+```
+
+MicroDuck `setup` and `check` default to `simulation` when mode is omitted;
+choose `software` explicitly for offline checks. Both setup modes call
+`uv sync --frozen --no-default-groups` on this Recipe project, with
+`--extra simulation` only for the full profile. The `simulation` extra includes
+`embodirun-microduck[full]`. Its resolved
+profile includes NumPy 1.26.4, Pillow 12.3.0, MuJoCo 3.8.1, ONNX Runtime 1.30.0,
+CasADi 3.7.2 and Transformers 4.51.3. On Linux, PyTorch 2.10.0 and torchvision
+0.25.0 use the official CUDA 13.0 wheel index. Those two versions align with
+the pinned EmbodiInfer development/runtime lock; they are a candidate profile
+for this Recipe, not proof of GPU compatibility or a restriction on every
+EmbodiInfer backend. A fresh native full-profile installation did not finish
+within an external 600-second validation limit (interrupted, exit 130);
+package imports and CUDA/EGL probes were not run. The full Docker target uses
+this lock, but its build was not executed in this validation round. Full
+target-host installation, scene and model execution remain unverified.
+
+The launcher defaults to the repository-root `.venv-microduck/bin/python`.
+If you install into another directory, set `EMBODIRUN_SCENE_PYTHON` to its
+absolute `bin/python` path, or set `python` in your local example YAML. An
+explicit YAML `python` takes precedence; keep it consistent with the selected
+environment. The commands below use the Recipe's locked CLI environment. Edit
+`example.local.yaml` if your asset layout differs. The inference source
+defaults to the pinned submodule; use `parameters.inference_root` for another
+compatible checkout. It is added only to the inference child's import path.
+
+The model profile requires `transformers==4.51.3`; keep it separate from
+Transformers 5.x and native LeRobot profiles. Provision packages and weights
+before running on an offline cluster. The sync commands install packages, but
+do not download weights or external assets.
+
+For `examples/run.sh`, select the already-installed Host CLI with
+`EMBODIRUN_EXAMPLE_PYTHON="$PWD/.venv/bin/python"`; it accepts the same manifest,
+command and mode as `embodirun example`. For example:
+
+```bash
+CONFIG=examples/local/microduck/example.local.yaml
+EMBODIRUN_EXAMPLE_PYTHON="$PWD/.venv/bin/python" \
+  examples/run.sh "$CONFIG" check --mode software --json
+```
+
+Independent first use and full inference remain separate acceptance checks;
+neither dependency installation nor a Docker build proves them.
+
+## Docker
+
+Docker Engine, Compose and Buildx with BuildKit are required; check
+`docker buildx version` and `docker compose version` before building.
+
+Build and use the software image on the target Linux host. It installs the same
+software lock during the image build; no native Recipe environment is needed:
+
+```bash
+docker compose build microduck-software
+mkdir -p examples/local
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software init microduck --output /workspace/microduck
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software /workspace/microduck/example.local.yaml validate
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software /workspace/microduck/example.local.yaml plan
+docker compose run --rm --user "$(id -u):$(id -g)" microduck-software /workspace/microduck/example.local.yaml check --mode software --json
+```
+
+`examples/local/microduck` stays editable by your host UID/GID. Skip `setup`
+inside the image: dependencies already live at `/opt/venv`. To use the shell
+entrypoint for the same check, replace the image entrypoint explicitly:
+
+```bash
+docker compose run --rm --user "$(id -u):$(id -g)" --entrypoint /bin/bash microduck-software /opt/embodirun/examples/run.sh /workspace/microduck/example.local.yaml check --mode software --json
+```
+
+The full image adds `--extra simulation` from the same lock and the pinned
+EmbodiInfer source. After initializing that submodule and provisioning the
+external assets, configure the NVIDIA runtime and prepare a separate local
+simulation recipe:
+
+```bash
+git submodule update --init third_party/embodiinfer
+docker compose --profile gpu build microduck
+export MICRODUCK_ASSETS=/absolute/asset/root
+mkdir -p examples/local
+docker compose --profile gpu run --rm --user "$(id -u):$(id -g)" microduck init microduck --assets /assets --output /workspace/microduck-simulation
+docker compose --profile gpu run --rm --user "$(id -u):$(id -g)" microduck /workspace/microduck-simulation/example.local.yaml check --mode simulation --json
+```
+
+Set `MICRODUCK_ASSETS` again in a new terminal. Assets mount at `/assets:ro`;
+they are not copied into the image. For Docker simulation, use the same Compose
+service and container manifest path with `check --mode simulation` or `run`;
+the next section's commands use a native environment. To reuse a native manifest, preserve the
+original and remove only its top-level `python` from a Docker copy beside it;
+an explicit host Python path would override the image's `/opt/venv/bin/python`.
+See [installation](../../docs/en/installation.md#containers) for shared
+`/tmp` launcher IPC storage and owned shutdown. Default Compose commands show
+help. Software checks do not establish CUDA/EGL support, asset compatibility,
+model inference or episode success.
+
+The container software flow was also exercised as a non-root host UID/GID.
+Its generated files stayed in `/workspace` with that ownership, both entrypoints
+passed plain and JSON checks, and the printed check command worked from another
+directory with a manifest path containing spaces. An unavailable environment
+returned exit 2 with a repair hint. The task's containers, launcher volume and
+network were removed after verification; this was software evidence only.
+
+## Run
+
+Run from the checkout root on the Linux GPU host. The assignments below use
+the default environment and manifest; if you chose custom paths, substitute
+their original absolute paths and select the scene interpreter as described
+above. Set these variables again in a new terminal:
+
+```bash
+RECIPE_ENV="$PWD/.venv-microduck"
+CONFIG="$PWD/examples/local/microduck/example.local.yaml"
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" validate
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" plan
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --mode simulation --json
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --mode simulation
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" run
+```
+
+`validate` and `plan` are offline. `check --mode simulation --json` reports local
+environment and path
+prerequisites; it does not check CUDA/EGL or model inference. `check` without
+`--json` continues into the asset/CUDA/EGL/ONNX/MPC/encoder preflight after the
+local checks pass. The full preflight exercises the scene and walking policy
+but does not run the learned VLN model. `run` starts simulation and its
+inference child; inspect the episode results for task success separately.
 All settings come from the YAML. Outputs are under
 `examples/local/microduck/runs/<timestamp>-run/result/`.
 
@@ -113,12 +266,14 @@ configure that request. To keep a run alive after SSH disconnects, set
 
 ```bash
 sbatch --gres=gpu:1 --cpus-per-task=4 --time=01:00:00 \
-  --wrap='uv run --frozen embodirun example examples/local/microduck/example.local.yaml run'
+  --wrap="\"$RECIPE_ENV/bin/embodirun\" example \"$CONFIG\" run"
 ```
 
 Add your cluster's partition option if needed. Run `sbatch` from the repository
-root. Cancel with `scancel JOB_ID`; termination saves available diagnostics and
-stops the inference child.
+root with the absolute `RECIPE_ENV` and `CONFIG` defined above. The
+wrapped command uses absolute CLI and manifest paths. Cancel with
+`scancel JOB_ID`; termination saves available diagnostics and stops the
+inference child.
 
 ## Episodes and asset integrity
 
@@ -143,8 +298,8 @@ asset set, point `parameters.manifest` at a **new, absent**
 `assets.revised.local.json`, then provision its inventory:
 
 ```bash
-uv run --frozen embodirun example "$CONFIG" provision
-uv run --frozen embodirun example "$CONFIG" check
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" provision
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check
 ```
 
 Provisioning does not allocate a GPU and refuses to overwrite an existing
@@ -195,17 +350,22 @@ reported behavior; inspect endpoint errors when experimenting with the controlle
 From the repository root, the normal development environment runs the CPU tests:
 
 ```bash
-uv run pytest -q tests/test_microduck_vln.py
-uv run ruff check src tests examples/microduck_vln integrations/microduck_vln
-uv run ruff format --check src tests examples/microduck_vln integrations/microduck_vln
+uv run --frozen pytest -q tests/test_microduck_vln.py
+uv run --frozen ruff check src tests examples/microduck_vln integrations/microduck_vln
+uv run --frozen ruff format --check src tests examples/microduck_vln integrations/microduck_vln
 bash -n examples/run.sh
 ```
 
 The HTTP adapter tests skip when Torch/EmbodiInfer are absent. To exercise them
-with the dedicated optional environment, without a GPU or checkpoint:
+with the dedicated simulation environment, without a GPU or checkpoint, also
+prepare pytest as a development tool in that environment; see the integration's
+[`test` extra](../../integrations/microduck_vln/README.md). The Recipe's runtime
+lock does not include pytest. That extra's installation has not been verified
+as a Recipe deployment step; the commands below are developer checks, not an
+additional locked installation profile:
 
 ```bash
-PYTHONPATH="src:third_party/embodiinfer" .venv-microduck/bin/python \
+PYTHONPATH="src:third_party/embodiinfer" "$RECIPE_ENV/bin/python" \
   -m pytest -q tests/test_microduck_vln.py tests/test_embodiinfer_http.py
 ```
 

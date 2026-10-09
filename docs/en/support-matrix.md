@@ -109,6 +109,17 @@ The roadmap tracks the next integrations separately from the current catalog.
     [WirelessComm configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/http-wireless-inference/wireless.yaml)
     and [transport measurements](inference-transport.md).
 
+## MicroDuck recipe prerequisites {#microduck-prerequisites}
+
+The [MicroDuck guide](microduck-vln.md) separates the software and simulation paths.
+Native setup and both container targets share the Python 3.12 / uv 0.12.x
+Recipe lock. Software `init`, `validate`, `plan` and `check --mode software`
+need no GPU, model or scene. Simulation is the default setup/check mode and
+adds the locked optional dependencies; scene/checkpoint/episode assets,
+dependency imports, CUDA/EGL and model/navigation success require separate
+target validation. The full profile remains experimental. Software CI does
+not establish a new verified model/hardware combination.
+
 ## XLeRobot recipe prerequisites {#xlerobot-recipe-prerequisites}
 
 Start with the [software rehearsal](xlerobot-snack-delivery.md). It uses

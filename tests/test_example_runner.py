@@ -7,7 +7,7 @@ import time
 
 import pytest
 import yaml
-from examples import runner
+from examples import configuration, runner
 
 CONFIGS = [
     "multi_robot_serving/example.yaml",
@@ -88,6 +88,79 @@ def test_microduck_argv_paths_and_legacy_env_are_explicit(tmp_path):
     assert command[0] == example.python
     assert env["MUJOCO_GL"] == "egl"
     assert "integrations/microduck_vln/src" in env["PYTHONPATH"]
+
+
+@pytest.mark.parametrize("as_json", [False, True])
+def test_microduck_software_check_needs_no_assets_and_never_starts_a_launcher(tmp_path, monkeypatch, capsys, as_json):
+    path = configuration.initialize("microduck", tmp_path / "recipe with spaces")
+    data = yaml.safe_load(path.read_text())
+    data["python"] = sys.executable
+    path.write_text(yaml.safe_dump(data))
+
+    def metadata(python, packages):
+        assert "embodirun-microduck" in packages
+        assert not {"torch", "mujoco", "numpy", "Pillow"}.intersection(packages)
+        return {"version": [3, 12, 3], "packages": dict.fromkeys(packages, "installed"), "sdk_src": None}
+
+    monkeypatch.setattr(configuration, "_environment_details", metadata)
+    monkeypatch.setattr(runner, "Supervisor", lambda *a, **k: pytest.fail("software check opened a launcher"))
+    monkeypatch.setattr(runner, "execute", lambda *a, **k: pytest.fail("software check started a scene"))
+    arguments = [str(path), "check", "--mode", "software", *(["--json"] if as_json else [])]
+    assert runner.main(arguments) == 0
+    output = capsys.readouterr()
+    assert output.err == ""
+    if as_json:
+        report = json.loads(output.out)
+        assert report["mode"] == "software" and report["issues"] == []
+        assert any("CUDA/EGL" in item for item in report["unverified"])
+        assert any("External scene" in item for item in report["unverified"])
+    else:
+        assert "scene/CUDA/model was not tested" in output.out
+    assert not (path.parent / "runs").exists()
+
+
+@pytest.mark.parametrize(
+    "template,mode,message",
+    [
+        ("microduck", "hardware", "MicroDuck setup/check mode must be software or simulation"),
+        ("microduck", "unknown", "MicroDuck setup/check mode must be software or simulation"),
+        ("xlerobot", "simulation", "XLeRobot setup/check mode must be software or hardware"),
+    ],
+)
+def test_recipe_mode_errors_are_actionable_json_before_a_process_starts(
+    tmp_path, monkeypatch, capsys, template, mode, message
+):
+    path = configuration.initialize(template, tmp_path / "recipe")
+    monkeypatch.setattr(runner.subprocess, "Popen", lambda *a, **k: pytest.fail("mode error started a process"))
+    assert runner.main([str(path), "check", "--mode", mode, "--json"]) == 2
+    output = capsys.readouterr()
+    assert output.err == ""
+    report = json.loads(output.out)
+    assert report["status"] == "needs_attention"
+    assert message in report["issues"][0]["message"]
+
+
+def test_microduck_software_missing_environment_explains_the_matching_setup(tmp_path, capsys):
+    path = configuration.initialize("microduck", tmp_path / "recipe")
+    data = yaml.safe_load(path.read_text())
+    data["python"] = str(tmp_path / "missing environment/bin/python")
+    path.write_text(yaml.safe_dump(data))
+    assert runner.main([str(path), "check", "--mode", "software", "--json"]) == 2
+    report = json.loads(capsys.readouterr().out)
+    assert [item["code"] for item in report["issues"]] == ["python_missing"]
+    assert "setup --mode software" in report["issues"][0]["next_action"]
+
+
+def test_microduck_simulation_json_rejects_an_empty_inference_directory(tmp_path):
+    path = configuration.initialize("microduck", tmp_path / "recipe")
+    example = runner.load_example(path)
+    inference = tmp_path / "empty inference directory"
+    inference.mkdir()
+    example.parameters["inference_root"] = str(inference)
+    report = configuration.check_report(example, mode="simulation")
+    issue = next(item for item in report["issues"] if item["code"] == "inference_source_missing")
+    assert "embodiinfer/__init__.py" in issue["message"]
+    assert "submodule update --init third_party/embodiinfer" in issue["next_action"]
 
 
 def test_failed_rollout_stops_deployment_and_records_failure(tmp_path, monkeypatch):

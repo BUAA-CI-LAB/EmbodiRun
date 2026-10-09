@@ -80,11 +80,11 @@ and episode manifest.
 | Command | SO-101 rollout | XLeRobot | MicroDuck |
 |---|---|---|---|
 | `validate` / `plan` | Offline configuration / command preview | Same | Same; assets need not be installed |
-| `setup` | Host `init`, then sync this checkout | `--mode software` for the small runtime; `--mode hardware` for full owner, both from the Recipe lock | Install Host from `uv.lock` and MicroDuck integration |
+| `setup` | Host `init`, then sync this checkout | `--mode software` for the small runtime; `--mode hardware` for full owner, both from the Recipe lock | `--mode software` for CLI/integration checks; default `simulation` adds its locked simulator/inference extra |
 | `up --allow-hardware` | Start model and robot services | Start owner and Control in the foreground | Inference starts with `run` |
 | `run` | Concurrent bounded rollouts; requires `--allow-hardware` | Supervised delivery; requires `--allow-hardware` | Launch simulation and inference |
 | `dry-run` | — | Fixture-only task rehearsal | — |
-| `check` | Report local placeholders and node-owned prerequisites | Read-only diagnostics for `--mode software` or `--mode hardware`; `--json` includes issues and next actions | Check paths and run the scene's CUDA/EGL/asset preflight |
+| `check` | Report local placeholders and node-owned prerequisites | Read-only diagnostics for `--mode software` or `--mode hardware`; `--json` includes issues and next actions | Software mode reads configuration/metadata; default simulation checks resources and runs scene preflight without `--json` |
 | `down` | Stop this deployment | Ask this recipe's foreground launcher to stop | Ask this recipe's foreground launcher to stop |
 
 XLeRobot `setup` / `check` default to hardware mode when `--mode` is omitted.
@@ -133,11 +133,11 @@ For XLeRobot, the separate environment uses
 `examples/xlerobot_snack_delivery/pyproject.toml` and `uv.lock` for both software
 and full hardware setup. The full owner installs CPU PyTorch; the GPU model
 service is prepared separately. The root checkout Host environment includes
-the default development group. MicroDuck's optional integration still uses
-its declared version ranges and is not fully locked by the root file.
+the default development group. MicroDuck uses its own Recipe project and lock
+under `examples/microduck_vln/` for software and simulation modes.
 Do not copy an existing machine's virtual environment.
 
-Container targets `host`, `xlerobot-software`, `xlerobot`, and `microduck` are in
+Container targets `host`, `xlerobot-software`, `xlerobot`, `microduck-software`, and `microduck` are in
 the root `Dockerfile`. XLeRobot native and container profiles use the same
 Recipe lock; the software container already has its environment. See the
 [XLeRobot README](xlerobot_snack_delivery/README.md) for copyable Linux software

@@ -48,6 +48,19 @@ For a dry-run, the printed `Outputs:` directory contains `run.json`, `command-0.
 `result/status.json` / `result/events.jsonl`. A completed fixture run keeps
 `task_success: "unverified"` and `physical_success: null`.
 
+CI installs the software Recipe from its frozen lock, builds the production
+software image in a fresh Docker builder and runs both public entrypoints as
+the caller UID. It checks printed commands outside the checkout with space-containing
+paths, failure diagnostics, fixture results, launcher cleanup and native/container
+package parity. To repeat the installed-environment checks:
+
+```bash
+"$PWD/.venv-xlerobot-snack/bin/python" scripts/check_recipe_software.py --recipe xlerobot
+```
+
+Independent human first use, model compatibility and physical delivery remain
+separate follow-up acceptance work.
+
 ### Docker alternative
 
 Use Docker Engine and Compose on the target Linux host. This path needs no

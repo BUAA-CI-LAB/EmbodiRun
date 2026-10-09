@@ -37,14 +37,19 @@ RUN --mount=type=cache,target=/root/.cache/uv,sharing=locked \
 # getpass for a username and uses the home directory for runtime caches.
 ENV LOGNAME=embodirun USER=embodirun HOME=/tmp
 
-# GPU simulation and inference stay separate from the LeRobot/robot-owner profile.
-FROM host AS microduck
+# Offline configuration checks use the same small Recipe lock as native setup.
+FROM host AS microduck-software
+RUN --mount=type=cache,target=/root/.cache/uv,sharing=locked \
+    python examples/setup_environment.py microduck --mode software --environment /opt/venv
+
+# Add simulation and inference from the same lock, separate from the robot-owner profile.
+FROM microduck-software AS microduck
 RUN apt-get update && apt-get install -y --no-install-recommends libegl1 libgl1 libglfw3 libopengl0 ffmpeg build-essential \
     && rm -rf /var/lib/apt/lists/*
 COPY third_party/embodiinfer/ third_party/embodiinfer/
 RUN chmod -R a+rX third_party/embodiinfer
 RUN --mount=type=cache,target=/root/.cache/uv,sharing=locked \
     test -f third_party/embodiinfer/embodiinfer/__init__.py \
-    && python examples/setup_environment.py microduck --environment /opt/venv
+    && python examples/setup_environment.py microduck --mode simulation --environment /opt/venv
 ENV LOGNAME=embodirun USER=embodirun HOME=/tmp
 ENV MUJOCO_GL=egl PYOPENGL_PLATFORM=egl NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics

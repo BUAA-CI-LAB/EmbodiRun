@@ -109,6 +109,14 @@
     [WirelessComm 配置](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/http-wireless-inference/wireless.yaml)
     和[传输测量](inference-transport.md)。
 
+## MicroDuck Recipe 前提 {#microduck-prerequisites}
+
+[MicroDuck 指南](microduck-vln.md)分别描述软件与仿真流程。Native setup 与两个容器目标
+共用 Python 3.12 / uv 0.12.x Recipe 锁。软件 `init`、`validate`、`plan` 与
+`check --mode software` 无需 GPU、模型或场景。默认的 setup/check 模式是 simulation，
+增加锁定的可选依赖；场景、checkpoint、episode、依赖导入、CUDA/EGL 与模型导航结果
+仍需在目标机器另行验证。完整 profile 仍为实验性；软件 CI 不构成新模型/硬件组合的验证。
+
 ## XLeRobot Recipe 前提 {#xlerobot-recipe-prerequisites}
 
 先从[软件演练](xlerobot-snack-delivery.md)开始。它使用 fixture，不需要下表中的实体前提。
