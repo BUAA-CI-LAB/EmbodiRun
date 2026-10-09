@@ -80,7 +80,10 @@ before completion: imports and CUDA/EGL probes were not run, and the full
 Docker target was not built in this validation round. Scene/model acceptance
 remains open.
 
-The Recipe software CI jobs install XLeRobot and MicroDuck from frozen locks
+The separate Recipe software workflow runs for relevant source, dependency and
+container changes, or by manual dispatch. Documentation-only changes use the
+existing CPU, lint and documentation jobs.
+Its jobs install XLeRobot and MicroDuck from frozen locks
 without restored uv caches, build their production software targets in fresh
 Docker builders, run both entrypoints as the host UID with container networking
 disabled, and compare native/container package inventories. XLeRobot also runs

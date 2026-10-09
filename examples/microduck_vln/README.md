@@ -103,7 +103,8 @@ on a warm retry (exit 0), after its new-builder, empty-cache build reached an
 external 600-second test limit (exit 130). These results do not establish fast
 uncached installation or independent first use.
 
-CI continuously checks the software scope with the production native installer
+The separate Recipe software workflow runs for relevant source, dependency or
+container changes, and supports manual dispatch. It checks the software scope with the production native installer
 and Dockerfile. It runs `init`, `validate`, `plan` and software checks through
 both entrypoints, copies printed commands outside the checkout without inherited
 Recipe variables, checks caller-owned files and compares locked package inventories.

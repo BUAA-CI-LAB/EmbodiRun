@@ -68,7 +68,9 @@ MicroDuck 默认使用独立的 `.venv-microduck` 环境。Native setup 与容�
 一次全新 native 完整 profile 安装也在完成前达到 600 秒测试上限；包导入与 CUDA/EGL
 探针未执行，本轮没有构建完整 Docker 目标，场景和模型仍待验收。
 
-Recipe software CI 任务不恢复 uv 缓存，从冻结锁安装 XLeRobot 和 MicroDuck，并使用全新
+独立的 Recipe software workflow 仅在相关源码、依赖或容器配置变更时运行，也支持手动触发。
+纯文档变更使用原有 CPU、lint 和文档任务。
+其任务不恢复 uv 缓存，从冻结锁安装 XLeRobot 和 MicroDuck，并使用全新
 Docker builder 构建生产软件目标。它以宿主 UID、关闭容器网络运行两个入口，比较
 native/container 包清单；XLeRobot 还通过两个入口执行 fixture 演练。打印的提示保留
 所选场景 Python，可在仓库外执行并支持带空格路径。这些检查覆盖软件上手流程；
