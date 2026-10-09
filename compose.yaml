@@ -1,0 +1,82 @@
+services:
+  host:
+    build:
+      context: .
+      target: host
+    image: embodirun-examples:host
+    init: true
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./examples/local:/workspace
+      - launcher-tmp:/tmp
+    command: [--help]
+  xlerobot-software:
+    build:
+      context: .
+      target: xlerobot-software
+    image: embodirun-examples:xlerobot-software
+    init: true
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./examples/local:/workspace
+      - launcher-tmp:/tmp
+    command: [--help]
+  xlerobot:
+    profiles: [hardware]
+    build:
+      context: .
+      target: xlerobot
+    image: embodirun-examples:xlerobot
+    init: true
+    stdin_open: true
+    tty: true
+    network_mode: host
+    stop_grace_period: 70s
+    volumes:
+      - ./examples/local:/workspace
+      - launcher-tmp:/tmp
+    # Add explicit devices and read-only SDK/calibration mounts in compose.local.yaml.
+    # No privileged mode or automatic hardware startup.
+    command: [--help]
+  microduck-software:
+    build:
+      context: .
+      target: microduck-software
+    image: embodirun-examples:microduck-software
+    init: true
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./examples/local:/workspace
+      - launcher-tmp:/tmp
+    command: [--help]
+  microduck:
+    profiles: [gpu]
+    build:
+      context: .
+      target: microduck
+    image: embodirun-examples:microduck
+    runtime: nvidia
+    init: true
+    stdin_open: true
+    tty: true
+    stop_grace_period: 70s
+    volumes:
+      - ./examples/local:/workspace
+      - launcher-tmp:/tmp
+      - ${MICRODUCK_ASSETS:-./examples/local/microduck/assets}:/assets:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: [--help]
+
+volumes:
+  # Keep private launcher sockets reachable from another same-UID Compose run.
+  # Default copy-up retains the image's /tmp permissions; this volume is project-scoped.
+  launcher-tmp:

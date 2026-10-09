@@ -36,7 +36,7 @@
 
     **◐ ARX5** — DM0.5 绑定。<br>
     **◐ Unitree Go2** — StreamVLN 导航。<br>
-    **◐ XLeRobot** — 通过独立硬件服务接入。
+    **◐ XLeRobot** — 独立硬件服务；双臂 π0.5 Recipe。
 
     [查看机器人适配器](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/robots)
 
@@ -82,7 +82,7 @@
     | Franka FR3 | π0.5 绑定 | [适配器](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/robots/franka/fr3) |
     | ARX5 | DM0.5 绑定 | [绑定](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/bindings/arx/x5/dm05) |
     | Unitree Go2 | StreamVLN 导航 | [机器人集成](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/robots/unitree/go2) |
-    | XLeRobot | 独立硬件服务 | [集成包](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/integrations/xlerobot_owner/README.md) |
+    | XLeRobot | 独立硬件服务；双臂使用 `lerobot.xlerobot.pi05` | [Recipe](xlerobot-snack-delivery.md) / [owner 集成包](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/integrations/xlerobot_owner/README.md) |
     | SO-101（有线遥操作） | 多主臂 UDP 分发，从臂侧 episode 采集 | [集成包](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/integrations/so101_wired_teleop/README.md) |
 
     SO-101 部署需要已标定的机械臂、相机映射，以及针对所选绑定
@@ -108,6 +108,39 @@
     单独安装的选项；参见
     [WirelessComm 配置](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/http-wireless-inference/wireless.yaml)
     和[传输测量](inference-transport.md)。
+
+## MicroDuck Recipe 前提 {#microduck-prerequisites}
+
+[MicroDuck 指南](microduck-vln.md)分别描述软件与仿真流程。Native setup 与两个容器目标
+共用 Python 3.12 / uv 0.12.x Recipe 锁。软件 `init`、`validate`、`plan` 与
+`check --mode software` 无需 GPU、模型或场景。默认的 setup/check 模式是 simulation，
+增加锁定的可选依赖；场景、checkpoint、episode、依赖导入、CUDA/EGL 与模型导航结果
+仍需在目标机器另行验证。完整 profile 仍为实验性；软件 CI 不构成新模型/硬件组合的验证。
+
+## XLeRobot Recipe 前提 {#xlerobot-recipe-prerequisites}
+
+先从[软件演练](xlerobot-snack-delivery.md)开始。它使用 fixture，不需要下表中的实体前提。
+native setup 使用 Python 3.12 / uv 0.12.x；Docker `xlerobot-software` 服务需要
+Linux 上的 Docker Engine 与 Compose。native 软件/硬件 profile 与 XLeRobot 容器目标
+都使用 `examples/xlerobot_snack_delivery/uv.lock`。硬件 owner 使用 CPU PyTorch，
+模型推理由独立服务承担。
+
+| 输入 | 准备自己的小车时何时需要 | 软件演练使用什么 |
+|---|---|---|
+| owner 环境 / SDK | `setup --mode hardware` 安装 owner；将 `sdk_src` 指向诊断中 `environment.sdk_src` 给出的锁定 LeRobot 目录。自备 SDK checkout 需单独确认版本。 | 软件依赖，不导入 owner 或 SDK |
+| 双臂 binding 与检查点 | 接入推理前，为 `lerobot.xlerobot.pi05` 准备适配 XLeRobot 的 π0.5 检查点。该 binding 控制双臂；底盘路线使用独立 Control scope。 | Fixture 提议，无需检查点 |
+| 动作 feature names 与单位 | 调用模型前，提供左右各六个字段：`left_arm_` / `right_arm_` 加 `shoulder_pan.pos`、`shoulder_lift.pos`、`elbow_flex.pos`、`wrist_flex.pos`、`wrist_roll.pos`、`gripper.pos`。关节位置用 `degrees`，夹爪用 `range_0_100`。 | 具名 fixture 数值，不验证学习动作质量 |
+| 相机映射 | 硬件检查前，在 deployment 中将 `observation.images.front`、`observation.images.left_wrist`、`observation.images.right_wrist` 映射到 owner 角色。推理前确认实际图像与检查点输入语义。 | 无真实相机 |
+| 标定与设备路径 | owner 启动前，在 `hardware.local.json` 提供本机已验证的标定、稳定串口/相机路径、轮向/几何和限位。文件存在不代表标定有效。 | 允许模板占位值 |
+| 路线 | `dry-run` 可用自带 `fixture: true` 路线。硬件准备需要本场地录制、带方向的非 fixture 片段；运动前验证每条路线。 | 零运动 fixture |
+| Handover | 监督递送前，按本机标定与场地验证 `handover.forward_pose` / `gripper_opening`。 | Fixture 任务顺序 |
+| 模型 endpoint | 启动前填写 `deployment.local.yaml` 的 `model.endpoint`；模型驱动运动前单独验证服务与具名输出。 | 不连接模型 |
+| 真机停止 | 操作员在场，运动前和停止后取得 owner 的新鲜停止确认。停止请求被接受或轮速为零仍不足以确认。 | 模拟反馈 |
+
+`check --mode hardware --json` 只读本地文件和声明。退出 0 / `status: "passed"`
+不验证设备连接、实际标定、相机图像、模型输出、新鲜观测、停止反馈或任务成功。
+`setup` / `check` 默认是 hardware，软件演练每次显式使用 `--mode software`。
+Linux ARM64 依赖与可选集成需在目标机器检查；仅有容器镜像不构成硬件/GPU 支持证明。
 
 ## 路线图 {#roadmap}
 

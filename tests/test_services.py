@@ -1899,7 +1899,7 @@ def test_cli_init_then_up_uses_persisted_initialized_state(tmp_path, capsys) -> 
     assert init_exit_code == 0
     assert init_output.err == ""
     assert "Init deployment thor-so101-pi05" in init_output.out
-    assert "2 environments ready" in init_output.out
+    assert "2 environments ready" in " ".join(init_output.out.split())
     initialized = StateStore(tmp_path / "thor-so101-pi05.json").load()
     assert initialized is not None
     assert initialized.inference_commit == INFERENCE_REVISION

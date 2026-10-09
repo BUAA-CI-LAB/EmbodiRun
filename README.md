@@ -42,7 +42,7 @@ planning loop.
 Click a preview to watch the video and explore the setup.
 
 [Reproduce the demos](docs/en/examples.md) with versioned YAML configurations and
-the shared `examples/run.sh` launcher.
+the shared `embodirun example` CLI (`examples/run.sh` remains available).
 
 ## Why EmbodiRun?
 

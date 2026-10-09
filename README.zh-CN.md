@@ -38,7 +38,7 @@
 
 点击预览图观看视频，了解运行配置。
 
-[复现演示](docs/zh/examples.md)：使用统一 YAML 配置与 `examples/run.sh` 启动入口。
+[复现演示](docs/zh/examples.md)：使用统一 YAML 配置与 `embodirun example` 命令行入口（`examples/run.sh` 仍可使用）。
 
 ## 为什么选择 EmbodiRun？
 
