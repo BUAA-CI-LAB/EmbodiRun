@@ -2,6 +2,7 @@
 
 import json
 import os
+import shlex
 import signal
 import subprocess
 import sys
@@ -10,7 +11,7 @@ import time
 import pytest
 import yaml
 from examples import lifecycle, runner
-from examples.configuration import TEMPLATES, check_requirements, initialize
+from examples.configuration import TEMPLATES, _recipe_command, check_requirements, initialize
 from examples.lifecycle import Supervisor, stop_owned
 from examples.setup_environment import install_commands
 
@@ -123,6 +124,23 @@ def test_deployment_cli_still_requires_config():
     with pytest.raises(SystemExit) as error:
         host_main(["validate"])
     assert error.value.code == 2
+
+
+@pytest.mark.parametrize("installed_cli", [True, False])
+def test_printed_recipe_hint_preserves_a_transient_scene_python(tmp_path, monkeypatch, installed_cli):
+    caller = tmp_path / "caller environment/bin/python"
+    caller.parent.mkdir(parents=True)
+    if installed_cli:
+        caller.with_name("embodirun").touch()
+    scene = str(tmp_path / "scene environment/bin/python")
+    monkeypatch.setattr(sys, "executable", str(caller))
+    monkeypatch.setenv("EMBODIRUN_SCENE_PYTHON", scene)
+    hint = shlex.split(_recipe_command(tmp_path / "recipe with spaces/example.yaml", "check", "--mode", "software"))
+    assert hint[:3] == ["env", f"EMBODIRUN_SOURCE_ROOT={runner.ROOT}", f"EMBODIRUN_SCENE_PYTHON={scene}"]
+    if installed_cli:
+        assert hint[3] == str(caller.with_name("embodirun"))
+    else:
+        assert hint[3:9] == ["uv", "run", "--frozen", "--project", str(runner.ROOT), "embodirun"]
 
 
 def test_profile_setup_does_not_need_assets_and_uses_one_dependency_source(tmp_path):

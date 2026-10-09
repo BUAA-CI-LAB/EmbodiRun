@@ -68,6 +68,11 @@ MicroDuck 默认使用独立的 `.venv-microduck` 环境。Native setup 与容�
 一次全新 native 完整 profile 安装也在完成前达到 600 秒测试上限；包导入与 CUDA/EGL
 探针未执行，本轮没有构建完整 Docker 目标，场景和模型仍待验收。
 
+`MicroDuck software (native + Docker)` CI 任务从冻结锁安装软件 Recipe，
+构建生产软件镜像，并以调用者 UID 检查两个入口。它验证带空格路径的可复制提示、
+缺失环境的诊断和 native/container 包版本一致性。这些检查覆盖软件上手流程；
+完整仿真、原生 LeRobot 成本对照和独立人工首次使用仍是后续验收工作。
+
 初始 `uv sync` 或 `docker compose build` 在 Recipe CLI 前失败时，尚无 Recipe 的
 `Outputs:` 或 `run.json`。将终端 stdout/stderr 保存到自行选择的日志文件，记录完整命令与退出码。
 Recipe setup 期间查看 `Outputs:` 目录内的 `command-0.log`。保留首条失败和退出码，
@@ -158,6 +163,10 @@ git submodule update --init third_party/embodiinfer
 ```
 
 ### 容器 {#containers}
+
+安装 Docker Engine、Compose 插件，以及支持 BuildKit 的 Buildx。
+Dockerfile 的缓存挂载需要 BuildKit，旧版 builder 无法构建。
+构建前检查 `docker buildx version` 和 `docker compose version`。
 
 仓库 `Dockerfile` 提供 `host`、`xlerobot-software`、`xlerobot`、`microduck-software`、`microduck` 五个目标。
 在目标 Linux 主机构建；构建 `microduck` 前先初始化上述固定子模块：

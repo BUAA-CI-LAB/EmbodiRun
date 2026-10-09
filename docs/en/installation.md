@@ -80,6 +80,13 @@ before completion: imports and CUDA/EGL probes were not run, and the full
 Docker target was not built in this validation round. Scene/model acceptance
 remains open.
 
+The `MicroDuck software (native + Docker)` CI job installs the software Recipe
+from its frozen lock, builds the production software image and checks both
+entrypoints as the caller UID. It verifies copyable hints with space-containing
+paths, missing-environment diagnostics and native/container package parity.
+These checks cover software onboarding; full simulation, native LeRobot cost
+comparisons and independent human first use remain follow-up acceptance work.
+
 If the initial `uv sync` or `docker compose build` fails before the Recipe CLI
 starts, no Recipe `Outputs:` or `run.json` exists yet. Save the terminal
 stdout/stderr to your chosen log file, with the exact command and exit code.
@@ -177,6 +184,10 @@ git submodule update --init third_party/embodiinfer
 ```
 
 ### Containers {#containers}
+
+Install Docker Engine, the Compose plugin and Buildx with BuildKit support.
+The Dockerfile's cache mounts require BuildKit; the legacy builder cannot build it.
+Check `docker buildx version` and `docker compose version` before building.
 
 The recipe container targets are `host`, `xlerobot-software`, `xlerobot`,
 `microduck-software`, and `microduck` in the

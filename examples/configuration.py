@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shlex
 import shutil
 import subprocess
@@ -122,12 +123,13 @@ def placeholders(value: Any, location: str = "") -> list[str]:
 
 def _recipe_command(path: Path, *args: str) -> str:
     entrypoint = Path(sys.executable).absolute().with_name("embodirun")
-    prefix = (
-        ["env", f"EMBODIRUN_SOURCE_ROOT={ROOT}", str(entrypoint)]
-        if entrypoint.is_file()
-        else ["uv", "run", "--frozen", "--project", str(ROOT), "embodirun"]
+    environment = [f"EMBODIRUN_SOURCE_ROOT={ROOT}"]
+    if scene_python := os.environ.get("EMBODIRUN_SCENE_PYTHON"):
+        environment.append(f"EMBODIRUN_SCENE_PYTHON={scene_python}")
+    command = (
+        [str(entrypoint)] if entrypoint.is_file() else ["uv", "run", "--frozen", "--project", str(ROOT), "embodirun"]
     )
-    return shlex.join([*prefix, "example", str(path), *args])
+    return shlex.join(["env", *environment, *command, "example", str(path), *args])
 
 
 def _environment_details(python: str, packages: list[str]) -> dict[str, Any]:

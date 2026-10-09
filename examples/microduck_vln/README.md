@@ -103,6 +103,19 @@ on a warm retry (exit 0), after its new-builder, empty-cache build reached an
 external 600-second test limit (exit 130). These results do not establish fast
 uncached installation or independent first use.
 
+CI continuously checks the software scope with the production native installer
+and Dockerfile. It runs `init`, `validate`, `plan` and software checks through
+both entrypoints, copies printed commands outside the checkout without inherited
+Recipe variables, checks caller-owned files and compares locked package inventories.
+To repeat the check after software setup, select the installed Recipe Python:
+
+```bash
+"$RECIPE_ENV/bin/python" scripts/check_microduck_software.py
+```
+
+This checks software onboarding. Full simulation/model execution, native LeRobot
+deployment comparisons and independent human first use remain follow-up work.
+
 `init` copies the reference inventory; `--assets /absolute/asset/root` fills
 project, checkpoint and episode paths but does not check that those external
 inputs exist. Without that option, edit the generated placeholders before
@@ -163,6 +176,9 @@ Independent first use and full inference remain separate acceptance checks;
 neither dependency installation nor a Docker build proves them.
 
 ## Docker
+
+Docker Engine, Compose and Buildx with BuildKit are required; check
+`docker buildx version` and `docker compose version` before building.
 
 Build and use the software image on the target Linux host. It installs the same
 software lock during the image build; no native Recipe environment is needed:
