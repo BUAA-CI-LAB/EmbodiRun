@@ -34,6 +34,9 @@ $ uv run pytest -q
 
 ## Checklist
 
+- [ ] My PR title and every introduced commit follow the
+      [commit policy](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/CONTRIBUTING.md#commit-messages-and-sign-off),
+      and every author/coauthor has supplied their own DCO `Signed-off-by`.
 - [ ] I updated [`docs/en/support-matrix.md`](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/docs/en/support-matrix.md)
       for any new combination, with versions, configuration, hardware,
       checkpoint, exact command, and observed result.
