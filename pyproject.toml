@@ -120,6 +120,7 @@ sim-vlabench = { requires-python = ">=3.12" }
 embodirun = "embodirun.services.host.cli.cli:main"
 embodirun-control-serve = "embodirun.services.control.server:main"
 embodirun-simulation-serve = "embodirun.services.simulation.server:main"
+embodirun-evaluate = "embodirun.services.simulation.evaluate:main"
 embodirun-sglang-serve = "embodirun.services.inference.adapters.sglang.pi05:main"
 embodirun-go2-streamvln = "embodirun.bindings.unitree.go2.streamvln.cli:main"
 

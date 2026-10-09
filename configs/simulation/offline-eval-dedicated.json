@@ -1,0 +1,44 @@
+{
+  "simulation": {
+    "schema": "rlinf.simulation.config.v1",
+    "runtime_id": "libero-eval",
+    "binding": "franka.panda.pi05",
+    "server": {
+      "bind": "127.0.0.1",
+      "port": 8200
+    },
+    "inference": {
+      "backend": "embodiinfer",
+      "transport": "http",
+      "endpoint": "http://127.0.0.1:8101",
+      "options": {}
+    },
+    "simulator": {
+      "id": "libero",
+      "type": "libero",
+      "options": {
+        "suite": "libero_10",
+        "task_id": 0,
+        "max_episode_steps": 480
+      }
+    }
+  },
+  "evaluation": {
+    "workers": 8,
+    "inference_endpoints": [
+      "http://127.0.0.1:8101"
+    ],
+    "render_gpu_id": 0,
+    "worker_timeout_s": 600
+  },
+  "episodes": [
+    {"schema": "rlinf.simulation.episode.v1", "request_id": "episode-0", "runtime_id": "libero-eval", "prompt": null, "task": "libero_10:0", "seed": 0, "chunk_steps": 5, "max_policy_steps": 96, "inference_timeout_s": 120},
+    {"schema": "rlinf.simulation.episode.v1", "request_id": "episode-1", "runtime_id": "libero-eval", "prompt": null, "task": "libero_10:0", "seed": 1, "chunk_steps": 5, "max_policy_steps": 96, "inference_timeout_s": 120},
+    {"schema": "rlinf.simulation.episode.v1", "request_id": "episode-2", "runtime_id": "libero-eval", "prompt": null, "task": "libero_10:0", "seed": 2, "chunk_steps": 5, "max_policy_steps": 96, "inference_timeout_s": 120},
+    {"schema": "rlinf.simulation.episode.v1", "request_id": "episode-3", "runtime_id": "libero-eval", "prompt": null, "task": "libero_10:0", "seed": 3, "chunk_steps": 5, "max_policy_steps": 96, "inference_timeout_s": 120},
+    {"schema": "rlinf.simulation.episode.v1", "request_id": "episode-4", "runtime_id": "libero-eval", "prompt": null, "task": "libero_10:0", "seed": 4, "chunk_steps": 5, "max_policy_steps": 96, "inference_timeout_s": 120},
+    {"schema": "rlinf.simulation.episode.v1", "request_id": "episode-5", "runtime_id": "libero-eval", "prompt": null, "task": "libero_10:0", "seed": 5, "chunk_steps": 5, "max_policy_steps": 96, "inference_timeout_s": 120},
+    {"schema": "rlinf.simulation.episode.v1", "request_id": "episode-6", "runtime_id": "libero-eval", "prompt": null, "task": "libero_10:0", "seed": 6, "chunk_steps": 5, "max_policy_steps": 96, "inference_timeout_s": 120},
+    {"schema": "rlinf.simulation.episode.v1", "request_id": "episode-7", "runtime_id": "libero-eval", "prompt": null, "task": "libero_10:0", "seed": 7, "chunk_steps": 5, "max_policy_steps": 96, "inference_timeout_s": 120}
+  ]
+}
