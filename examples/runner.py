@@ -7,6 +7,7 @@ services; the MicroDuck and XLeRobot examples retain their own execution loops.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import math
@@ -363,8 +364,15 @@ def execute(
             try:
                 child.wait(timeout=45)
             except subprocess.TimeoutExpired:
-                os.killpg(child.pid, signal.SIGKILL)
+                with contextlib.suppress(ProcessLookupError):
+                    os.killpg(child.pid, signal.SIGKILL)
                 child.wait()
+            finally:
+                # Each command starts its own session. Its leader can exit
+                # before its descendants, including after a cleanup timeout.
+                # Finish that owned group even when the leader was already reaped.
+                with contextlib.suppress(ProcessLookupError):
+                    os.killpg(child.pid, signal.SIGKILL)
         for log in logs:
             log.close()
 
