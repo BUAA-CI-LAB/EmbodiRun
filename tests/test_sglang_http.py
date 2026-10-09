@@ -334,10 +334,10 @@ def test_sglang_command_selects_explicit_pipeline_and_optional_entrypoint() -> N
         checkpoint="/models/pi05",
         bind="127.0.0.1",
         port=8000,
-        executable="rlinf-sglang-serve",
+        executable="embodirun-sglang-serve",
         pipeline="LeRobotPi05Pipeline",
     )
-    assert command[:3] == ("rlinf-sglang-serve", "serve", "/models/pi05")
+    assert command[:3] == ("embodirun-sglang-serve", "serve", "/models/pi05")
     assert command[command.index("--pipeline-class-name") + 1] == "LeRobotPi05Pipeline"
     assert "--pipeline" not in command
 

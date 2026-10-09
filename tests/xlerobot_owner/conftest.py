@@ -1,7 +1,7 @@
 """Make the checkout's optional owner package importable for root pytest.
 
 The owner is an optional integration, so the core environment does not install
-its dependencies or package it as part of ``rlinf-deploy``.  Keeping this path
+its dependencies or package it as part of ``embodirun``.  Keeping this path
 adjustment local to the owner tests lets a root checkout run collection after
 installing the selected owner extra without pulling hardware SDKs into core
 development.  Tests still use ``importorskip`` at the boundaries that need an

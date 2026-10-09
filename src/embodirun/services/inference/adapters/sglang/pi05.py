@@ -2,7 +2,7 @@
 
 Model math and checkpoint processing live in ``integrations/sglang_pi05``.
 Install that package in the managed SGLang environment before importing this
-historical path or invoking the legacy ``rlinf-sglang-serve`` launcher.
+historical path.
 """
 
 from __future__ import annotations

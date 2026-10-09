@@ -20,11 +20,11 @@ def _camera_buffer_size() -> int:
     caps delivery at 10.00 fps while 2 (or more) reaches 20.00 fps. Two buffers
     keep the configured rate and cost only one frame of freshness.
 
-    Override with ``RLINF_DEPLOY_CAMERA_BUFFERSIZE``; values below 1 fall back to
+    Override with ``EMBODIRUN_CAMERA_BUFFERSIZE``; values below 1 fall back to
     the default.
     """
 
-    raw = os.environ.get("RLINF_DEPLOY_CAMERA_BUFFERSIZE", "2")
+    raw = os.environ.get("EMBODIRUN_CAMERA_BUFFERSIZE", "2")
     try:
         value = int(raw)
     except ValueError:

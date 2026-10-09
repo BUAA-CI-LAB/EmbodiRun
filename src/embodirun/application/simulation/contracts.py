@@ -8,10 +8,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-SIMULATION_CONFIG_SCHEMA = "rlinf.simulation.config.v1"
-EPISODE_REQUEST_SCHEMA = "rlinf.simulation.episode.v1"
-EPISODE_RESULT_SCHEMA = "rlinf.simulation.result.v1"
-ERROR_SCHEMA = "rlinf.simulation.error.v1"
+SIMULATION_CONFIG_SCHEMA = "embodirun.simulation.config.v1"
+EPISODE_REQUEST_SCHEMA = "embodirun.simulation.episode.v1"
+EPISODE_RESULT_SCHEMA = "embodirun.simulation.result.v1"
+ERROR_SCHEMA = "embodirun.simulation.error.v1"
 
 
 class SimulationContractError(ValueError):
