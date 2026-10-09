@@ -117,4 +117,3 @@ jobs:
           assert native["packages"] == docker["packages"], "Native/container locked packages differ"
           print(f"Native/container parity: {len(native['packages'])} packages")
           PY
-
