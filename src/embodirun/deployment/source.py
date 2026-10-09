@@ -20,11 +20,8 @@ _SOURCE_DIRS = ("src/embodirun", "integrations")
 # project.  Managed checkouts cloned before the rename keep working instead of
 # forcing a fresh clone.
 _REPOSITORY_ALIASES = {
-    "rlinf-deploy": "EmbodiRun",
-    "rlinf-inference": "EmbodiInfer",
-    "embodirun-internal": "EmbodiRun",
-    "embodiinfer-internal": "EmbodiInfer",
     "embodirun": "EmbodiRun",
+    "embodirun-inference": "EmbodiInfer",
     "embodiinfer": "EmbodiInfer",
 }
 

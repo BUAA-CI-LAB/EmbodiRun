@@ -11,10 +11,10 @@ from typing import Any
 from embodirun.model_services.providers import provider
 from embodirun.robots.sensors import SensorInput
 
-CONTROL_CONFIG_SCHEMA = "rlinf.control.config.v1"
-TASK_REQUEST_SCHEMA = "rlinf.control.task.v1"
-TASK_RESULT_SCHEMA = "rlinf.control.result.v1"
-ERROR_SCHEMA = "rlinf.control.error.v1"
+CONTROL_CONFIG_SCHEMA = "embodirun.control.config.v1"
+TASK_REQUEST_SCHEMA = "embodirun.control.task.v1"
+TASK_RESULT_SCHEMA = "embodirun.control.result.v1"
+ERROR_SCHEMA = "embodirun.control.error.v1"
 
 
 class ControlContractError(ValueError):

@@ -70,7 +70,7 @@ def test_probe_resources_checks_both_buses_and_calibration_files():
     node = NodeState(
         node_id="local",
         home="/home/test",
-        root="/home/test/.rlinf",
+        root="/home/test/.embodirun",
         deploy_project="/srv/deploy",
         inference_project="/srv/inference",
         platform="linux",

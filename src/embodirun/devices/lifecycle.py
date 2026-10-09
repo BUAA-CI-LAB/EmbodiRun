@@ -431,7 +431,7 @@ class DeviceManager:
         self.owner_id = owner_id or f"control:{os.getpid()}"
         explicit_lock_dir = lock_dir is not None
         self.lock_dir = Path(
-            lock_dir or os.environ.get("RLINF_DEPLOY_DEVICE_LOCK_DIR", "/tmp/rlinf-deploy-device-locks")
+            lock_dir or os.environ.get("EMBODIRUN_DEVICE_LOCK_DIR", "/tmp/embodirun-device-locks")
         ).expanduser()
         if state_path is None:
             if explicit_lock_dir:
@@ -446,7 +446,7 @@ class DeviceManager:
                         Path.home() / ".local" / "state",
                     )
                 ).expanduser()
-                state_path = state_root / "rlinf-deploy" / "device-state.json"
+                state_path = state_root / "embodirun" / "device-state.json"
         self.state_store = DeviceStateStore(state_path)
         self._records: dict[str, _Record] = {}
         self._unresolved = self.state_store.load()

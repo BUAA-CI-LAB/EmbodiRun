@@ -144,7 +144,7 @@ class RobotIOScheduler:
         self._preemptive_active = False
         self._worker = threading.Thread(
             target=self._run,
-            name=f"rlinf-device-io-{bus_id}",
+            name=f"embodirun-device-io-{bus_id}",
             daemon=True,
         )
         self._worker.start()
@@ -411,7 +411,7 @@ class RobotIOScheduler:
 
             threading.Thread(
                 target=invoke,
-                name=f"rlinf-device-preemptive-stop-{self.bus_id}",
+                name=f"embodirun-device-preemptive-stop-{self.bus_id}",
                 daemon=True,
             ).start()
             if not done.wait(wait_timeout):
