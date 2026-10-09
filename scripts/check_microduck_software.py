@@ -126,7 +126,7 @@ def check(python: Path, source: Path, work: Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--python", type=Path, default=Path(sys.executable))
-    parser.add_argument("--source-root", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--source-root", type=Path, default=Path(__file__).resolve().parent.parent)
     parser.add_argument("--work-dir", type=Path, help="parent for a temporary caller-owned Recipe directory")
     parser.add_argument(
         "--report", type=Path, help="save the checked package inventory for native/container comparison"
