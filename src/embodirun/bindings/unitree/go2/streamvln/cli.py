@@ -32,7 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--username", required=True, help="SSH username")
     parser.add_argument(
         "--remote-root",
-        default=".local/share/rlinf-go2-agent",
+        default=".local/share/embodirun-go2-agent",
         help="remote installation root, absolute or relative to the SSH user's home",
     )
     parser.add_argument("--connect-timeout", type=float, default=10.0)

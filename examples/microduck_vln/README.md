@@ -110,7 +110,7 @@ Recipe variables, checks caller-owned files and compares locked package inventor
 To repeat the check after software setup, select the installed Recipe Python:
 
 ```bash
-"$RECIPE_ENV/bin/python" scripts/check_microduck_software.py
+"$RECIPE_ENV/bin/python" scripts/check_recipe_software.py --recipe microduck
 ```
 
 This checks software onboarding. Full simulation/model execution, native LeRobot

@@ -78,7 +78,7 @@ def test_host_control_contract_contains_only_dynamic_task_fields() -> None:
     payload = task_request().to_payload()
 
     assert TaskRequest.from_payload(payload) == task_request()
-    assert payload["schema"] == "rlinf.control.task.v1"
+    assert payload["schema"] == "embodirun.control.task.v1"
     assert "robot" not in payload
     assert "inputs" not in payload
     assert "binding" not in payload
@@ -257,7 +257,7 @@ def test_control_service_reuses_wireless_client_across_health_checks() -> None:
             inference_transport="wireless",
             inference_endpoint="wireless://inference-thor",
             inference_options={
-                "comm_config": "/etc/rlinf/control-wireless.yaml",
+                "comm_config": "/etc/embodirun/control-wireless.yaml",
                 "server_node_id": "inference-thor",
             },
         ),

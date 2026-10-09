@@ -80,10 +80,12 @@ before completion: imports and CUDA/EGL probes were not run, and the full
 Docker target was not built in this validation round. Scene/model acceptance
 remains open.
 
-The `MicroDuck software (native + Docker)` CI job installs the software Recipe
-from its frozen lock, builds the production software image and checks both
-entrypoints as the caller UID. It verifies copyable hints with space-containing
-paths, missing-environment diagnostics and native/container package parity.
+The Recipe software CI jobs install XLeRobot and MicroDuck from frozen locks
+without restored uv caches, build their production software targets in fresh
+Docker builders, run both entrypoints as the host UID with container networking
+disabled, and compare native/container package inventories. XLeRobot also runs
+its fixture rehearsal through both entrypoints. Printed hints preserve the
+selected scene Python and work outside the checkout with space-containing paths.
 These checks cover software onboarding; full simulation, native LeRobot cost
 comparisons and independent human first use remain follow-up acceptance work.
 

@@ -20,7 +20,7 @@ from embodirun.robots.lerobot.so101.teleop import (
     resolve_axes_action as resolve_so101_axes_action,
 )
 
-TELEOP_AXES_ACTION_SPACE = "rlinf.teleop.axes.v1"
+TELEOP_AXES_ACTION_SPACE = "embodirun.teleop.axes.v1"
 _ROBOT_KIND_ALIASES = {
     "arx5": "arx.x5",
     "arx.x5": "arx.x5",
@@ -158,7 +158,7 @@ def main(argv: list[str] | None = None) -> int:
     from .inputs import ControlInputBridge, JoystickInput, KeyboardInput
 
     parser = argparse.ArgumentParser(
-        prog="rlinf-control-teleop",
+        prog="embodirun-control-teleop",
         description=(
             "Poll keyboard and optional joystick input and forward manual control "
             "requests to the loopback control service. Keyboard commands: space "
