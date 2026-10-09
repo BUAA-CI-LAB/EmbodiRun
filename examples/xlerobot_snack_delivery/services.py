@@ -30,10 +30,26 @@ def _private(path: Path, text: str) -> None:
         stream.write(text)
 
 
-def prepare(config: dict[str, Any], directory: Path, *, base_dir: Path) -> list[list[str]]:
+def control_endpoints(config: dict[str, Any]) -> dict[str, dict[str, str]]:
+    """Derive the task's scoped local endpoints from the service deployment."""
+    if not isinstance(config, dict):
+        raise ValueError("snack deployment must be a mapping")
+    for section, fields in (("owner", ("port",)), ("control", ("base_port", "manipulation_port"))):
+        values = config.get(section)
+        if not isinstance(values, dict) or any(field not in values for field in fields):
+            raise ValueError(f"deployment.{section} must configure {', '.join(fields)}")
     ports = [config["owner"]["port"], config["control"]["base_port"], config["control"]["manipulation_port"]]
-    if len(set(ports)) != 3 or any(isinstance(p, bool) or not isinstance(p, int) or not 1 <= p <= 65535 for p in ports):
+    if any(isinstance(p, bool) or not isinstance(p, int) or not 1 <= p <= 65535 for p in ports) or len(set(ports)) != 3:
         raise ValueError("owner, base and manipulation ports must be distinct valid ports")
+    return {
+        "base": {"endpoint": f"http://127.0.0.1:{ports[1]}", "runtime_id": "xlerobot-base", "scope": "base"},
+        "manipulation": {"endpoint": f"http://127.0.0.1:{ports[2]}", "runtime_id": "xlerobot-pi05", "scope": "arms"},
+    }
+
+
+def prepare(config: dict[str, Any], directory: Path, *, base_dir: Path) -> list[list[str]]:
+    control_endpoints(config)
+    ports = [config["owner"]["port"], config["control"]["base_port"], config["control"]["manipulation_port"]]
     hardware = Path(config["owner"]["hardware_config"])
     hardware = hardware if hardware.is_absolute() else base_dir / hardware
     if not hardware.is_file():
@@ -152,6 +168,7 @@ def main(argv=None) -> int:
             logs.append(log)
             children.append(subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT))
         print("Owner and Control processes started. Logs:", args.state_dir, flush=True)
+        print("Local process startup does not verify device, model or stop readiness.", flush=True)
         print("Use the owner UI to confirm a physical stop before running the recipe.", flush=True)
         while True:
             if any(child.poll() is not None for child in children):

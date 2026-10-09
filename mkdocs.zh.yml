@@ -64,6 +64,7 @@ nav:
       - 手动控制: control.md
       - 操作安全: safety.md
       - 支持的平台与路线图: support-matrix.md
+      - V1 范围与证据: v1-roadmap.md
   - 集成:
       - 推理 API v1: http_api.md
       - Agent 执行流程: agent-workflow.md

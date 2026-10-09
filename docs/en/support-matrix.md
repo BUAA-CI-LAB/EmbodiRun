@@ -36,7 +36,7 @@ The roadmap tracks the next integrations separately from the current catalog.
 
     **◐ ARX5** — DM0.5 binding.<br>
     **◐ Unitree Go2** — StreamVLN navigation.<br>
-    **◐ XLeRobot** — external hardware owner.
+    **◐ XLeRobot** — external hardware owner; dual-arm π0.5 recipe.
 
     [Explore robot adapters](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/robots)
 
@@ -82,7 +82,7 @@ The roadmap tracks the next integrations separately from the current catalog.
     | Franka FR3 | π0.5 binding | [Adapter](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/robots/franka/fr3) |
     | ARX5 | DM0.5 binding | [Binding](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/bindings/arx/x5/dm05) |
     | Unitree Go2 | StreamVLN navigation | [Robot integration](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/robots/unitree/go2) |
-    | XLeRobot | External hardware owner | [Integration package](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/integrations/xlerobot_owner/README.md) |
+    | XLeRobot | External hardware owner; `lerobot.xlerobot.pi05` for two arms | [Recipe](xlerobot-snack-delivery.md) / [owner package](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/integrations/xlerobot_owner/README.md) |
     | SO-101 (wired teleoperation) | Multi-leader UDP fan-out, follower-side episode collection | [Integration package](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/integrations/so101_wired_teleop/README.md) |
 
     SO-101 deployments need calibrated arms, camera mappings, and a checkpoint
@@ -108,6 +108,37 @@ The roadmap tracks the next integrations separately from the current catalog.
     separately installed option; see the
     [WirelessComm configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/http-wireless-inference/wireless.yaml)
     and [transport measurements](inference-transport.md).
+
+Deployment time, operations steps, resource usage, and multi-device scaling
+belong in the [deployment-readiness evidence template](../../benchmarks/deployment-readiness.md).
+
+## XLeRobot recipe prerequisites {#xlerobot-recipe-prerequisites}
+
+Start with the [software rehearsal](xlerobot-snack-delivery.md). It uses
+fixtures and needs none of the physical inputs below. Native setup uses
+Python 3.12 / uv 0.12.x; the `xlerobot-software` Docker service needs Docker
+Engine and Compose on Linux. Native software/hardware profiles and the
+XLeRobot container targets use `examples/xlerobot_snack_delivery/uv.lock`.
+The hardware owner uses CPU PyTorch; inference runs in a separate model service.
+
+| Input | When it is needed for your own robot | What software rehearsal uses |
+|---|---|---|
+| Owner environment / SDK | `setup --mode hardware` installs the owner. Set `sdk_src` to the locked LeRobot directory reported as `environment.sdk_src`; a custom SDK checkout needs its own version check. | Software dependencies; no owner or SDK import |
+| Two-arm binding and checkpoint | Before connecting inference, match `lerobot.xlerobot.pi05` to an XLeRobot-adapted π0.5 checkpoint. This binding controls the arms; base routes use separate Control scope. | Fixture proposals; no checkpoint |
+| Action feature names and units | Before model use, supply all 12 `left_arm_` / `right_arm_` fields: `shoulder_pan.pos`, `shoulder_lift.pos`, `elbow_flex.pos`, `wrist_flex.pos`, `wrist_roll.pos`, `gripper.pos`. Joint positions are `degrees`; grippers are `range_0_100`. | Named fixture values; no learned action-quality check |
+| Camera mapping | Before hardware checks, map `observation.images.front`, `observation.images.left_wrist`, and `observation.images.right_wrist` to owner roles in deployment. Verify actual images and checkpoint input meanings before inference. | No physical cameras |
+| Calibration and device paths | Before owner startup, provide your verified calibration, stable serial/camera paths, wheel geometry/directions, and limits in `hardware.local.json`. File existence does not establish calibration validity. | Template placeholders are allowed |
+| Routes | `dry-run` accepts the supplied `fixture: true` routes. Hardware preparation needs locally recorded, directed non-fixture chunks; verify each route in the target space before motion. | Zero-motion fixtures |
+| Handover | Before supervised delivery, validate `handover.forward_pose` and `gripper_opening` for your calibrated robot and workspace. | Fixture task sequence |
+| Model endpoint | Set `deployment.local.yaml`'s `model.endpoint` before startup; verify the service and named outputs separately before model-driven motion. | No model connection |
+| Physical stop | With the operator present, obtain fresh owner stop confirmation before motion and after stopping. An accepted stop request or zero wheel speed alone is insufficient. | Simulated feedback |
+
+`check --mode hardware --json` reads local files and declarations. Exit 0 /
+`status: "passed"` does not verify device connections, actual calibration,
+camera images, model output, fresh observations, stop feedback, or task success.
+The default `setup` / `check` mode is hardware; use `--mode software` explicitly
+for rehearsal. Linux ARM64 dependencies and optional integrations need checks
+on the target. A container image alone does not establish hardware/GPU support.
 
 ## Roadmap
 

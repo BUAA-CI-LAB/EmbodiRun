@@ -31,6 +31,8 @@ The configuration, launcher, and task code are under
 | Interfaces and execution feedback | [`architecture.md`](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/xlerobot_snack_delivery/architecture.md) |
 | Deployment fields | [`deployment.example.yaml`](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/xlerobot_snack_delivery/deployment.example.yaml), [`config.example.json`](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/xlerobot_snack_delivery/config.example.json) |
 | Unified setup and launch | [`example.yaml`](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/xlerobot_snack_delivery/example.yaml), [`examples/run.sh`](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/run.sh) |
+| Deployment help from your coding Agent | [`AGENT_GUIDE.md`](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/xlerobot_snack_delivery/AGENT_GUIDE.md) |
+| Classroom trial and first-use feedback | [`FIRST_USE_FEEDBACK.md`](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/xlerobot_snack_delivery/FIRST_USE_FEEDBACK.md) |
 
 The default route files are marked as fixtures and are accepted only by
 `dry-run`. For a real scene, record directed route chunks in the target space
@@ -40,18 +42,54 @@ route files.
 
 ## Rehearse without hardware
 
-After `uv sync --frozen`, rehearse the task through the shared entrypoint:
+Choose native setup or the [Docker software path](installation.md#managed-deployments).
+Both need a checkout on the target Linux host and network access for the first
+installation. Native XLeRobot setup uses Python 3.12 and uv 0.12.x:
 
 ```bash
-bash examples/run.sh examples/xlerobot_snack_delivery/example.yaml validate
-bash examples/run.sh examples/xlerobot_snack_delivery/example.yaml dry-run
+uv sync --frozen --python 3.12
+uv run --frozen embodirun example init xlerobot
+CONFIG=examples/local/xlerobot/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" setup --mode software
+uv run --frozen embodirun example "$CONFIG" check --mode software --json
+uv run --frozen embodirun example "$CONFIG" dry-run
 ```
 
-The package README covers local YAML setup, service startup, supervised
-execution, and output files. See [Reproduce the demos](examples.md) for common
-commands.
+No real SDK, calibration, cameras, route recording, checkpoint, model endpoint,
+RPent, or GPU is required. If `init` finds an existing directory, reuse the
+configuration path it prints or choose a new `--output`; it does not overwrite
+local work. Docker uses `xlerobot-software` and already contains the software
+environment, so it skips native `setup`. Its dependency source is the same
+recipe project and lock as native XLeRobot setup.
 
-For hardware, follow the owner and safety instructions in the setup guide,
-keep an operator present, and validate the robot-specific calibration and
-emergency stop before allowing motion. Record routes and calibrate the arm and
-cameras for your own workspace.
+`check` exits 0 with `status: "passed"` or 2 with issues to resolve. Read each
+issue's `location` and `next_action`, then repeat the same check. The printed
+output directory contains `run.json`, `command-0.log`, and
+`result/status.json` / `result/events.jsonl`. A completed dry-run records
+fixture sequencing, with `task_success: "unverified"` and
+`physical_success: null`; it starts no owner, inference service, or task Agent.
+
+## Prepare your own cart
+
+Continue in the generated local directory:
+
+| File | Your inputs |
+|---|---|
+| `deployment.local.yaml` | Model endpoint, Control ports, camera feature-to-owner-role mapping |
+| `hardware.local.json` | Installed SDK path, devices, verified calibration, wheel parameters, limits |
+| `config.local.json` and `routes/` | Recorded directed routes, grasp instruction, planner, calibrated handover |
+
+Use `setup --mode hardware` for the complete owner environment, then
+`check --mode hardware --json` for local prerequisites. These commands default
+to hardware mode when `--mode` is omitted. See the
+[support matrix](support-matrix.md#xlerobot-recipe-prerequisites) for the
+two-arm `lerobot.xlerobot.pi05` binding, units, cameras, and required inputs.
+
+Static checks do not establish live readiness. Follow the setup guide and keep
+an operator present to verify calibration, camera images, model compatibility,
+and fresh stop feedback before authorizing motion. Inference runs
+separately; installing the owner does not supply a checkpoint. Use the local
+README for supervised `up` / `run` and shutdown. Classroom feedback materials
+are provided, but actual student feedback still needs to be collected.

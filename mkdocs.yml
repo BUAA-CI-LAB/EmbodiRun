@@ -51,6 +51,7 @@ nav:
       - Control: control.md
       - Safety: safety.md
       - Platforms and roadmap: support-matrix.md
+      - V1 scope and evidence: v1-roadmap.md
   - Integrating:
       - Inference API v1: http_api.md
       - Agent execution workflow: agent-workflow.md

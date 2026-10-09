@@ -26,10 +26,10 @@
 
 ## 演示
 
-| 三台机器人，共享一个推理服务 | SO-101 上的推理引擎对比 |
+| 多设备共享或独立推理 | SO-101 上的推理引擎对比 |
 |---|---|
 | [![三台 SO-101 的录制](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/multi_robot_serving.jpg)](https://embodirun.readthedocs.io/en/latest/demos/multi-robot-serving/) | [![SO-101 引擎对比](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/engine_e2e_contrast.jpg)](https://embodirun.readthedocs.io/en/latest/demos/engine-e2e-contrast/) |
-| 三台 SO-101 共享一个 π0.5 推理服务，每台设备运行独立的 rollout 进程。 | Jetson AGX Thor 与 SO-101 上的 EmbodiInfer HTTP/WirelessComm、SGLang 和原生 LeRobot 对比。 |
+| 多台 SO-101 可以共享一个 π0.5 推理服务，每台设备运行独立的 rollout 进程，也可以为设备配置独立后端。 | Jetson AGX Thor 与 SO-101 上的 EmbodiInfer HTTP/WirelessComm、SGLang 和原生 LeRobot 对比。 |
 
 | XLeRobot 帮你拿零食 | MicroDuck 语言导航 |
 |---|---|
@@ -38,7 +38,7 @@
 
 点击预览图观看视频，了解运行配置。
 
-[复现演示](docs/zh/examples.md)：使用统一 YAML 配置与 `examples/run.sh` 启动入口。
+[复现演示](docs/zh/examples.md)：使用统一 YAML 配置与 `embodirun example` 命令行入口（`examples/run.sh` 仍可使用）。
 
 ## 为什么选择 EmbodiRun？
 
@@ -52,8 +52,8 @@
 <a href="docs/zh/architecture.md">部署架构 →</a>
 </td>
 <td width="50%" valign="top">
-<h3>🦾 多台机器人，共享推理</h3>
-<p>多个独立设备循环连接同一个模型端点。每台机器人保留自己的会话与执行流程，共享同一推理服务。</p>
+<h3>🦾 独立、共享或混合推理</h3>
+<p>设备可以连接独立端点、共享模型端点，或按设备混合使用多个后端。每台设备保留自己的会话与执行流程。</p>
 <a href="docs/zh/demos/multi-robot-serving.md">查看三台 SO-101 如何共用推理服务 →</a>
 </td>
 </tr>
