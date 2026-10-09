@@ -20,7 +20,6 @@ dependencies = [
 
 [project.scripts]
 embodirun-sglang-pi05-serve = "embodirun_sglang_pi05.pi05:main"
-# Compatibility alias for existing deployments.
 
 [tool.setuptools.packages.find]
 where = ["src"]

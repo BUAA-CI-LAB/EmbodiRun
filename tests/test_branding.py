@@ -12,30 +12,33 @@ from embodirun.services.host.config import config_digest, load_config
 from embodirun.services.host.plan import build_plan
 
 
-def test_installed_cli_commands_exist() -> None:
-    entries = {
-        entry.name: entry for entry in distribution("embodirun").entry_points if entry.group == "console_scripts"
-    }
-    for name in (
+@pytest.mark.parametrize(
+    "name",
+    [
         "embodirun",
         "embodirun-control-serve",
         "embodirun-simulation-serve",
         "embodirun-sglang-serve",
         "embodirun-go2-streamvln",
-    ):
-        assert name in entries, name
-        if name == "embodirun-sglang-serve":
-            pytest.importorskip("sglang.multimodal_gen")
-        assert entries[name].load() is not None
-        result = subprocess.run(
-            [str(Path(sys.executable).parent / name), "--help"],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=False,
-        )
-        assert result.returncode == 0, result.stderr
-        assert "usage:" in result.stdout
+    ],
+)
+def test_installed_cli_commands_exist(name: str) -> None:
+    entries = {
+        entry.name: entry for entry in distribution("embodirun").entry_points if entry.group == "console_scripts"
+    }
+    assert name in entries, name
+    if name == "embodirun-sglang-serve":
+        pytest.importorskip("sglang.multimodal_gen")
+    assert entries[name].load() is not None
+    result = subprocess.run(
+        [str(Path(sys.executable).parent / name), "--help"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "usage:" in result.stdout
 
 
 def test_cli_validates_existing_config() -> None:
