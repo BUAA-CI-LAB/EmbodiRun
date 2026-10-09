@@ -57,7 +57,9 @@ MicroDuck 使用 `examples/microduck_vln/` 下独立的 Python 3.12 / uv 0.12.x
 完整仿真仍需兼容的外部资源，并另行验收 CUDA/EGL 与模型执行。
 见 [MicroDuck 指南](microduck-vln.md)。
 
-Recipe software CI 任务不恢复 uv 缓存，从冻结锁安装两个 Recipe，并使用全新 Docker
+独立的 Recipe software workflow 仅在相关源码、依赖或容器配置变更时运行，也支持手动触发。
+纯文档变更使用原有 CPU、lint 和文档任务。
+其任务不恢复 uv 缓存，从冻结锁安装两个 Recipe，并使用全新 Docker
 builder 构建生产软件目标。它以宿主 UID、关闭容器网络运行两个入口，比较 native/container
 包清单；XLeRobot 还通过两个入口执行 fixture 演练。打印的提示保留所选场景 Python，
 可在仓库外执行并支持带空格路径。这些检查覆盖软件上手流程；独立人工首次使用、

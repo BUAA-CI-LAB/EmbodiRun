@@ -64,7 +64,10 @@ and is the default. Software checks need no assets or GPU; full simulation
 still requires compatible external assets and separate CUDA/EGL/model acceptance.
 See the [MicroDuck guide](microduck-vln.md).
 
-The Recipe software CI jobs install both Recipes from frozen locks without
+The separate Recipe software workflow runs for relevant source, dependency and
+container changes, or by manual dispatch. Documentation-only changes use the
+existing CPU, lint and documentation jobs.
+Its jobs install both Recipes from frozen locks without
 restored uv caches, build their production software targets in fresh Docker
 builders, run both entrypoints as the host UID with container networking disabled,
 and compare native/container package inventories. XLeRobot also runs its fixture

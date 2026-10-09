@@ -1,0 +1,120 @@
+name: Recipe software
+
+# Exercise production installers/images only when their inputs change.
+# Documentation-only PRs retain the existing CPU, lint and docs checks.
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/recipe-software.yml"
+      - ".dockerignore"
+      - "Dockerfile"
+      - "compose.yaml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "src/**"
+      - "examples/*.py"
+      - "examples/run.sh"
+      - "examples/xlerobot_snack_delivery/**"
+      - "!examples/xlerobot_snack_delivery/**/*.md"
+      - "examples/microduck_vln/**"
+      - "!examples/microduck_vln/**/*.md"
+      - "integrations/xlerobot_owner/**"
+      - "!integrations/xlerobot_owner/**/*.md"
+      - "integrations/microduck_vln/**"
+      - "!integrations/microduck_vln/**/*.md"
+      - "agents/**"
+      - "!agents/**/*.md"
+      - "scripts/check_recipe_software.py"
+  pull_request:
+    paths:
+      - ".github/workflows/recipe-software.yml"
+      - ".dockerignore"
+      - "Dockerfile"
+      - "compose.yaml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "src/**"
+      - "examples/*.py"
+      - "examples/run.sh"
+      - "examples/xlerobot_snack_delivery/**"
+      - "!examples/xlerobot_snack_delivery/**/*.md"
+      - "examples/microduck_vln/**"
+      - "!examples/microduck_vln/**/*.md"
+      - "integrations/xlerobot_owner/**"
+      - "!integrations/xlerobot_owner/**/*.md"
+      - "integrations/microduck_vln/**"
+      - "!integrations/microduck_vln/**/*.md"
+      - "agents/**"
+      - "!agents/**/*.md"
+      - "scripts/check_recipe_software.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recipe-software-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  recipe-software:
+    name: Recipe software (${{ matrix.recipe }}, native + Docker)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - recipe: xlerobot
+            project: xlerobot_snack_delivery
+            target: xlerobot-software
+          - recipe: microduck
+            project: microduck_vln
+            target: microduck-software
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.12.x"
+          enable-cache: false
+
+      - name: Install the native software Recipe from its frozen lock
+        env:
+          UV_CACHE_DIR: ${{ runner.temp }}/recipe-downloads
+        run: |
+          uv sync --frozen --python 3.12 --no-default-groups --group host
+          EMBODIRUN_SCENE_PYTHON="$RUNNER_TEMP/recipe environment/bin/python" \
+            .venv/bin/embodirun example "examples/${{ matrix.project }}/example.yaml" setup --mode software
+
+      - name: Check both native entrypoints and printed commands
+        run: |
+          "$RUNNER_TEMP/recipe environment/bin/python" scripts/check_recipe_software.py \
+            --recipe "${{ matrix.recipe }}" --report "$RUNNER_TEMP/recipe-native.json"
+
+      - name: Set up an isolated Docker builder
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build the production software Docker target
+        run: docker buildx build --load --no-cache --target "${{ matrix.target }}" --tag recipe-software-ci .
+
+      - name: Check the offline container as the host UID and compare locked inventories
+        run: |
+          docker run --rm --network none --user "$(id -u):$(id -g)" \
+            --mount "type=bind,source=$PWD/scripts/check_recipe_software.py,target=/check.py,readonly" \
+            --mount "type=bind,source=$RUNNER_TEMP,target=/workspace" \
+            --entrypoint /opt/venv/bin/python recipe-software-ci /check.py \
+            --recipe "${{ matrix.recipe }}" --source-root /opt/embodirun \
+            --work-dir /workspace --report /workspace/recipe-docker.json
+          python3 - <<'PY'
+          import json, os, pathlib
+          root = pathlib.Path(os.environ["RUNNER_TEMP"])
+          native = json.loads((root / "recipe-native.json").read_text())
+          docker = json.loads((root / "recipe-docker.json").read_text())
+          assert native["packages"] == docker["packages"], "Native/container locked packages differ"
+          print(f"Native/container parity: {len(native['packages'])} packages")
+          PY
+
