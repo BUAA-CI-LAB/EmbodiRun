@@ -29,7 +29,9 @@ SO101_POSITION_FEATURES = tuple(f"{name}.pos" for name in SO101_MOTORS)
 _MOTOR_IDS = dict(zip(SO101_MOTORS, range(1, 7)))
 _STS3215_MODEL_NUMBER = 777
 _ENCODER_RESOLUTION = 4096
-_READ_RETRIES = 2
+_READ_RETRIES = 5
+_READ_RETRY_BACKOFF_S = 0.005
+_MAX_STALE_POSITION_READS = 5
 
 _RETURN_DELAY = (7, 1)
 _MIN_POSITION = (9, 2)
@@ -186,6 +188,8 @@ class _FeetechSO101Controller:
         self._connected = False
         self._calibrated = False
         self._prepared = False
+        self._last_positions: dict[str, float] | None = None
+        self._stale_position_reads = 0
         # Startup may fail after partially enabling the bus.  Keep this
         # separate from ``_prepared`` so close can still attempt torque off,
         # while a passive connection never writes torque registers.
@@ -413,20 +417,42 @@ class _FeetechSO101Controller:
             if result == self.sdk.COMM_SUCCESS:
                 break
             if attempt == _READ_RETRIES:
-                self._communication_error("read SO-101 positions", result, 0)
+                return self._read_positions_individually()
+            # A busy USB/serial adapter can occasionally miss one status
+            # packet. Immediate retries tend to collide with the same device
+            # timing window, so give the bus a short increasing recovery gap.
+            time.sleep(_READ_RETRY_BACKOFF_S * (attempt + 1))
 
         positions: dict[str, float] = {}
         for motor, motor_id in _MOTOR_IDS.items():
             if not reader.isAvailable(motor_id, address, size):
-                raise SO101AdapterError(f"position response for motor {motor!r} is incomplete")
+                return self._read_positions_individually()
             raw = _decode_sign_magnitude(reader.getData(motor_id, address, size), 15)
+            positions[f"{motor}.pos"] = self._normalized_position(motor, raw)
+        return positions
+
+    def _read_positions_individually(self) -> dict[str, float]:
+        """Recover from an occasional failed multi-servo status packet."""
+
+        positions: dict[str, float] = {}
+        for motor, motor_id in _MOTOR_IDS.items():
+            raw = self._read_register(motor_id, _PRESENT_POSITION, sign_bit=15)
             positions[f"{motor}.pos"] = self._normalized_position(motor, raw)
         return positions
 
     def get_observation(self) -> Mapping[str, object]:
         if not self.is_connected:
             raise SO101AdapterError("SO-101 is not connected")
-        return self._read_positions()
+        try:
+            positions = self._read_positions()
+        except SO101AdapterError:
+            if self._last_positions is None or self._stale_position_reads >= _MAX_STALE_POSITION_READS:
+                raise
+            self._stale_position_reads += 1
+            return dict(self._last_positions)
+        self._last_positions = dict(positions)
+        self._stale_position_reads = 0
+        return positions
 
     def send_action(self, action: Mapping[str, float]) -> None:
         if self.read_only:
@@ -441,8 +467,13 @@ class _FeetechSO101Controller:
             data = [self.sdk.SCS_LOBYTE(encoded), self.sdk.SCS_HIBYTE(encoded)]
             if not writer.addParam(motor_id, data):
                 raise SO101AdapterError(f"failed to prepare position command for motor {motor!r}")
-        result = writer.txPacket()
-        self._communication_error("write SO-101 positions", result, 0)
+        for attempt in range(_READ_RETRIES + 1):
+            result = writer.txPacket()
+            if result == self.sdk.COMM_SUCCESS:
+                return
+            if attempt == _READ_RETRIES:
+                self._communication_error("write SO-101 positions", result, 0)
+            time.sleep(_READ_RETRY_BACKOFF_S * (attempt + 1))
 
     def _close_port(self) -> None:
         if getattr(self.port_handler, "is_open", False):

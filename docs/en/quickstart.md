@@ -121,7 +121,7 @@ uv run embodirun --config my-deployment.yaml run \
 | `--task`, `--seed` | Simulator task and episode seed. |
 | `--chunk-steps` | Actions executed from each inference chunk (capped by the binding). |
 | `--max-steps` | Maximum number of inference/action chunks (default 1). |
-| `--control-hz` | Action playback rate (default 5). |
+| `--control-hz` | Action playback rate (default 5); set to `0` to disable software pacing. |
 | `--request-timeout` | Timeout for one inference request (default 60 s). |
 
 A π0.5 response has no task-complete signal. The chunk bound limits the run;

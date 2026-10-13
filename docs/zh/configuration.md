@@ -146,6 +146,24 @@ runtimes:
 无线运行时还需声明 `inference_client.bind` 和
 `inference_client.port`，并且节点上的每个监听器必须使用不同的端口。
 
+异步执行通过 `options.async` 显式开启。`mode: rtc` 使用 Real-Time Chunking。
+仿真器用 `overlap_steps` 和 `inference_delay_steps` 描述模拟的控制窗口，真机运行时会测量实际请求延迟。
+`mode: naive` 可用作不携带算法条件的异步基线。通过 SGLang
+使用 RTC 时，其 `/v1/actions/metadata` 必须声明对应的
+`async_inference` 能力。
+
+```yaml
+runtimes:
+  libero-pi05-runtime:
+    # ... simulator/robot、model、binding 和 server 字段 ...
+    options:
+      async:
+        mode: rtc
+        overlap_steps: 10
+        inference_delay_steps: 5 # 仿真 Δ；真机可以省略
+        execution_horizon: 50
+```
+
 ## 扩展推理后端：provider {#provider}
 
 每个推理后端通过 provider 注册，声明支持的传输协议、启动命令、依赖组和模型参数。

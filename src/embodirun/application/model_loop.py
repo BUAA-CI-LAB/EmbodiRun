@@ -40,6 +40,7 @@ class ControlRuntime:
         mapper: BindingMapper,
         chunk_steps: int,
         control_hz: float = 5.0,
+        inference_delay_s: float = 0.0,
         command_sink: CommandSink | None = None,
         observation_source: Callable[[], RobotObservation] | None = None,
         cancel_event: threading.Event | None = None,
@@ -54,9 +55,16 @@ class ControlRuntime:
             isinstance(control_hz, bool)
             or not isinstance(control_hz, (int, float))
             or not math.isfinite(control_hz)
-            or control_hz <= 0
+            or control_hz < 0
         ):
-            raise ValueError("control_hz must be a finite positive number")
+            raise ValueError("control_hz must be a finite non-negative number")
+        if (
+            isinstance(inference_delay_s, bool)
+            or not isinstance(inference_delay_s, (int, float))
+            or not math.isfinite(inference_delay_s)
+            or inference_delay_s < 0
+        ):
+            raise ValueError("inference_delay_s must be a finite non-negative number")
         self.robot = robot
         self.client = client
         self.instruction = instruction
@@ -77,7 +85,10 @@ class ControlRuntime:
         if command_sink is not None and command_sink.robot_id != robot.robot_id:
             raise ValueError("command_sink robot_id must match robot")
         self.cancel_event = cancel_event
-        self.action_period_s = 1.0 / control_hz
+        # Zero explicitly disables software pacing.  The adapter/transport then
+        # determines how quickly actions can be dispatched.
+        self.action_period_s = 0.0 if control_hz == 0 else 1.0 / control_hz
+        self.inference_delay_s = float(inference_delay_s)
         self.monotonic = monotonic
         self.sleep = sleep
         self.session = client.open_session(
@@ -123,6 +134,7 @@ class ControlRuntime:
                 except AttributeError as error:
                     raise TypeError("mapper request must support metadata propagation") from error
         result = self.client.step(request)
+        self._wait_for_inference_delay()
         self._raise_if_cancelled()
         actions = tuple(self.mapper.map_result(result))
         if not actions:
@@ -162,6 +174,17 @@ class ControlRuntime:
                     self._raise_if_cancelled()
         self.step_id += 1
         return result
+
+    def _wait_for_inference_delay(self) -> None:
+        """Delay result availability to emulate extra end-to-end latency."""
+
+        if self.inference_delay_s <= 0:
+            return
+        if self.cancel_event is None:
+            self.sleep(self.inference_delay_s)
+        else:
+            self.cancel_event.wait(self.inference_delay_s)
+            self._raise_if_cancelled()
 
     def reset(self) -> None:
         self._stop()

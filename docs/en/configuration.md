@@ -149,6 +149,26 @@ Host. Device-only runtimes can omit the model; see
 Wireless runtimes additionally declare `inference_client.bind` and
 `inference_client.port`, and each listener on a node must use a distinct port.
 
+Asynchronous execution is opt-in through `options.async`. Use `mode: rtc` for
+Real-Time Chunking. The `overlap_steps` and `inference_delay_steps` values
+describe the modeled control window in simulation, while a physical runtime
+measures the request latency. `mode: naive` keeps the overlap baseline without
+algorithm-specific conditioning. RTC through SGLang requires its
+`/v1/actions/metadata` response to advertise the requested
+`async_inference` capability.
+
+```yaml
+runtimes:
+  libero-pi05-runtime:
+    # ... robot/simulator, model, binding, and server fields ...
+    options:
+      async:
+        mode: rtc
+        overlap_steps: 10
+        inference_delay_steps: 5 # simulation Δ; omit for a physical runtime
+        execution_horizon: 50
+```
+
 ## Providers
 
 Inference backends are registered providers. A provider declares which
