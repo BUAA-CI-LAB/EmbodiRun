@@ -455,10 +455,20 @@ class TaskRequest:
             value = getattr(self, name)
             if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
                 raise ControlContractError(f"{name} must be a positive integer")
-        for name in ("control_hz", "inference_timeout_s"):
-            value = getattr(self, name)
-            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
-                raise ControlContractError(f"{name} must be a finite positive number")
+        if (
+            isinstance(self.control_hz, bool)
+            or not isinstance(self.control_hz, (int, float))
+            or not math.isfinite(self.control_hz)
+            or self.control_hz < 0
+        ):
+            raise ControlContractError("control_hz must be a finite non-negative number")
+        if (
+            isinstance(self.inference_timeout_s, bool)
+            or not isinstance(self.inference_timeout_s, (int, float))
+            or not math.isfinite(self.inference_timeout_s)
+            or self.inference_timeout_s <= 0
+        ):
+            raise ControlContractError("inference_timeout_s must be a finite positive number")
 
     def to_payload(self) -> dict[str, Any]:
         """Return the transport-neutral JSON object sent to Control."""

@@ -111,7 +111,7 @@ uv run embodirun --config my-deployment.yaml run \
 | `--task`、`--seed` | 仿真器任务与 episode 种子。 |
 | `--chunk-steps` | 每个动作块中实际执行的步数，不能超过绑定上限。 |
 | `--max-steps` | 推理与动作执行的最大轮数（默认 1）。 |
-| `--control-hz` | 动作回放频率（默认 5）。 |
+| `--control-hz` | 动作回放频率（默认 5）；设为 `0` 可关闭软件节拍。 |
 | `--request-timeout` | 单次推理请求的超时时间（默认 60 s）。 |
 
 π0.5 每次返回一个动作块（chunk），不返回任务完成信号。运行在达到设定的动作块数量后结束，

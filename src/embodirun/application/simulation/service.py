@@ -8,13 +8,14 @@ wireless client reuse. HTTP parsing and listener lifetime remain in
 from __future__ import annotations
 
 import threading
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
 from embodirun.bindings import binding_definition
 from embodirun.model_services import build_inference_client
 from embodirun.simulators import simulator_definition
 
+from .async_runtime import AsyncSimulationConfig, AsyncSimulationRuntime
 from .contracts import EpisodeRequest, EpisodeResult, SimulationServiceConfig
 from .runtime import SimulationRuntime
 
@@ -83,21 +84,41 @@ class SimulationService:
                 f"simulator {self.config.simulator_id!r} configuration is invalid: {error}"
             ) from error
 
+        try:
+            async_config = AsyncSimulationConfig.from_options(
+                self.config.runtime_options,
+                chunk_steps=request.chunk_steps,
+            )
+        except (TypeError, ValueError) as error:
+            raise SimulationServiceError(str(error)) from error
+
         client: Any | None = None
         simulator: Any | None = None
         runtime: Any | None = None
         try:
             client = self._inference_client(request.inference_timeout_s)
             simulator = definition.adapter_type(simulator_config)
-            runtime = self.runtime_factory(
-                simulator,
-                client,
-                mapper=binding.mapper_factory(),
-                chunk_steps=request.chunk_steps,
-            )
             health = client.health()
             if health.get("status") != "ok":
                 raise SimulationServiceError("inference service is not healthy")
+            if async_config.mode == "rtc" and self.config.inference_backend == "sglang":
+                _check_sglang_async_capability(client, async_config)
+            if self.runtime_factory is SimulationRuntime and async_config.mode != "sync":
+                runtime = AsyncSimulationRuntime(
+                    simulator,
+                    client,
+                    mapper=binding.mapper_factory(),
+                    config=async_config,
+                )
+            else:
+                if async_config.mode != "sync":
+                    raise SimulationServiceError("async runtime_options require the default SimulationRuntime factory")
+                runtime = self.runtime_factory(
+                    simulator,
+                    client,
+                    mapper=binding.mapper_factory(),
+                    chunk_steps=request.chunk_steps,
+                )
             outcome = runtime.run(
                 instruction=request.prompt,
                 max_policy_steps=request.max_policy_steps,
@@ -166,6 +187,29 @@ def _shutdown_client(client: Any) -> None:
     shutdown = getattr(client, "shutdown", None)
     if callable(shutdown):
         shutdown()
+
+
+def _check_sglang_async_capability(client: Any, config: AsyncSimulationConfig) -> None:
+    capabilities = getattr(client, "capabilities", None)
+    if not callable(capabilities):
+        raise SimulationServiceError("SGLang async RTC requires endpoint capability metadata; use async mode=naive")
+    try:
+        payload = capabilities()
+    except Exception as error:
+        raise SimulationServiceError(f"SGLang async capability probe failed: {error}") from error
+    if not isinstance(payload, Mapping):
+        raise SimulationServiceError("SGLang capabilities response must be an object")
+    advertised = payload.get("async_inference")
+    if not isinstance(advertised, Mapping):
+        nested = payload.get("capabilities")
+        advertised = nested.get("async_inference") if isinstance(nested, Mapping) else None
+    if not isinstance(advertised, Mapping):
+        raise SimulationServiceError("SGLang endpoint does not advertise async_inference.rtc; use async mode=naive")
+    required = [config.mode]
+    if any(advertised.get(name) is not True for name in required):
+        raise SimulationServiceError(
+            f"SGLang endpoint does not support async algorithm {config.mode!r}; use async mode=naive"
+        )
 
 
 __all__ = ["SimulationService", "SimulationServiceError", "create_inference_client"]

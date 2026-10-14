@@ -50,6 +50,201 @@ def test_sglang_environment_preserves_or_discovers_toolkit(tmp_path, monkeypatch
     assert sglang.os.environ.get("CUDA_PATH") == ("/selected/cuda" if selection == "CUDA_PATH" else None)
 
 
+def _sglang_pi05_integration_module():
+    pytest.importorskip("sglang.multimodal_gen")
+    import importlib
+
+    from embodirun.services.inference.adapters.sglang.pi05 import LeRobotPi05Pipeline
+
+    return importlib.import_module(LeRobotPi05Pipeline.__module__)
+
+
+def test_sglang_soft_rtc_uses_the_denoiser_jacobian():
+    torch = pytest.importorskip("torch")
+
+    integration = _sglang_pi05_integration_module()
+    x = torch.ones(1, 2, 1)
+    previous = torch.zeros_like(x)
+    weights = torch.ones(2)
+
+    guided = integration._rtc_velocity(
+        lambda value: value * 0.5,
+        x,
+        torch.tensor(0.5),
+        previous,
+        weights,
+        10.0,
+    )
+
+    # clean=0.75*x, error=-0.75 and d(clean)/d(x)=0.75.  The RTC
+    # strength at t=0.5 is 2, so a real VJP yields 0.5 + 2*0.5625.
+    torch.testing.assert_close(guided, torch.full_like(x, 1.625), rtol=0, atol=0)
+    # A detached denoiser would incorrectly use correction=error and yield 2.
+    assert not torch.equal(guided, torch.full_like(x, 2.0))
+
+
+def test_sglang_soft_rtc_rejects_a_detached_denoiser():
+    torch = pytest.importorskip("torch")
+
+    integration = _sglang_pi05_integration_module()
+    x = torch.ones(1, 2, 1)
+    with pytest.raises(RuntimeError, match="detached velocity"):
+        integration._rtc_velocity(
+            lambda value: (value * 0.5).detach(),
+            x,
+            torch.tensor(0.5),
+            torch.zeros_like(x),
+            torch.ones(2),
+            10.0,
+        )
+
+
+def test_sglang_soft_rtc_materializes_inference_mode_timestep():
+    torch = pytest.importorskip("torch")
+
+    integration = _sglang_pi05_integration_module()
+    value = torch.ones(1, 2, 1)
+    with torch.inference_mode():
+        inference_time = torch.tensor(0.5)
+    assert inference_time.is_inference()
+
+    guided = integration._rtc_velocity(
+        lambda current: current * 0.5,
+        value,
+        inference_time,
+        torch.zeros_like(value),
+        torch.ones(2),
+        10.0,
+    )
+
+    torch.testing.assert_close(guided, torch.full_like(value, 1.625), rtol=0, atol=0)
+
+
+def test_sglang_soft_rtc_stops_device_diagnostics_after_two_requests(monkeypatch):
+    """Steady-state RTC must not synchronize CUDA just for diagnostics."""
+
+    torch = pytest.importorskip("torch")
+
+    integration = _sglang_pi05_integration_module()
+    integration._RTC_TELEMETRY_REQUESTS = 2
+
+    def unexpected_isfinite(*args, **kwargs):
+        del args, kwargs
+        raise AssertionError("steady-state RTC diagnostics touched torch.isfinite")
+
+    monkeypatch.setattr(integration.torch, "isfinite", unexpected_isfinite)
+    try:
+        value = torch.ones(1, 2, 1)
+        guided = integration._rtc_velocity(
+            lambda current: current * 0.5,
+            value,
+            torch.tensor(0.5),
+            torch.zeros_like(value),
+            torch.ones(2),
+            10.0,
+            telemetry=True,
+        )
+    finally:
+        integration._RTC_TELEMETRY_REQUESTS = 0
+
+    torch.testing.assert_close(guided, torch.full_like(value, 1.625), rtol=0, atol=0)
+
+
+def test_sglang_soft_rtc_copies_prefix_cache_out_of_inference_mode():
+    torch = pytest.importorskip("torch")
+
+    pytest.importorskip("sglang.multimodal_gen")
+    from sglang.multimodal_gen.runtime.vla.prefix_cache import (
+        PrefixContext,
+        VLADensePrefixCache,
+    )
+
+    integration = _sglang_pi05_integration_module()
+    with torch.inference_mode():
+        keys = torch.ones(1, 1, 2, 2)
+        values = torch.ones(1, 1, 2, 2)
+        masks = torch.ones(1, 2, dtype=torch.bool)
+        context = PrefixContext(
+            past_key_values=VLADensePrefixCache([(keys, values, None)]),
+            prefix_pad_masks=masks,
+            prefix_len=2,
+        )
+
+    normal = integration._rtc_autograd_prefix_context(context)
+
+    normal_keys, normal_values, _ = normal.past_key_values[0]
+    assert keys.is_inference() and values.is_inference() and masks.is_inference()
+    assert not normal_keys.is_inference()
+    assert not normal_values.is_inference()
+    assert not normal.prefix_pad_masks.is_inference()
+    torch.testing.assert_close(normal_keys, keys)
+    torch.testing.assert_close(normal_values, values)
+
+
+def test_sglang_soft_rtc_unwraps_core_no_grad_and_uses_native_geglu():
+    torch = pytest.importorskip("torch")
+
+    integration = _sglang_pi05_integration_module()
+
+    class FakeFusedActivation(torch.nn.Module):
+        def forward(self, value):
+            return value.detach() * 3.0
+
+        def forward_native(self, value):
+            return value * 3.0
+
+    activation = FakeFusedActivation()
+    layer = SimpleNamespace(mlp=SimpleNamespace(act_fn=activation))
+
+    class FakeCore:
+        def __init__(self):
+            expert = SimpleNamespace(model=SimpleNamespace(layers=[layer]))
+            self.paligemma_with_expert = SimpleNamespace(gemma_expert=expert)
+
+        @torch.no_grad()
+        def denoise_step(
+            self,
+            prefix_pad_masks,
+            past_key_values,
+            x,
+            timestep,
+            prefix_full_attention,
+            *,
+            action_position_offset=0,
+        ):
+            del prefix_pad_masks, past_key_values, timestep, prefix_full_attention
+            assert action_position_offset == 0
+            return layer.mlp.act_fn(x)
+
+    core = FakeCore()
+    model = SimpleNamespace(action_expert=SimpleNamespace(core_model=core))
+    prefix = SimpleNamespace(
+        prefix_pad_masks=torch.ones(1, 1, dtype=torch.bool),
+        past_key_values=object(),
+        layout={"full_attention": True},
+    )
+    value = torch.ones(1, 2, 1, requires_grad=True)
+
+    with torch.inference_mode():
+        inference_timestep = torch.tensor([0.5])
+    assert inference_timestep.is_inference()
+
+    original_denoise_step = FakeCore.denoise_step.__wrapped__
+
+    def checked_denoise_step(self, *args, **kwargs):
+        assert not args[3].is_inference()
+        return original_denoise_step(self, *args, **kwargs)
+
+    FakeCore.denoise_step.__wrapped__ = checked_denoise_step
+    with torch.enable_grad():
+        velocity = integration._grad_enabled_denoise(model, prefix, value, inference_timestep)
+
+    assert velocity.requires_grad
+    assert velocity.grad_fn is not None
+    torch.testing.assert_close(torch.autograd.grad(velocity.sum(), value)[0], torch.full_like(value, 3.0))
+    assert isinstance(layer.mlp.act_fn, integration._AutogradSafeGeluAndMul)
+
+
 def test_sglang_lerobot_statistics_preserve_mean_std_math():
     pytest.importorskip("sglang.multimodal_gen")
     import torch

@@ -17,9 +17,17 @@ from .contracts import (
 )
 
 _LAZY_CONTROL = {"ControlService", "ControlServiceError", "ControlTaskRejected"}
+_LAZY_ASYNC = {"AsyncControlRuntime", "AsyncRuntimeConfig"}
 
 
 def __getattr__(name: str):
+    if name in _LAZY_ASYNC:
+        from .async_inference import AsyncControlRuntime, AsyncRuntimeConfig
+
+        return {
+            "AsyncControlRuntime": AsyncControlRuntime,
+            "AsyncRuntimeConfig": AsyncRuntimeConfig,
+        }[name]
     if name in _LAZY_CONTROL:
         from .control_service import (
             ControlService,
@@ -48,4 +56,6 @@ __all__ = [
     "Role",
     "TaskRequest",
     "TaskResult",
+    "AsyncControlRuntime",
+    "AsyncRuntimeConfig",
 ]

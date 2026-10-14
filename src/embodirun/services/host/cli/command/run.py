@@ -59,10 +59,10 @@ def register(commands: Any) -> None:
     )
     parser.add_argument(
         "--control-hz",
-        type=_positive_number,
+        type=_nonnegative_number,
         default=DEFAULT_CONTROL_HZ,
         metavar="HZ",
-        help=f"action playback rate (default: {DEFAULT_CONTROL_HZ:g})",
+        help=f"action playback rate; 0 disables software pacing (default: {DEFAULT_CONTROL_HZ:g})",
     )
     parser.add_argument(
         "--request-timeout",
@@ -132,7 +132,9 @@ def run(args: argparse.Namespace, context: CommandContext) -> int:
         progress.advance(runtime.node)
 
         playback_s = (
-            args.max_steps * max(0, chunk_steps - 1) / args.control_hz if runtime.target_kind == "robot" else 0.0
+            args.max_steps * max(0, chunk_steps - 1) / args.control_hz
+            if runtime.target_kind == "robot" and args.control_hz > 0
+            else 0.0
         )
         task_timeout_s = max(60.0, args.max_steps * args.request_timeout + playback_s + 30.0)
         progress.update(
@@ -197,6 +199,16 @@ def _positive_number(value: str) -> float:
         raise argparse.ArgumentTypeError("must be a number") from error
     if not math.isfinite(result) or result <= 0:
         raise argparse.ArgumentTypeError("must be a finite positive number")
+    return result
+
+
+def _nonnegative_number(value: str) -> float:
+    try:
+        result = float(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("must be a number") from error
+    if not math.isfinite(result) or result < 0:
+        raise argparse.ArgumentTypeError("must be a finite non-negative number")
     return result
 
 

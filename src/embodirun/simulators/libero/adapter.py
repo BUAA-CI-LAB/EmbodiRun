@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import json
 import math
 import os
@@ -171,7 +172,14 @@ class LiberoAdapter(SimulatorAdapter):
                 values={"observation.state": state},
                 metadata=dict(metadata),
             ),
-            frames=tuple(_encode_frame(f"observation.images.{name}", value) for name, value in pixels.items()),
+            frames=tuple(
+                _encode_frame(
+                    f"observation.images.{name}",
+                    value,
+                    encoding=self.config.image_encoding,
+                )
+                for name, value in pixels.items()
+            ),
         )
 
     def _ensure_open(self) -> None:
@@ -196,25 +204,35 @@ def make_libero_environment(config: LiberoConfig) -> Any:
     task_count = len(suite.tasks)
     if config.task_id >= task_count:
         raise ValueError(f"LIBERO task_id {config.task_id} is outside suite {config.suite!r} with {task_count} tasks")
-    return LiberoEnv(
-        task_suite=suite,
-        task_id=config.task_id,
-        task_suite_name=config.suite,
-        episode_length=config.max_episode_steps,
-        camera_name=tuple(_CAMERA_MAPPING),
-        camera_name_mapping=dict(_CAMERA_MAPPING),
-        obs_type="pixels_agent_pos",
-        render_mode="rgb_array",
-        observation_width=config.width,
-        observation_height=config.height,
-        init_states=True,
-        episode_index=0,
-        n_envs=1,
-        num_steps_wait=10,
-        control_freq=20,
-        control_mode="relative",
-        hard_reset=True,
-    )
+    # LeRobot's LIBERO wrapper changed its constructor between the 0.4 and
+    # 0.6 releases.  Keep the adapter usable with either optional environment
+    # while retaining the common settings.  ``max_episode_steps`` is enforced
+    # by :meth:`step`, so older wrappers that do not expose ``episode_length``
+    # remain bounded by the runtime contract.
+    options = {
+        "task_suite": suite,
+        "task_id": config.task_id,
+        "task_suite_name": config.suite,
+        "episode_length": config.max_episode_steps,
+        "camera_name": tuple(_CAMERA_MAPPING),
+        "camera_name_mapping": dict(_CAMERA_MAPPING),
+        "obs_type": "pixels_agent_pos",
+        "render_mode": "rgb_array",
+        "observation_width": config.width,
+        "observation_height": config.height,
+        "init_states": True,
+        "episode_index": 0,
+        "n_envs": 1,
+        "num_steps_wait": 10,
+        "control_freq": 20,
+        "control_mode": "relative",
+        "hard_reset": True,
+    }
+    try:
+        accepted = set(inspect.signature(LiberoEnv).parameters)
+    except (TypeError, ValueError):  # pragma: no cover - unusual extension wrapper
+        accepted = set(options)
+    return LiberoEnv(**{key: value for key, value in options.items() if key in accepted})
 
 
 def _prepare_libero_import() -> None:
@@ -271,7 +289,10 @@ def _action_array(values: Any) -> Any:
         raise ValueError(f"LIBERO action must have shape ({LIBERO_ACTION_DIM},), got {action.shape}")
     if not np.isfinite(action).all():
         raise ValueError("LIBERO action must contain only finite values")
-    return np.clip(action, -1.0, 1.0)
+    # LIBERO's OSC controller consumes a binary open/close gripper command.
+    clipped = np.clip(action, -1.0, 1.0)
+    clipped[-1] = np.sign(clipped[-1])
+    return clipped
 
 
 def _mapping(value: Any, name: str) -> dict[str, Any]:
@@ -323,19 +344,24 @@ def _policy_image(value: Any, *, name: str) -> Any:
     return np.ascontiguousarray(image[::-1, ::-1], dtype=np.uint8)
 
 
-def _encode_frame(name: str, value: Any) -> CameraFrame:
+def _encode_frame(name: str, value: Any, *, encoding: str = "jpeg") -> CameraFrame:
     try:
         import cv2
     except ImportError as error:
         raise RuntimeError("LIBERO image encoding requires OpenCV") from error
+    if encoding not in {"jpeg", "png"}:
+        raise ValueError("LIBERO image encoding must be 'jpeg' or 'png'")
+    extension = ".jpg" if encoding == "jpeg" else ".png"
+    options = [int(cv2.IMWRITE_JPEG_QUALITY), 90] if encoding == "jpeg" else []
     encoded, payload = cv2.imencode(
-        ".jpg",
+        extension,
         cv2.cvtColor(value, cv2.COLOR_RGB2BGR),
-        [int(cv2.IMWRITE_JPEG_QUALITY), 90],
+        options,
     )
     if not encoded:
-        raise RuntimeError(f"LIBERO camera {name!r} could not be JPEG encoded")
-    return CameraFrame(name=name, mime_type="image/jpeg", data=payload.tobytes())
+        raise RuntimeError(f"LIBERO camera {name!r} could not be {encoding.upper()} encoded")
+    mime_type = "image/jpeg" if encoding == "jpeg" else "image/png"
+    return CameraFrame(name=name, mime_type=mime_type, data=payload.tobytes())
 
 
 def _unpack_reset(result: Any) -> tuple[Any, Mapping[str, Any]]:

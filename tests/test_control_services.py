@@ -85,6 +85,12 @@ def test_host_control_contract_contains_only_dynamic_task_fields() -> None:
     assert "inference" not in payload
 
 
+def test_host_control_contract_allows_zero_hz_to_disable_pacing() -> None:
+    request = replace(task_request(), control_hz=0.0)
+
+    assert TaskRequest.from_payload(request.to_payload()).control_hz == 0.0
+
+
 def test_host_control_contract_rejects_unknown_fields() -> None:
     payload = task_request().to_payload()
     payload["robot"] = {"id": "must-not-cross-this-boundary"}
