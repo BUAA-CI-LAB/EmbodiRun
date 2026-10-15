@@ -334,8 +334,8 @@ def test_sglang_package_metadata_keeps_core_dependency_and_new_entrypoint() -> N
     )["project"]
     assert "embodirun>=0.1.0" in metadata["dependencies"]
     assert metadata["scripts"]["embodirun-sglang-pi05-serve"].endswith(".pi05:main")
-    assert metadata["scripts"]["rlinf-sglang-pi05-serve"].endswith(".pi05:main")
-    assert "rlinf-sglang-serve" not in metadata["scripts"]
+    assert metadata["scripts"]["embodirun-sglang-pi05-serve"].endswith(".pi05:main")
+    assert "embodirun-sglang-serve" not in metadata["scripts"]
 
 
 def test_host_plan_control_config_preserves_sglang_options(tmp_path: Path) -> None:

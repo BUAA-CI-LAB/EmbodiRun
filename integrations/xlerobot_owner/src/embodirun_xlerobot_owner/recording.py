@@ -1763,8 +1763,8 @@ def export_lerobot(
         dataset_class = dataset_module.LeRobotDataset
     except Exception as exc:
         raise LeRobotExportError(
-            "LeRobot export requires the modern LeRobot package (0.4+/0.5); "
-            "install the project extra, for example `pip install 'lerobot>=0.4'`."
+            "LeRobot export requires the LeRobot dataset writer and its table/image dependencies; "
+            "install the XLeRobot owner's recording extra."
         ) from exc
     try:
         numpy_module = importlib.import_module("numpy")

@@ -106,3 +106,7 @@ bash examples/run.sh "$CONFIG" down
 每条机械臂保留自己的会话和动作序列。
 运行目录包含 `run.json` 和各机械臂的命令日志。配置格式与输出说明见
 [复现演示](../examples.md)。
+
+## 相关 Recipe
+
+可以先运行[单臂 SO-101 抓取](so101-grasping.md)，或查看[推理引擎与传输对比](engine-e2e-contrast.md)。

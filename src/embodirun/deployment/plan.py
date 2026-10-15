@@ -479,6 +479,7 @@ def _simulation_service(
             simulator_id=simulator.simulator_id,
             simulator_kind=simulator.kind,
             simulator_options=simulator.options,
+            runtime_options=runtime.options,
         )
     except (TypeError, ValueError) as error:
         raise ServiceError(f"runtime {runtime.runtime_id!r} simulation configuration is invalid: {error}") from error

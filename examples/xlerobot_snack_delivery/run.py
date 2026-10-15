@@ -114,6 +114,27 @@ def _load_json(path: Path) -> dict[str, Any]:
     return value
 
 
+def load_recipe_config(path: Path, deployment: Path | None = None) -> dict[str, Any]:
+    """Resolve managed Control addresses while keeping routes beside the task file."""
+    config = _load_json(path)
+    _reject_credentials(config)
+    if deployment is not None:
+        from embodirun.deployment.config.loader import _load_yaml
+
+        try:
+            from .services import control_endpoints
+        except ImportError:
+            from services import control_endpoints
+
+        values = _load_yaml(deployment)
+        if not isinstance(config.get("control"), Mapping):
+            raise RecipeError("control configuration must be an object")
+        config["control"] = {**config["control"], "endpoints": control_endpoints(values)}
+    _validate_config(config)
+    config["_config_dir"] = str(path.parent.resolve())
+    return config
+
+
 def _write_json(path: Path, value: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -1295,6 +1316,9 @@ def _validate_config(config: Mapping[str, Any]) -> None:
     navigation = config.get("navigation")
     if not isinstance(navigation, Mapping):
         raise RecipeError("navigation configuration is required")
+    routes = navigation.get("routes")
+    if not isinstance(routes, Mapping) or not {"outbound", "return"} <= routes.keys():
+        raise RecipeError("navigation.routes must configure outbound and return")
     _positive(navigation.get("control_hz", 15), "navigation.control_hz")
     ConfigEvidenceNormalizer.from_config(config)
     grasp = config.get("grasp", {})
@@ -1326,6 +1350,7 @@ def _urlsplit(endpoint: str) -> Any:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--deployment", type=Path, help="derive local scoped Control addresses from this deployment")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--mode", choices=("plan", "dry-run", "hardware"), default="plan")
     parser.add_argument(
@@ -1335,10 +1360,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     try:
-        config = _load_json(args.config)
-        _validate_config(config)
-        config = dict(config)
-        config["_config_dir"] = str(args.config.parent.resolve())
+        config = load_recipe_config(args.config, args.deployment)
         runtimes: RuntimeSet = DryRunRuntimes(config) if args.mode in {"plan", "dry-run"} else ControlRuntimes(config)
         runner = SnackDelivery(
             config,

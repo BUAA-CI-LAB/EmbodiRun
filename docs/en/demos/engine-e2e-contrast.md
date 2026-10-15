@@ -16,6 +16,15 @@ latency falls from **1,061 ms to 162 ms**, and a complete chunk takes
 and native LeRobot. The 29-second edit shows the first eight chunks of each
 run; each panel freezes after its eighth chunk.*
 
+## Latency comparison
+
+![SO-101 inference and full-chunk medians](../assets/performance/so101-engine-comparison.svg)
+
+The chart uses the [summary data and generator](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/benchmarks/engine-comparison).
+Each value is the median of 15 chunks in one run. The dataset contains aggregate
+timings; original per-chunk samples are unavailable. Conditions and timing
+definitions follow below.
+
 ## Task and hardware
 
 A single SO-101 arm follows the instruction **“Pick up the cube and place it in

@@ -24,7 +24,7 @@ def register(commands: Any) -> None:
     )
     parser.add_argument(
         "--root",
-        default=".local/share/rlinf-deploy",
+        default=".local/share/embodirun",
         help="managed directory on each node, relative to its home by default",
     )
     parser.set_defaults(command_handler=run)

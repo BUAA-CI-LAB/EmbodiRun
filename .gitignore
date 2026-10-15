@@ -25,3 +25,11 @@ site/
 site-zh/
 .tools/
 .os-review/
+
+# Generated local recipe workspaces and optional recipe environments
+/examples/local/
+**/runs/
+**/base-control.json
+**/arms-control.json
+/.venv-xlerobot-snack/
+/compose.local.yaml

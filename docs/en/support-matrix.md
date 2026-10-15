@@ -7,6 +7,23 @@ The roadmap tracks the next integrations separately from the current catalog.
 **◐ Experimental** — integration code is available; setup is platform-specific.<br>
 **○ Planned** — on the roadmap, not yet implemented.
 
+## Scenario guides
+
+| Scenario | Start here | Related setup |
+|---|---|---|
+| VLA | [SO-101 grasping](demos/so101-grasping.md) | [Multiple arms](demos/multi-robot-serving.md), [engine variants](demos/engine-e2e-contrast.md), [Bi-SO-101](pi05-bi-so101.md) |
+| VLN | [MicroDuck / ActiveVLN in MuJoCo](demos/microduck-vln.md) | Simulator and robot configurations below |
+| Agent | [XLeRobot snack delivery](demos/xlerobot-snack-delivery.md) | [Agent workflow](agent-workflow.md), [RPent integration](rpent-integration.md) |
+
+Full task instructions are in the [Recipe index](examples.md). The catalog
+below describes adapter support; follow the linked guide for platform-specific
+dependencies and calibration.
+
+π0.5 HTTP and WirelessComm services support cross-session batching with
+`--max-batch`, which defaults to 1. DM0.5 and StreamVLN currently execute one
+request at a time. MicroDuck uses its integration-specific ActiveVLN HTTP
+service.
+
 ## Current support
 
 <div class="grid cards support-grid" markdown>
@@ -21,6 +38,7 @@ The roadmap tracks the next integrations separately from the current catalog.
     **◐ VLABench**<br>
     Manipulation with π0.5.
 
+    **◐ MuJoCo / MicroDuck** — ActiveVLN navigation.<br>
     **◐ Habitat · Isaac Sim**<br>
     Navigation with StreamVLN.
 
@@ -36,7 +54,7 @@ The roadmap tracks the next integrations separately from the current catalog.
 
     **◐ ARX5** — DM0.5 binding.<br>
     **◐ Unitree Go2** — StreamVLN navigation.<br>
-    **◐ XLeRobot** — external hardware owner.
+    **◐ XLeRobot** — external hardware owner; dual-arm π0.5 recipe.
 
     [Explore robot adapters](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/robots)
 
@@ -82,7 +100,7 @@ The roadmap tracks the next integrations separately from the current catalog.
     | Franka FR3 | π0.5 binding | [Adapter](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/robots/franka/fr3) |
     | ARX5 | DM0.5 binding | [Binding](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/bindings/arx/x5/dm05) |
     | Unitree Go2 | StreamVLN navigation | [Robot integration](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/robots/unitree/go2) |
-    | XLeRobot | External hardware owner | [Integration package](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/integrations/xlerobot_owner/README.md) |
+    | XLeRobot | External hardware owner; `lerobot.xlerobot.pi05` for two arms | [Recipe](xlerobot-snack-delivery.md) / [owner package](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/integrations/xlerobot_owner/README.md) |
     | SO-101 (wired teleoperation) | Multi-leader UDP fan-out, follower-side episode collection | [Integration package](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/integrations/so101_wired_teleop/README.md) |
 
     SO-101 deployments need calibrated arms, camera mappings, and a checkpoint
@@ -108,6 +126,54 @@ The roadmap tracks the next integrations separately from the current catalog.
     separately installed option; see the
     [WirelessComm configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/configs/http-wireless-inference/wireless.yaml)
     and [transport measurements](inference-transport.md).
+
+## MicroDuck prerequisites {#microduck-prerequisites}
+
+The [MicroDuck Recipe](microduck-vln.md) is a dedicated simulation launcher
+using the HTTP inference client; it does not register a Host/Control device.
+
+| Stage | Required inputs and evidence |
+|---|---|
+| Configuration | `init microduck` → `validate` → `plan` works without a GPU or assets. `plan` previews simulation; it starts no child process. |
+| Installation | Python 3.12 / uv 0.12.x; native `setup`, direct `uv sync --project examples/microduck_vln --frozen` and Docker share one Recipe lock. `--mode software` selects base dependencies; `--mode simulation` adds the simulation extra and is the default. Setup does not download models or scenes. |
+| Software check | `check --mode software`, with or without `--json`, reads configuration and installed metadata only. CUDA/EGL, assets, dependency imports and model execution remain unverified. No fixture `dry-run` is implemented. |
+| Simulation local check | `check --mode simulation --json` reads installed metadata, project/checkpoint/episodes/inventory paths and the inference source entrypoint. CUDA/EGL and model readiness remain unverified. |
+| Full preflight | Plain `check --mode simulation`: Linux CUDA/NVIDIA EGL, external MuJoCo scene and robot meshes, walking ONNX, compatible merged SFT-v3 weights and episode data; verifies the scene/MPC/encoder, not learned VLN inference. |
+| Run | Actual inference and recorded episodes; inspect per-episode success separately from completed process status. |
+| Reproducibility evidence | Record fresh target installation, native/Docker package parity and independent first use separately. A software check or lock resolution does not establish full GPU/model execution. |
+
+Keep Transformers 4.51.3 separate from Transformers 5.x profiles. The historical
+A800 reference environment is not evidence that a different GPU or architecture
+has been validated. See [Runtime costs](runtime-value.md) for the separately
+pending deployment comparison.
+
+## XLeRobot recipe prerequisites {#xlerobot-recipe-prerequisites}
+
+Start with the [software rehearsal](xlerobot-snack-delivery.md). It uses
+fixtures and needs none of the physical inputs below. Native setup uses
+Python 3.12 / uv 0.12.x; the `xlerobot-software` Docker service needs Docker
+Engine and Compose on Linux. Native software/hardware profiles and the
+XLeRobot container targets use `examples/xlerobot_snack_delivery/uv.lock`.
+The hardware owner uses CPU PyTorch; inference runs in a separate model service.
+
+| Input | When it is needed for your own robot | What software rehearsal uses |
+|---|---|---|
+| Owner environment / SDK | `setup --mode hardware` installs the owner. Set `sdk_src` to the locked LeRobot directory reported as `environment.sdk_src`; a custom SDK checkout needs its own version check. | Software dependencies; no owner or SDK import |
+| Two-arm binding and checkpoint | Before connecting inference, match `lerobot.xlerobot.pi05` to an XLeRobot-adapted π0.5 checkpoint. This binding controls the arms; base routes use separate Control scope. | Fixture proposals; no checkpoint |
+| Action feature names and units | Before model use, supply all 12 `left_arm_` / `right_arm_` fields: `shoulder_pan.pos`, `shoulder_lift.pos`, `elbow_flex.pos`, `wrist_flex.pos`, `wrist_roll.pos`, `gripper.pos`. Joint positions are `degrees`; grippers are `range_0_100`. | Named fixture values; no learned action-quality check |
+| Camera mapping | Before hardware checks, map `observation.images.front`, `observation.images.left_wrist`, and `observation.images.right_wrist` to owner roles in deployment. Verify actual images and checkpoint input meanings before inference. | No physical cameras |
+| Calibration and device paths | Before owner startup, provide your verified calibration, stable serial/camera paths, wheel geometry/directions, and limits in `hardware.local.json`. File existence does not establish calibration validity. | Template placeholders are allowed |
+| Routes | `dry-run` accepts the supplied `fixture: true` routes. Hardware preparation needs locally recorded, directed non-fixture chunks; verify each route in the target space before motion. | Zero-motion fixtures |
+| Handover | Before supervised delivery, validate `handover.forward_pose` and `gripper_opening` for your calibrated robot and workspace. | Fixture task sequence |
+| Model endpoint | Set `deployment.local.yaml`'s `model.endpoint` before startup; verify the service and named outputs separately before model-driven motion. | No model connection |
+| Physical stop | With the operator present, obtain fresh owner stop confirmation before motion and after stopping. An accepted stop request or zero wheel speed alone is insufficient. | Simulated feedback |
+
+`check --mode hardware --json` reads local files and declarations. Exit 0 /
+`status: "passed"` does not verify device connections, actual calibration,
+camera images, model output, fresh observations, stop feedback, or task success.
+The default `setup` / `check` mode is hardware; use `--mode software` explicitly
+for rehearsal. Linux ARM64 dependencies and optional integrations need checks
+on the target. A container image alone does not establish hardware/GPU support.
 
 ## Roadmap
 
@@ -147,6 +213,20 @@ The roadmap tracks the next integrations separately from the current catalog.
     - [ ] Example deployments and closed-loop checks
 
 </div>
+
+### Planned Recipes and benchmarks
+
+| Area | Deliverable | Status |
+|---|---|---|
+| VLA | Complete Recipes for Bi-SO-101, Franka FR3, ARX X5, and manipulation simulators | 🟨 待补充 |
+| VLA | Dedicated single-arm SO-101 video and repeated task-success measurements | 🟨 待补充 |
+| VLN | Complete Recipes for Go2, Habitat, Isaac Sim, and LightNav-0/XLeRobot | 🟨 待补充 |
+| Agent | Automatic collection workflow and video, including task reset and dataset export | 🟨 待补充 |
+| Agent | Additional mobile-manipulation agent Recipes | 🟨 待补充 |
+| Performance | Deployment comparisons and client/node scaling curves | 🟨 待补充 |
+
+Benchmark workloads and data requirements are described in the
+[benchmark plan](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/benchmarks/README.md#planned-benchmarks).
 
 ## Agents and extensions
 

@@ -1,0 +1,35 @@
+[project]
+name = "embodirun-microduck-vln-recipe"
+version = "0.1.0"
+description = "Locked offline configuration and optional MicroDuck VLN simulation environment"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "embodirun",
+    "embodirun-microduck",
+    "paramiko>=3.4,<5",
+    "PyYAML>=6,<7",
+    "rich>=13,<15",
+]
+
+[project.optional-dependencies]
+simulation = [
+    "embodirun-microduck[full]",
+    "torch==2.10.0",
+    "torchvision==0.25.0",
+]
+
+[tool.uv]
+package = false
+required-version = ">=0.12.0,<0.13"
+default-groups = []
+
+[tool.uv.sources]
+embodirun = { path = "../..", editable = true }
+embodirun-microduck = { path = "../../integrations/microduck_vln", editable = true }
+torch = [{ index = "pytorch-cu130", marker = "sys_platform == 'linux'" }]
+torchvision = [{ index = "pytorch-cu130", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true

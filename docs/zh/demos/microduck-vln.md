@@ -1,4 +1,4 @@
-# MicroDuck 语言导航演示
+# VLN：MicroDuck 语言导航
 
 给 MicroDuck 一条导航指令，让它在 MuJoCo 场景中寻找目标。
 ActiveVLN 根据相机画面生成导航动作，EmbodiRun 客户端连接推理服务与行走控制器。
@@ -42,3 +42,8 @@ bash examples/run.sh "$CONFIG" run
 从 `example.yaml` 复制本地配置，设置资源路径、Python 解释器、任务轮数、随机种子和计算资源。
 
 环境要求、参考配置和完整运行说明见 [MicroDuck 仿真指南](../microduck-vln.md)。
+
+## 其他导航集成
+
+[支持矩阵](../support-matrix.md)列出 Go2、Habitat、Isaac Sim 与 LightNav-0/XLeRobot 的集成、
+配置和使用指南。

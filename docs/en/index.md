@@ -15,10 +15,21 @@ loop from one file.
 
 </div>
 
-EmbodiRun connects model inference, service deployment, cross-node communication,
-and robot execution into one reproducible system. High-performance inference is
-provided by [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer), which stays
-an independent engine and can also be used on its own.
+EmbodiRun deploys services, connects robot observations to inference, and
+coordinates action execution. Pair it with
+[EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer), an external model
+service, or an agent that manages its own task loop.
+
+## Three scenarios
+
+| Scenario | Task | Get started |
+|---|---|---|
+| **VLA · Manipulation** | SO-101 + π0.5 picks up a cube and places it in a bowl. | [Demo](demos/so101-grasping.md) |
+| **VLN · Navigation** | MicroDuck + ActiveVLN follows a language instruction in MuJoCo. | [Demo](demos/microduck-vln.md) |
+| **Agent · Mobile manipulation** | XLeRobot combines base routes, RPent/Astra review, and VLA grasping for supervised snack delivery. | [Workflow and architecture](demos/xlerobot-snack-delivery.md) |
+
+Each [Recipe](examples.md) walks through setup, configuration, execution,
+outputs, and shutdown.
 
 ## Choose a path
 
@@ -88,7 +99,7 @@ flowchart TB
 ## Find your setup
 
 Browse the [supported robots, simulators, and models](support-matrix.md), or
-start with one of the [four demo examples](examples.md). Each example includes
+start with one of the [three scenarios and their Recipes](examples.md). Each example includes
 configuration files, launch commands, and a guide to its outputs.
 For latency measurements and transport comparisons, see [Experiments](experiments.md).
 

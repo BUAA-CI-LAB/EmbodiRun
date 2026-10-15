@@ -13,7 +13,7 @@ import pytest
 from agents.astra_pi05.cooperative import CooperativeLoop, Proposal
 
 from embodirun.client import Observation, UnsupportedOperation
-from test_agent_client import _client_server, _close
+from tests.test_agent_client import _client_server, _close
 
 NAMES = tuple(f"joint_{index}" for index in range(12))
 

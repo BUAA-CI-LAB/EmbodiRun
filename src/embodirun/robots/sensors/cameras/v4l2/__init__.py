@@ -12,7 +12,7 @@ def create_source(inputs: Sequence[SensorInput]) -> V4L2CameraSource:
     cameras: list[V4L2CameraConfig] = []
     for item in inputs:
         options = dict(item.options)
-        unknown = sorted(set(options) - {"device", "width", "height", "fps"})
+        unknown = sorted(set(options) - {"device", "width", "height", "fps", "input_format"})
         if unknown:
             raise CameraError(f"sensor {item.sensor_id!r} contains unknown V4L2 fields: {', '.join(unknown)}")
         missing = [name for name in ("device", "width", "height", "fps") if name not in options]
@@ -26,6 +26,7 @@ def create_source(inputs: Sequence[SensorInput]) -> V4L2CameraSource:
                     width=options["width"],
                     height=options["height"],
                     fps=options["fps"],
+                    input_format=options.get("input_format"),
                 )
             )
         except (TypeError, ValueError) as error:

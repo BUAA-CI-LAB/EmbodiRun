@@ -7,6 +7,25 @@ The full contribution guide is
 [`CONTRIBUTING.md`](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/CONTRIBUTING.md)
 in the repository root. Start here for development setup and pull request checks.
 
+## Commit messages and sign-off
+
+Use `<type>[(scope)][!]: <description>` subjects, with a lowercase type from
+`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`,
+`chore`, or `revert`, and a maximum of 72 characters. The PR title follows
+the same convention. Every introduced commit must have a final
+`Signed-off-by: Name <email>` trailer matching its author; named coauthors
+must supply their own sign-offs too.
+
+```bash
+git commit -s -m "fix(deployment): validate device configuration before launch"
+python3 scripts/check_commit_policy.py --base origin/main --head HEAD
+```
+
+The `Commit policy` CI check validates all new PR commits and the PR title.
+Read the
+[complete policy and DCO instructions](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/CONTRIBUTING.md#commit-messages-and-sign-off)
+for category definitions, message layout, breaking changes, and repair commands.
+
 ## Development setup
 
 ```bash

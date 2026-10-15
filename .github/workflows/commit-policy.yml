@@ -1,0 +1,29 @@
+name: Commit policy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: commit-policy-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  commits:
+    name: Commit policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout the merge tree and full commit history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Check the event's actual head, not GitHub's unsigned test-merge commit.
+      # Read the title as JSON data instead of interpolating it into shell code.
+      - name: Check all introduced commits and the PR title
+        run: python3 -I scripts/check_commit_policy.py --event "$GITHUB_EVENT_PATH"

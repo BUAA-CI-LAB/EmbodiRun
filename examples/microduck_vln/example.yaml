@@ -1,7 +1,7 @@
 version: 1
 name: microduck-vln
 kind: microduck
-python: ../../.venv-microduck/bin/python
+# setup prepares .venv-microduck; the launcher selects it automatically.
 output_dir: ../../artifacts/examples/microduck-vln
 parameters:
   project_root: /REPLACE_MICRODUCK_ASSETS

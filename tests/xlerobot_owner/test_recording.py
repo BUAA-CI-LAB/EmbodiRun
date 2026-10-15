@@ -495,5 +495,5 @@ def test_export_refuses_existing_output_and_missing_real_lerobot_dependency(tmp_
         return original_import(name)
 
     monkeypatch.setattr(recording_module.importlib, "import_module", missing_lerobot)
-    with pytest.raises(LeRobotExportError, match="install.*lerobot"):
+    with pytest.raises(LeRobotExportError, match="install.*recording extra"):
         export_lerobot([episode], repo_id="user/no-lerobot", output=tmp_path / "missing")

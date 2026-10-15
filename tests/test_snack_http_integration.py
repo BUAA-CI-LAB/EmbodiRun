@@ -24,7 +24,7 @@ from embodirun.model_services import PolicyAction, PolicyResult
 from embodirun.robots.lerobot.xlerobot.units import ARM_UNITS, stamped_metadata
 from embodirun.services.control.devices import DeviceManager
 from embodirun.services.control.server import ControlHttpServer, ControlService
-from test_xlerobot_external_owner import _close_control, _OwnerHandler, _OwnerState, _port
+from tests.test_xlerobot_external_owner import _close_control, _OwnerHandler, _OwnerState, _port
 
 
 class ScopeState(_OwnerState):

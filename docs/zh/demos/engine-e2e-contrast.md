@@ -15,6 +15,14 @@
 以及原生 LeRobot。这段 29 秒的剪辑展示了各次运行的前八轮控制；
 每个画面在第八轮结束后定格。*
 
+## 延迟对比
+
+![SO-101 推理与完整 chunk 中位数](../assets/performance/so101-engine-comparison.svg)
+
+图表由[汇总数据与绘图脚本](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/benchmarks/engine-comparison)生成。
+每个数值为一次运行中 15 个 chunk 的中位数。当前数据集保存汇总计时，原始逐 chunk 样本不可用。
+实验条件与计时定义见下文。
+
 ## 任务与硬件
 
 单台 SO-101 机械臂执行指令 **“拿起方块并将它放入

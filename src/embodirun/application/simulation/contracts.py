@@ -5,13 +5,13 @@ from __future__ import annotations
 import json
 import math
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
-SIMULATION_CONFIG_SCHEMA = "rlinf.simulation.config.v1"
-EPISODE_REQUEST_SCHEMA = "rlinf.simulation.episode.v1"
-EPISODE_RESULT_SCHEMA = "rlinf.simulation.result.v1"
-ERROR_SCHEMA = "rlinf.simulation.error.v1"
+SIMULATION_CONFIG_SCHEMA = "embodirun.simulation.config.v1"
+EPISODE_REQUEST_SCHEMA = "embodirun.simulation.episode.v1"
+EPISODE_RESULT_SCHEMA = "embodirun.simulation.result.v1"
+ERROR_SCHEMA = "embodirun.simulation.error.v1"
 
 
 class SimulationContractError(ValueError):
@@ -31,6 +31,7 @@ class SimulationServiceConfig:
     simulator_kind: str
     simulator_options: Mapping[str, Any]
     inference_backend: str = "embodiinfer"
+    runtime_options: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         for name in (
@@ -58,6 +59,7 @@ class SimulationServiceConfig:
             raise SimulationContractError("inference backend must be embodiinfer or sglang")
         for name in ("inference_options", "simulator_options"):
             object.__setattr__(self, name, _mapping(getattr(self, name), name))
+        object.__setattr__(self, "runtime_options", _mapping(self.runtime_options, "runtime_options"))
 
     def to_json(self) -> str:
         return json.dumps(
@@ -77,6 +79,7 @@ class SimulationServiceConfig:
                     "type": self.simulator_kind,
                     "options": dict(self.simulator_options),
                 },
+                "runtime_options": dict(self.runtime_options),
             },
             allow_nan=False,
             ensure_ascii=False,
@@ -110,6 +113,7 @@ class SimulationServiceConfig:
             simulator_id=_string(simulator, "id", "simulation config.simulator"),
             simulator_kind=_string(simulator, "type", "simulation config.simulator"),
             simulator_options=_mapping(simulator.get("options", {}), "simulation config.simulator.options"),
+            runtime_options=_mapping(root.get("runtime_options", {}), "simulation config.runtime_options"),
         )
 
 

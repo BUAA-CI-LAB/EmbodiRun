@@ -296,7 +296,7 @@ class RobotAdapterCommandPort:
             # existing last-error surface; the structured IOResult remains
             # available to callers that need scheduler context.
             with contextlib.suppress(Exception):
-                result.error._rlinf_io_result = result
+                result.error._embodirun_io_result = result
             raise result.error
         if result.status is IOStatus.REJECTED and result.operation == "stop":
             # Another stop is pending/running.  The scheduler keeps a single
@@ -1013,7 +1013,7 @@ class RobotControlArbiter:
                 if port_result is None:
                     port_result = getattr(error, "result", None)
                     if not isinstance(port_result, IOResult):
-                        port_result = getattr(error, "_rlinf_io_result", None)
+                        port_result = getattr(error, "_embodirun_io_result", None)
                 was_cancelled = ticket.cancel_event.is_set()
                 status = CommandStatus.CANCELLED if was_cancelled else CommandStatus.FAILED
                 with self._condition:

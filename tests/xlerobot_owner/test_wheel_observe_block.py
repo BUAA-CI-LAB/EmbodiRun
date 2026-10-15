@@ -1,4 +1,5 @@
 import pytest
+
 from tests.xlerobot_owner.test_motor_diagnostics import setup
 
 

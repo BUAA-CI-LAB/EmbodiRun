@@ -38,7 +38,7 @@ DEPLOY_REPOSITORY = "https://github.com/BUAA-CI-LAB/EmbodiRun.git"
 
 INFERENCE_REPOSITORY = "https://github.com/BUAA-CI-LAB/EmbodiInfer.git"
 
-DEFAULT_MANAGED_ROOT = ".local/share/rlinf-deploy"
+DEFAULT_MANAGED_ROOT = ".local/share/embodirun"
 
 
 class InitError(RuntimeError):

@@ -103,9 +103,9 @@ class ProfiledCv2(FakeCv2):
 def test_v4l2_camera_requests_two_buffers_by_default(monkeypatch, configured, expected) -> None:
     """One V4L2 buffer drops every other frame; the default must be two."""
     if configured is None:
-        monkeypatch.delenv("RLINF_DEPLOY_CAMERA_BUFFERSIZE", raising=False)
+        monkeypatch.delenv("EMBODIRUN_CAMERA_BUFFERSIZE", raising=False)
     else:
-        monkeypatch.setenv("RLINF_DEPLOY_CAMERA_BUFFERSIZE", configured)
+        monkeypatch.setenv("EMBODIRUN_CAMERA_BUFFERSIZE", configured)
     cv2 = FakeCv2()
 
     source = V4L2CameraSource(

@@ -58,7 +58,8 @@ nav:
   - 快速开始:
       - 安装: installation.md
       - 快速开始: quickstart.md
-      - 复现演示: examples.md
+      - 独立首次上手: first-use.md
+      - 场景与 Recipe: examples.md
       - 部署配置: configuration.md
   - 机器人操作:
       - 手动控制: control.md
@@ -71,8 +72,10 @@ nav:
       - π0.5 双臂控制: pi05-bi-so101.md
   - 系统设计:
       - 系统架构: architecture.md
+      - Runtime 职责与成本: runtime-value.md
   - 实验:
       - 概览: experiments.md
+      - SO-101 推理引擎对比: demos/engine-e2e-contrast.md
       - HTTP 与 WirelessComm 对比: inference-transport.md
       - 相机采集与断连恢复: camera-only-experiments.md
       - 传输与采集优化: transport-experiments.md
@@ -81,11 +84,11 @@ nav:
       - XLeRobot 零食递送: xlerobot-snack-delivery.md
   - 参考:
       - Python API: api.md
-  - 演示:
-      - 多机器人共享推理: demos/multi-robot-serving.md
-      - SO-101 推理引擎对比: demos/engine-e2e-contrast.md
-      - XLeRobot 零食递送: demos/xlerobot-snack-delivery.md
-      - MicroDuck 语言导航: demos/microduck-vln.md
+  - 场景:
+      - VLA — SO-101 抓取: demos/so101-grasping.md
+      - VLN — MicroDuck 导航: demos/microduck-vln.md
+      - Agent — XLeRobot 递送: demos/xlerobot-snack-delivery.md
+      - 多机器人 Recipe: demos/multi-robot-serving.md
   - 项目:
       - 参与贡献（英文）: https://embodirun.readthedocs.io/en/latest/contributing/
       - 行为准则（英文）: https://embodirun.readthedocs.io/en/latest/code-of-conduct/

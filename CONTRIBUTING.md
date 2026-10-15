@@ -22,6 +22,114 @@ the same license, as described in section 5 of the license. Do not contribute
 code you cannot license this way, and do not paste third-party code without its
 license and attribution.
 
+## Commit messages and sign-off
+
+Use [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/)
+and certify every contribution under the
+[Developer Certificate of Origin (DCO) 1.1](https://developercertificate.org/).
+The `Commit policy` CI check validates **every commit introduced by a PR**,
+including contributor-created merge commits, and the PR title. Existing base
+branch history and GitHub's temporary test-merge commit are outside that range.
+
+### Subject and categories
+
+```text
+<type>[(scope)][!]: <description>
+```
+
+| Type | Use for |
+| --- | --- |
+| `feat` | A new user-facing capability |
+| `fix` | A bug fix |
+| `docs` | Documentation changes |
+| `style` | Formatting changes without behavior changes |
+| `refactor` | Restructuring without a new feature or bug fix |
+| `perf` | Performance improvements |
+| `test` | Adding or correcting meaningful tests |
+| `build` | Dependencies, packaging, or build tooling |
+| `ci` | CI workflows and their tooling |
+| `chore` | Other repository maintenance |
+| `revert` | Reverting a change; identify the original commit in the body |
+
+The following subject rules also apply to the PR title:
+
+- Use a lowercase type from the table, followed by exactly `: `.
+- An optional lowercase scope starts with a letter or digit and contains only
+  letters, digits, `.`, `_`, `/`, or `-`. Prefer the affected domain, such as
+  `deployment`, `devices`, or `model_services`.
+- Keep the complete subject within 72 characters, including the prefix. Use a
+  specific description, without surrounding whitespace, control characters,
+  or a final `.` or `。`. Prefer an imperative phrase such as "validate device
+  configuration"; Chinese descriptions are also accepted.
+- Keep each commit focused on one logical change. Mark an incompatible change
+  with `!` before the colon, or a `BREAKING CHANGE: <explanation>` footer.
+
+Separate the subject, optional body, and final trailer block with empty lines.
+Use the body to explain why the change is needed and any migration steps;
+wrapping prose at about 72 characters is recommended, but long URLs and code
+are allowed. No message line may have trailing whitespace.
+
+```text
+fix(deployment): validate device configuration before launch
+
+Report missing device configuration before starting remote processes.
+
+Signed-off-by: Your Name <you@example.com>
+```
+
+### Required DCO sign-off
+
+Every introduced commit must end with a trailer spelled exactly
+`Signed-off-by: Name <email>`. The name must match the commit's author name,
+and the email must match its author email (case-insensitively). A GitHub
+`noreply` address is accepted. Each contributor named in a `Co-authored-by`
+trailer must also provide a matching `Signed-off-by` trailer. A sign-off in
+the middle of the message, or one from somebody other than the author, does
+not satisfy this requirement.
+
+Read the DCO before signing. Configure your own Git identity and use `-s`
+when creating a commit:
+
+```bash
+git config user.name "Your Name"
+git config user.email "you@example.com"
+git commit -s -m "fix(deployment): validate device configuration before launch"
+```
+
+`-s` adds the committer's DCO trailer; it is distinct from `-S`, which creates
+a cryptographic signature. When committing another author's work, obtain
+their sign-off rather than signing on their behalf. Coauthors must each
+certify their own contribution.
+
+To repair your latest unpublished or PR-branch commit, use
+`git commit --amend --signoff`; edit its subject if necessary. For older
+commits, use `git rebase -i origin/main`, stop at each of your affected commits,
+amend it, and continue the rebase. After rewriting your own published PR
+branch, push with `git push --force-with-lease`. Do not rewrite merged history
+or add other contributors' sign-offs yourself.
+
+If merging main into your branch, supply a compliant subject and your sign-off:
+
+```bash
+git merge --signoff -m "chore(merge): sync main" origin/main
+```
+
+Maintainers must retain the authors' and coauthors' sign-offs when squashing
+or rebasing. Use a compliant final subject and add your own sign-off when
+creating a final merge commit; the PR check does not inspect the commit that
+GitHub creates after merging.
+
+### Check locally
+
+```bash
+git fetch origin main
+python3 scripts/check_commit_policy.py --base origin/main --head HEAD \
+  --title "fix(deployment): validate device configuration before launch"
+```
+
+CI reports the failing commit IDs and individual rules. PR edits rerun
+this lightweight check without rerunning the CPU and documentation workflows.
+
 ## Development setup
 
 ```bash

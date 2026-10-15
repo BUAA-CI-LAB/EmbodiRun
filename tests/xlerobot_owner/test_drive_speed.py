@@ -1,13 +1,13 @@
 import asyncio
 
 import pytest
-from tests.xlerobot_owner.test_hardware import _config
-from tests.xlerobot_owner.test_keyboard import enable, packet
-from tests.xlerobot_owner.test_server import HEADERS, station, wait_for
 
 from embodirun_xlerobot_owner.control import MappingConfig
 from embodirun_xlerobot_owner.hardware import HardwareRobot
 from embodirun_xlerobot_owner.keyboard import KeyboardFrame
+from tests.xlerobot_owner.test_hardware import _config
+from tests.xlerobot_owner.test_keyboard import enable, packet
+from tests.xlerobot_owner.test_server import HEADERS, station, wait_for
 
 
 async def set_speed(ws, linear=0.1, angular=20):

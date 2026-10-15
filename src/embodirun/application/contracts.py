@@ -11,10 +11,10 @@ from typing import Any
 from embodirun.model_services.providers import provider
 from embodirun.robots.sensors import SensorInput
 
-CONTROL_CONFIG_SCHEMA = "rlinf.control.config.v1"
-TASK_REQUEST_SCHEMA = "rlinf.control.task.v1"
-TASK_RESULT_SCHEMA = "rlinf.control.result.v1"
-ERROR_SCHEMA = "rlinf.control.error.v1"
+CONTROL_CONFIG_SCHEMA = "embodirun.control.config.v1"
+TASK_REQUEST_SCHEMA = "embodirun.control.task.v1"
+TASK_RESULT_SCHEMA = "embodirun.control.result.v1"
+ERROR_SCHEMA = "embodirun.control.error.v1"
 
 
 class ControlContractError(ValueError):
@@ -455,10 +455,20 @@ class TaskRequest:
             value = getattr(self, name)
             if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
                 raise ControlContractError(f"{name} must be a positive integer")
-        for name in ("control_hz", "inference_timeout_s"):
-            value = getattr(self, name)
-            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
-                raise ControlContractError(f"{name} must be a finite positive number")
+        if (
+            isinstance(self.control_hz, bool)
+            or not isinstance(self.control_hz, (int, float))
+            or not math.isfinite(self.control_hz)
+            or self.control_hz < 0
+        ):
+            raise ControlContractError("control_hz must be a finite non-negative number")
+        if (
+            isinstance(self.inference_timeout_s, bool)
+            or not isinstance(self.inference_timeout_s, (int, float))
+            or not math.isfinite(self.inference_timeout_s)
+            or self.inference_timeout_s <= 0
+        ):
+            raise ControlContractError("inference_timeout_s must be a finite positive number")
 
     def to_payload(self) -> dict[str, Any]:
         """Return the transport-neutral JSON object sent to Control."""

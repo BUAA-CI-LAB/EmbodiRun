@@ -293,9 +293,16 @@ class ControlService:
                 f"chunk_steps {request.chunk_steps} exceeds binding "
                 f"{binding.kind!r} maximum {binding.maximum_chunk_steps}"
             )
+        async_runtime_type: type[Any] | None = None
+        async_config: Any | None = None
         if profile_config.runtime_options:
-            names = ", ".join(sorted(profile_config.runtime_options))
-            raise ControlServiceError(f"unsupported runtime options: {names}")
+            from .async_inference import AsyncControlRuntime, AsyncRuntimeConfig
+
+            async_runtime_type = AsyncControlRuntime
+            try:
+                async_config = AsyncRuntimeConfig.from_options(profile_config.runtime_options)
+            except (TypeError, ValueError) as error:
+                raise ControlServiceError(str(error)) from error
         client = self._inference_client(profile_config, request.inference_timeout_s)
         cameras: CameraSource | None = None
         controller: Any | None = None
@@ -306,6 +313,7 @@ class ControlService:
             health = client.health()
             if health.get("status") != "ok":
                 raise ControlServiceError(f"inference service at {self.config.inference_endpoint} is not healthy")
+            _check_async_capability(client, profile_config, async_config)
             cameras, _ = self._acquire_cameras(profile_config)
             robot, arbiter = self._ensure_robot_arbiter(
                 robot_definition_value,
@@ -323,32 +331,77 @@ class ControlService:
                 except ObservationViewError as error:
                     raise ControlServiceError(str(error)) from error
 
-            controller = self.runtime_factory(
-                robot,
-                client,
-                instruction=request.prompt,
-                mapper=binding.mapper_factory(),
-                chunk_steps=request.chunk_steps,
-                control_hz=request.control_hz,
-                command_sink=ArbiterCommandSink(arbiter, task_cancel),
-                observation_source=observation_source,
-                cancel_event=task_cancel,
-                monotonic=self.monotonic,
-                sleep=self.sleep,
+            runtime_factory = self.runtime_factory
+            if async_config is not None and async_config.enabled:
+                assert async_runtime_type is not None
+                if runtime_factory is ControlRuntime:
+                    runtime_factory = async_runtime_type
+                elif runtime_factory is not async_runtime_type:
+                    raise ControlServiceError(
+                        "async runtime_options require a runtime_factory that accepts AsyncRuntimeConfig"
+                    )
+            runtime_kwargs: dict[str, Any] = {
+                "robot": robot,
+                "client": client,
+                "instruction": request.prompt,
+                "mapper": binding.mapper_factory(),
+                "chunk_steps": request.chunk_steps,
+                "control_hz": request.control_hz,
+                "inference_delay_s": (0.0 if async_config is None else async_config.artificial_inference_delay_s),
+                "command_sink": ArbiterCommandSink(arbiter, task_cancel),
+                "observation_source": observation_source,
+                "cancel_event": task_cancel,
+                "monotonic": self.monotonic,
+                "sleep": self.sleep,
+            }
+            if async_runtime_type is not None and runtime_factory is async_runtime_type:
+                runtime_kwargs.pop("inference_delay_s")
+                runtime_kwargs["config"] = async_config
+            controller = runtime_factory(
+                runtime_kwargs.pop("robot"),
+                runtime_kwargs.pop("client"),
+                **runtime_kwargs,
             )
-            for _ in range(request.max_steps):
+            # A synchronous runtime advances one complete action chunk per
+            # call.  The asynchronous runtime advances one physical action so
+            # inference can overlap the remaining chunk.  Preserve the public
+            # ``max_steps`` meaning (number of chunks) by expanding only the
+            # async loop to its action count.
+            runtime_steps = (
+                request.max_steps * request.chunk_steps
+                if async_config is not None and async_config.enabled
+                else request.max_steps
+            )
+            for runtime_step in range(runtime_steps):
                 requested = _runtime_camera_requests(profile_config)
-                current_snapshot = self._shared_observations.snapshot(
-                    require_state=True,
-                    required_source_ids=[source_id for source_id, _ in requested],
-                    force_publish=True,
-                )
-                frames = self._shared_observations.frames_for(
-                    current_snapshot,
-                    requested,
-                )
+                for capture_attempt in range(3):
+                    current_snapshot = self._shared_observations.snapshot(
+                        require_state=True,
+                        required_source_ids=[source_id for source_id, _ in requested],
+                        # Async execution advances once per physical action.  The
+                        # camera workers already publish at their configured FPS;
+                        # forcing a fresh USB capture on every action both stalls
+                        # the control loop and can turn one transient V4L2 timeout
+                        # into a failed task.  Synchronous execution still forces
+                        # one fresh observation for each policy chunk.
+                        force_publish=async_config is None or not async_config.enabled,
+                    )
+                    try:
+                        frames = self._shared_observations.frames_for(
+                            current_snapshot,
+                            requested,
+                        )
+                        break
+                    except SharedSensorError:
+                        if capture_attempt == 2:
+                            raise
+                        # USB cameras can miss one publish while the other
+                        # source succeeds.  Retry the complete snapshot rather
+                        # than terminating a physical task for one absent frame.
+                        self.sleep(0.01)
                 controller.step(frames)
-                completed += 1
+                if async_config is None or not async_config.enabled or (runtime_step + 1) % request.chunk_steps == 0:
+                    completed += 1
         finally:
             with self._control_lock:
                 if self._current_task_cancel is task_cancel:
@@ -851,6 +904,12 @@ class ControlService:
             RobotAdapterCommandPort(
                 robot,
                 action_resolver=resolve_teleop_action,
+                # SO-101 serial recovery may briefly fall back from one group
+                # transaction to per-motor reads. Keep the caller wait budget
+                # above that bounded recovery path so the bus is not
+                # quarantined while the driver is still completing it.
+                io_wait_timeout_s=3.0 if profile_config.robot_kind == "lerobot.so101" else 1.0,
+                observation_wait_timeout_s=(3.0 if profile_config.robot_kind == "lerobot.so101" else 1.0),
                 emergency_stop_policy=(
                     EmergencyStopPolicy.PREEMPTIVE
                     if profile_config.robot_kind == "franka.fr3"
@@ -1326,7 +1385,7 @@ def _control_job_database(
 ) -> Path:
     """Choose one persistent, per-service job database under device state."""
 
-    configured = state_dir or os.environ.get("RLINF_DEPLOY_CONTROL_STATE_DIR")
+    configured = state_dir or os.environ.get("EMBODIRUN_CONTROL_STATE_DIR")
     if configured is None:
         manager = service.device_manager
         if manager is None:
@@ -1352,7 +1411,7 @@ def _load_auth_policy(token_file: Path | None) -> AuthPolicy:
 
     configured = token_file
     if configured is None:
-        environment_path = os.environ.get("RLINF_DEPLOY_CONTROL_TOKEN_FILE")
+        environment_path = os.environ.get("EMBODIRUN_CONTROL_TOKEN_FILE")
         configured = Path(environment_path).expanduser() if environment_path else None
     if configured is None:
         return AuthPolicy()
@@ -1379,11 +1438,11 @@ def _configured_recorder(
 ) -> ObservationRecorder | None:
     configured_dir = recording_dir
     if configured_dir is None:
-        environment_path = os.environ.get("RLINF_DEPLOY_CONTROL_RECORDING_DIR")
+        environment_path = os.environ.get("EMBODIRUN_CONTROL_RECORDING_DIR")
         configured_dir = Path(environment_path).expanduser() if environment_path else None
     if configured_dir is None:
         return None
-    configured_id = recording_id or os.environ.get("RLINF_DEPLOY_CONTROL_RECORDING_ID", config.runtime_id)
+    configured_id = recording_id or os.environ.get("EMBODIRUN_CONTROL_RECORDING_ID", config.runtime_id)
     expected_frames = tuple(item.name for item in config.inputs)
     return ObservationRecorder(
         store,
@@ -1660,6 +1719,45 @@ def _runtime_camera_requests(
     return tuple((_sensor_identity(config, item).key, item.name) for item in config.inputs)
 
 
+def _check_async_capability(
+    client: Any,
+    profile_config: ControlServiceConfig,
+    async_config: Any | None,
+) -> None:
+    """Reject algorithmic async on SGLang unless its endpoint advertises it."""
+
+    if async_config is None or not async_config.enabled or profile_config.inference_backend != "sglang":
+        return
+    if not async_config.rtc_enabled:
+        return  # ``mode=naive`` is the provider-neutral overlap baseline.
+    capabilities = getattr(client, "capabilities", None)
+    if not callable(capabilities):
+        raise ControlServiceError(
+            "SGLang async RTC requires endpoint capability metadata; use async mode=naive for the baseline"
+        )
+    try:
+        payload = capabilities()
+    except Exception as error:
+        raise ControlServiceError(f"SGLang async capability probe failed: {error}") from error
+    if not isinstance(payload, Mapping):
+        raise ControlServiceError("SGLang capabilities response must be an object")
+    advertised = payload.get("async_inference")
+    if not isinstance(advertised, Mapping):
+        nested = payload.get("capabilities")
+        advertised = nested.get("async_inference") if isinstance(nested, Mapping) else None
+    if not isinstance(advertised, Mapping):
+        raise ControlServiceError(
+            "SGLang endpoint does not advertise async_inference.rtc; use async mode=naive for the baseline"
+        )
+    missing = ["rtc"] if advertised.get("rtc") is not True else []
+    if missing:
+        raise ControlServiceError(
+            "SGLang endpoint does not support requested async algorithm(s): "
+            + ", ".join(missing)
+            + "; use async mode=naive for the baseline"
+        )
+
+
 def _observation_payload(value: Any) -> Any:
     if isinstance(value, Mapping):
         return dict(value)
@@ -1693,7 +1791,7 @@ def _shutdown_client(client: Any) -> None:
 def _package_version() -> str:
     """Report installed package metadata without inventing a source hash."""
 
-    for distribution in ("embodirun", "rlinf-deploy"):
+    for distribution in ("embodirun", "embodirun"):
         try:
             return package_version(distribution)
         except PackageNotFoundError:  # editable/source checkouts may lack metadata

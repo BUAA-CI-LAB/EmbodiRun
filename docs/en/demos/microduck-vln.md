@@ -1,4 +1,4 @@
-# Language-guided navigation with MicroDuck
+# VLN: language-guided navigation with MicroDuck
 
 Give MicroDuck a navigation instruction and watch the observation–inference–action
 loop in MuJoCo. This demo brings together ActiveVLN, EmbodiRun's inference
@@ -46,3 +46,8 @@ episodes, seed, and resource selection; start from the shipped `example.yaml`.
 
 See [MicroDuck setup and configuration](../microduck-vln.md) for prerequisites,
 the reference configuration, and the complete example guide.
+
+## Other navigation integrations
+
+The [support matrix](../support-matrix.md) lists Go2, Habitat, Isaac Sim, and
+LightNav-0/XLeRobot integrations with their configuration and setup guides.

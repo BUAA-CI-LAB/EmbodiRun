@@ -13,7 +13,7 @@ from embodirun.services.control.arbitration import CommandCancelled
 from embodirun.services.control.devices import DeviceManager
 from embodirun.services.control.server import ControlHttpServer, ControlService, ControlTaskRejected
 from embodirun.services.control.teleop import ControlHttpTeleopClient
-from test_control_services import _unused_loopback_port, control_config, task_request
+from tests.test_control_services import _unused_loopback_port, control_config, task_request
 
 
 @pytest.fixture

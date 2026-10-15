@@ -1,0 +1,61 @@
+{
+  "status": "software_trials_completed",
+  "comparison_scope": "software_service_management",
+  "source_versions": {
+    "embodirun_revision": "3fe4df9d6667a02226302c7f0766e3d1ec8b7c27",
+    "embodirun_local_changes": "None in measured Control/Host sources; external recorder and task copy of deployment YAML with deploy-commit set to this revision. Later installer/test changes are outside this measured source.",
+    "lerobot_version": null,
+    "model_backend_version": null,
+    "adapter_version": null
+  },
+  "machine": {
+    "os": "Ubuntu 24.04.4 LTS; glibc 2.39",
+    "architecture": "aarch64",
+    "cpu": "14 online ARM logical CPUs; lscpu model name unavailable",
+    "ram_mib": 125809.33203125,
+    "gpu": "NVIDIA Thor; unused by this workload",
+    "driver": "595.78",
+    "cuda": null,
+    "node_roles": [
+      "one Linux host: caller, Control, Host-managed service"
+    ],
+    "network_topology": "Loopback HTTP port 8100 for trials; source/wheel transfer used Tailscale relay. No private host addresses published."
+  },
+  "environment": {
+    "python_version": "3.12.3 for caller and managed Control",
+    "uv_version": "0.12.17; preinstalled executable reused",
+    "package_versions_file": "managed-packages.json",
+    "dependency_file": "root uv.lock at the recorded revision; host group",
+    "docker_base_image_version": null,
+    "task_environment_fresh": true,
+    "uv_download_cache_state": "Task cache was empty at preparation start; unsuccessful remote downloads and fresh relayed locked wheels populated it. Prepared startup trials reused this task cache and environments.",
+    "docker_cache_state": "Not applicable to measured native Control trials",
+    "preexisting_sources_assets": "No old deployment source, venv, state, download cache, model or scene reused; system Python/uv executable reused. Prepared trials share the same task-generated source/env/config."
+  },
+  "workload": {
+    "policy_checkpoint_version": null,
+    "input_dataset_version": null,
+    "dtype": null,
+    "decode_steps": null,
+    "compile_graph_settings": null,
+    "action_horizon": null,
+    "observation_shape_rate": "One fake 64x48 RGB PNG image and five joint values plus gripper; query only, no execute request",
+    "device_count": 1,
+    "client_count": 1,
+    "seed": null,
+    "warmup_count": null,
+    "readiness_condition": "health status ok; observation status ok/fresh with observation.images.front data; robot.metadata.simulated true and hardware_access false",
+    "poll_interval_s": 1,
+    "timeout_s": 60,
+    "resource_sampling_tool_interval_window": null
+  },
+  "unavailable_fields_and_reasons": [
+    "No policy/checkpoint, inference backend, replay adapter, dataset or learned-policy request in this software workload.",
+    "CUDA SDK version not collected; no CUDA used.",
+    "CPU/RAM/GPU/VRAM workload samples null: no reliable aggregate process sampler was run. Machine RAM capacity is not service peak memory.",
+    "Active human/operator time not measured. Agent assistance records are descriptive, not classroom first-use or manual-work comparison.",
+    "Quiet prepared-startup window excluded native package extraction/builds; port fault/recovery ran after that window with installation/build work permitted, and is separate fault evidence.",
+    "Model warmup is not applicable. One common Host service-preparation pass is described in the report and excluded from both prepared startup routes."
+  ],
+  "operator": "Agent"
+}

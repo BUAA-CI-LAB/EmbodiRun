@@ -1,10 +1,10 @@
 import asyncio
 
 import pytest
-from tests.xlerobot_owner.test_server import HEADERS, TOKEN, station
 
 from embodirun_xlerobot_owner.control import JOINT_NAMES
 from embodirun_xlerobot_owner.robot import RemoteRobot
+from tests.xlerobot_owner.test_server import HEADERS, TOKEN, station
 
 
 def headers(scope, owner):

@@ -1,14 +1,20 @@
-# 复现演示
+# 场景与 Recipe
 
-四个演示均通过 `examples/run.sh` 启动，并使用带格式版本号的 YAML 配置。
-部署配置描述设备和服务，示例配置指定任务、执行限制和输出目录。
+通过统一的 `embodirun example` 命令行入口（兼容 `examples/run.sh`），运行抓取、导航或移动抓取任务。
+每个 Recipe 提供环境准备、本地配置、任务执行、输出文件与停止说明。
+验证未合并 PR 时，从其 head 分支安装。新用户或编程 Agent 的实际软件试用见[独立首次上手](first-use.md)。
 
-| 演示 | 示例目录 | 运行内容 |
+| 场景 | 演示 | Recipe |
 |---|---|---|
-| [三台机器人，一个服务](demos/multi-robot-serving.md) | [multi_robot_serving](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/multi_robot_serving) | 三个并发的 SO-101 循环，共享 π0.5 批次 |
-| [引擎对比](demos/engine-e2e-contrast.md) | [engine_comparison](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/engine_comparison) | EmbodiInfer HTTP/WirelessComm 或 SGLang HTTP |
-| [零食递送](demos/xlerobot-snack-delivery.md) | [xlerobot_snack_delivery](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/xlerobot_snack_delivery) | 沿路线移动、VLA 抓取、操作员确认交接 |
-| [MicroDuck 导航](demos/microduck-vln.md) | [microduck_vln](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/microduck_vln) | MuJoCo 与 ActiveVLN，本地 GPU 或 Slurm |
+| **VLA** | [SO-101 抓取](demos/so101-grasping.md) | [单臂 + π0.5 / HTTP](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/so101_grasping.md) |
+| **VLN** | [MicroDuck 导航](demos/microduck-vln.md) | [MuJoCo + ActiveVLN](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/microduck_vln/README.md) |
+| **Agent** | [XLeRobot 零食递送](demos/xlerobot-snack-delivery.md) | [录制路线、RPent/Astra 与 VLA 抓取](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/xlerobot_snack_delivery/README.md) |
+
+[Recipe 索引](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/README.md)
+还提供[多臂共享推理](demos/multi-robot-serving.md)、[引擎与传输变体](demos/engine-e2e-contrast.md)
+及纯软件示例。其他设备与仿真器的接入情况见[支持矩阵](support-matrix.md)。
+
+部署 YAML 定义设备与服务；示例清单选择任务、执行限制和输出目录。
 
 ## 检查配置
 
@@ -16,17 +22,23 @@
 
 ```bash
 uv sync --frozen
-bash examples/run.sh examples/multi_robot_serving/example.yaml validate
-bash examples/run.sh examples/multi_robot_serving/example.yaml plan
+uv run --frozen embodirun example init so101
+CONFIG=examples/local/so101/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
 ```
 
 `validate` 在本地检查字段和部署引用；`plan` 打印一次运行
 将要执行的命令。
 
-将选定的 YAML 及其引用的部署复制到同一目录下的 `*.local.yaml`。
-更新 `parameters.deployment` 中的引用，然后填写
-设备路径、SSH 主机、标定、检查点路径和任务设置。
-本地 YAML/JSON 文件会被 Git 忽略。
+`init` 一次生成独立的本地目录，示例配置与引用的部署文件已联动，
+且不会覆盖已有目录。其他模板可选 `xlerobot`、`microduck`、
+`embodiinfer-http`、`embodiinfer-wireless` 和 `sglang-http`。
+随后填写设备路径、SSH 主机、标定、检查点路径和任务设置。
+`examples/local/` 会被 Git 忽略。SO-101 和 XLeRobot 的 `check`
+只列出本地缺失前提，不打开设备；它不能证明机器人、相机、模型或停止反馈已就绪。
+MicroDuck 软件模式的 `check` 读取配置与已安装包元数据；默认仿真模式的 `check`
+（不带 `--json`）还会在目标 Linux 主机执行 GPU/EGL 场景预检。
 
 示例配置中的相对路径以 YAML 所在目录为基准；部署配置中的设备和模型路径则以对应节点为准。
 完整字段和命令见 [examples/README.md](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/README.md)。
@@ -36,37 +48,47 @@ bash examples/run.sh examples/multi_robot_serving/example.yaml plan
 按照所选示例的标定与环境说明操作后：
 
 ```bash
-CONFIG=examples/multi_robot_serving/example.local.yaml
-bash examples/run.sh "$CONFIG" setup
-bash examples/run.sh "$CONFIG" up --allow-hardware
-bash examples/run.sh "$CONFIG" run --allow-hardware
-bash examples/run.sh "$CONFIG" down
+CONFIG=examples/local/so101/example.local.yaml
+uv run --frozen embodirun example "$CONFIG" setup
+uv run --frozen embodirun example "$CONFIG" check
+uv run --frozen embodirun example "$CONFIG" up --allow-hardware
+uv run --frozen embodirun example "$CONFIG" run --allow-hardware
+uv run --frozen embodirun example "$CONFIG" down
 ```
 
 SO-101 服务可连续运行多个任务，每次任务之间手动复位场景，全部完成后用 `down` 停止服务。
-XLeRobot 的 `up` 在前台运行；另开终端执行任务，结束后回到服务终端按 Ctrl-C 停止。
+XLeRobot 的 `up` 在前台运行；另开终端执行任务，结束后使用 `down` 或在服务终端按 Ctrl-C 停止。
 启用运动前，确保操作员在场并验证急停。
 
 无需硬件的任务预演：
 
 ```bash
-bash examples/run.sh examples/xlerobot_snack_delivery/example.yaml dry-run
+uv run --frozen embodirun example examples/local/xlerobot/example.local.yaml dry-run
 ```
 
 ## 在仿真中运行
 
-按照 [MicroDuck 环境搭建](microduck-vln.md) 安装其可选环境
-并准备场景与检查点。填写 `example.local.yaml`，然后运行：
+先在仓库根目录走软件流程：
 
 ```bash
-CONFIG=examples/microduck_vln/example.local.yaml
-bash examples/run.sh "$CONFIG" check
-bash examples/run.sh "$CONFIG" run
+uv sync --frozen --python 3.12
+uv run --frozen embodirun example init microduck
+CONFIG="$PWD/examples/local/microduck/example.local.yaml"
+uv run --frozen embodirun example "$CONFIG" validate
+uv run --frozen embodirun example "$CONFIG" plan
+uv run --frozen embodirun example "$CONFIG" setup --mode software
+RECIPE_ENV="$PWD/.venv-microduck"
+"$RECIPE_ENV/bin/embodirun" example "$CONFIG" check --mode software --json
 ```
 
-`check` 校验资源以及 GPU/渲染环境。YAML 选择
-本地或 Slurm 执行、episode 数、随机种子、动作限制和视频帧率。
-运行退出时，推理子进程会停止。
+软件模式的 `check` 可带或不带 `--json`，外部资源、CUDA/EGL、依赖导入和模型执行仍未验证，
+不会启动场景或推理进程。`plan` 只预览仿真命令；MicroDuck 没有 fixture `dry-run`。
+两种 setup 模式及 Docker target 共用 Recipe 锁。完整运行前，按 [MicroDuck 环境搭建](microduck-vln.md)
+提供外部场景、适配 checkpoint、episode、资源清单及固定推理来源，再在 Linux 上执行
+`setup --mode simulation`。仿真模式的 `check --json` 读取已安装包元数据和本地路径；
+仿真模式的 `check`（不带 `--json`）继续执行资源/GPU/渲染预检。setup/check 默认是 `simulation`。
+场景预检不运行学习模型推理。YAML 选择本地或 Slurm 执行、episode 数、随机种子、动作限制和视频帧率。
+运行退出时，推理子进程会停止；另一终端沿用同一 checkout/配置，通过 `down` 请求关闭该前台 launcher。
 
 ## 查看日志与结果
 
@@ -76,3 +98,6 @@ SO-101 为每个运行时保存命令日志；MicroDuck 和 XLeRobot 的 `result
 
 使用 [推理传输基准测试](inference-transport.md) 进行重复的
 延迟测量。
+[Runtime 成本流程](runtime-value.md)另提供 Agent 已执行的三组环境准备后软件启停、
+每种入口一次单独的端口占用故障/恢复报告，以及采集空模板。
+完整同模型原生 LeRobot 对照、六类部署成本与人类诊断时间仍未测。

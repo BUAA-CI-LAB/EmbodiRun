@@ -1,0 +1,1 @@
+measurement_id,comparison_scope,variant,scenario,trial,phase,environment_id,cache_state,started_at_utc,finished_at_utc,elapsed_s,exit_code,status,readiness_evidence,command_log,stdout_log,stderr_log,service_log,cpu_pct_mean,ram_peak_mib,gpu_util_pct_mean,vram_peak_mib,notes

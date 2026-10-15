@@ -1,10 +1,10 @@
 import copy
 
 import pytest
-from tests.xlerobot_owner.test_hardware import _robot
-from tests.xlerobot_owner.test_server import HEADERS, station
 
 from embodirun_xlerobot_owner.motor_diagnostics import read_sts3215_present_block
+from tests.xlerobot_owner.test_hardware import _robot
+from tests.xlerobot_owner.test_server import HEADERS, station
 
 
 def word(value):

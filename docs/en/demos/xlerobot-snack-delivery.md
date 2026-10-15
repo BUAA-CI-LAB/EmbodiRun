@@ -1,8 +1,12 @@
-# Fetching a snack with XLeRobot
+# Agent: snack delivery with XLeRobot
 
-“Bring me a bag of chips.” An agent turns that request into a trip to the table,
-a VLA-guided grasp, and a return journey with the snack. EmbodiRun connects the
-task stages to the robot's observations and motion.
+**“Bring me a bag of chips.”** XLeRobot drives to the table, grasps the snack,
+and returns for handover. RPent/Astra reviews the scene and guides task choices;
+a VLA policy generates grasp actions. EmbodiRun provides observations and
+coordinates base and arm execution, with operator confirmation at arrival,
+grasp, and handover.
+
+## Watch the task
 
 <video controls muted playsinline preload="metadata" width="720"
        poster="https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/xlerobot_snack_delivery/xlerobot_snack_delivery_overview.jpg">
@@ -10,47 +14,81 @@ task stages to the robot's observations and motion.
   Your browser does not support the video tag.
 </video>
 
-*67-second edit showing the request, approach, grasp, and return.*
+*67 seconds: request, approach, grasp, and return.*
 
-## From a request to a grasp
+## Prepare routes and recordings
 
-The agent coordinates the task; the VLA policy handles the grasp. Both use
-EmbodiRun to interact with the robot:
+Start by recording outbound and return routes through the hardware owner's
+teleoperation interface. Resample and export them as bounded action chunks at
+the configured playback rate. The [route guide](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/xlerobot_snack_delivery/guide.md#route-input-choices)
+covers the recording formats and export commands.
 
-1. **Reach the table.** The agent selects the route and requests base motion.
-2. **Pick up the snack.** Camera observations feed the VLA service; EmbodiRun
-   validates and executes bounded action segments through the robot owner.
-3. **Bring it back.** The task switches from grasping to the return route while
-   the gripper holds the bag.
+For camera and state recording, configure a Control recorder and use the
+[recording API](../agent-workflow.md) to start and stop a session and retrieve
+its artifacts. Model training and dataset preparation use your existing tools;
+the delivery task requires a π0.5 checkpoint compatible with the two arms.
 
-The video pairs the physical scene with task-stage and route overlays, making
-the transition between base motion and manipulation easy to follow.
+## Deploy the services
 
-## Build the task
+The robot host runs one hardware owner and two Control services, scoped to the
+base and arms. The owner holds the motor and camera connections. Control exposes
+observations and bounded execution to the task runner.
 
-The [snack-delivery example](../xlerobot-snack-delivery.md) connects recorded
-routes, an optional RPent/Astra observation review, a π0.5/VLA service, and
-operator-confirmed handover. EmbodiInfer serves the model; EmbodiRun manages
-observations, action validation, execution, and feedback. The XLeRobot owner
-holds the motor and camera connections.
+Run the VLA service on a GPU host and set its endpoint in the deployment
+configuration. Configure the RPent/Astra factory in the task JSON, then supply
+the recorded routes and calibrated grasp and handover settings.
 
-Start with the example's setup guide to configure the owner and inference
-service, record routes, and calibrate the grasp and handover on your robot.
-Validate the emergency stop and run under operator supervision.
+```mermaid
+flowchart LR
+  agent["Task runner<br/>RPent / Astra"]
+  base["Base Control"]
+  arms["Arm Control"]
+  owner["Hardware owner<br/>cameras, state, motors"]
+  robot["XLeRobot<br/>mobile base + SO-101 arms"]
+  infer["GPU host<br/>VLA service"]
+  recordings["Session recordings"]
 
-The [example package](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/xlerobot_snack_delivery)
-includes a unified manifest, task configuration, and fixture routes. After
-`uv sync --frozen`, rehearse the task without hardware:
+  agent -- "route execution" --> base
+  agent -- "observe / propose / execute" --> arms
+  arms -- "observation" --> infer
+  infer -- "action proposal" --> arms
+  base -- "bounded motion" --> owner
+  arms -- "validated actions" --> owner
+  owner <--> robot
+  owner -- "camera and state" --> base
+  owner -- "camera and state" --> arms
+  arms --> recordings
+```
+
+The [setup guide](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/xlerobot_snack_delivery/guide.md)
+covers owner installation, calibration, route preparation, model configuration,
+and the agent factory.
+
+## Execute the delivery
+
+1. **Approach the table.** Select and execute the recorded outbound route.
+2. **Review the scene and grasp.** Use RPent/Astra review and VLA proposals to
+   choose bounded grasp actions. Control validates and executes each segment.
+3. **Return and hand over.** Follow the return route, move to the calibrated
+   handover pose, and wait for operator confirmation.
+
+Task output includes delivery events, review decisions, and VLA proposals,
+alongside any configured session recordings.
+
+## Try the Recipe
+
+After `uv sync --frozen`, rehearse the task with fixture routes and feedback:
 
 ```bash
 bash examples/run.sh examples/xlerobot_snack_delivery/example.yaml dry-run
 ```
 
-For a calibrated deployment, follow the package README to create
-`example.local.yaml`, then use `up --allow-hardware` and, in a second terminal,
-`run --allow-hardware`. Delivery events, decisions, and proposals are saved under
-`result/`. See [Reproduce the demos](../examples.md) for the shared command format.
+The rehearsal runs the task sequence without starting robot, model, or Astra
+services. For a physical run, follow the
+[complete delivery Recipe](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/xlerobot_snack_delivery/README.md)
+to create `example.local.yaml`. Start `up --allow-hardware` in one terminal
+and `run --allow-hardware` in another.
 
-- [Example and setup](../xlerobot-snack-delivery.md)
 - [Agent execution workflow](../agent-workflow.md)
+- [XLeRobot integration](../xlerobot-snack-delivery.md)
 - [Hardware safety](../safety.md)

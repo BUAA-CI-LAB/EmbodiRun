@@ -26,6 +26,7 @@ class LiberoConfig:
     width: int = 256
     height: int = 256
     viewer: bool = False
+    image_encoding: str = "jpeg"
 
     @classmethod
     def from_mapping(
@@ -41,6 +42,7 @@ class LiberoConfig:
             "width",
             "height",
             "viewer",
+            "image_encoding",
         }
         unknown = sorted(set(options) - allowed)
         if unknown:
@@ -53,6 +55,7 @@ class LiberoConfig:
             width=options.get("width", 256),
             height=options.get("height", 256),
             viewer=options.get("viewer", False),
+            image_encoding=options.get("image_encoding", "jpeg"),
         )
 
     def __post_init__(self) -> None:
@@ -70,6 +73,8 @@ class LiberoConfig:
                 raise ValueError(f"LIBERO {name} must be a positive integer")
         if not isinstance(self.viewer, bool):
             raise TypeError("LIBERO viewer must be a boolean")
+        if self.image_encoding not in {"jpeg", "png"}:
+            raise ValueError("LIBERO image_encoding must be 'jpeg' or 'png'")
 
     @property
     def task(self) -> str:

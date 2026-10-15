@@ -5,11 +5,10 @@ import pytest
 
 pytest.importorskip("PIL")
 
-from tests.xlerobot_owner.test_dualsense import FakeRobot, sample
-
 from embodirun_xlerobot_owner.dualsense_drive import ZERO, BaseSession
 from embodirun_xlerobot_owner.dualsense_recording import DemoRecording, input_record
 from embodirun_xlerobot_owner.robot import DemoRobot
+from tests.xlerobot_owner.test_dualsense import FakeRobot, sample
 
 
 class Observer:

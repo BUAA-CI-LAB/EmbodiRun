@@ -146,6 +146,50 @@ def test_control_runtime_plays_action_chunk_at_control_rate() -> None:
     assert clock.sleeps == [0.05, 0.05]
 
 
+def test_control_runtime_adds_inference_result_delay_before_actions() -> None:
+    robot = FakeRobot()
+    client = FakeClient()
+    clock = FakeClock()
+    runtime = ControlRuntime(
+        robot,
+        client,
+        instruction="pick up the block",
+        mapper=ThreeActionMapper(),
+        chunk_steps=3,
+        control_hz=50.0,
+        inference_delay_s=0.2,
+        monotonic=clock.monotonic,
+        sleep=clock.sleep,
+    )
+
+    runtime.step((CameraFrame("observation.images.front", "image/jpeg", b"jpeg"),))
+
+    assert [action.values["index"] for action in robot.actions] == [0, 1, 2]
+    assert clock.sleeps == pytest.approx([0.2, 0.02, 0.02])
+
+
+def test_control_runtime_zero_control_hz_disables_software_pacing() -> None:
+    robot = FakeRobot()
+    client = FakeClient()
+    clock = FakeClock()
+    runtime = ControlRuntime(
+        robot,
+        client,
+        instruction="pick up the block",
+        mapper=ThreeActionMapper(),
+        chunk_steps=3,
+        control_hz=0.0,
+        monotonic=clock.monotonic,
+        sleep=clock.sleep,
+    )
+
+    runtime.step((CameraFrame("observation.images.front", "image/jpeg", b"jpeg"),))
+
+    assert [action.values["index"] for action in robot.actions] == [0, 1, 2]
+    assert clock.sleeps == []
+    assert runtime.action_period_s == 0.0
+
+
 def test_control_runtime_executes_only_requested_chunk_steps() -> None:
     robot = FakeRobot()
     client = FakeClient()
