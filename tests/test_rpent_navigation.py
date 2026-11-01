@@ -159,3 +159,46 @@ def test_tool_budget_aborts_without_false_stop_success(tmp_path):
     result = toolkit.execute_tool("navigate", {"instruction": "door"})
     assert result.is_finish and result.result["status"] == "stuck"
     assert backend.stops == [False] and backend.executions == 0
+
+
+def test_go2_termination_cancels_worker_before_closing_resources():
+    import signal
+
+    from agents.rpent.navigation.go2 import cancellation_scope
+
+    events = []
+
+    class Toolkit:
+        def cancel_active_and_wait(self):
+            events.append("cancel")
+
+        def close(self):
+            events.append("close")
+
+    previous = signal.getsignal(signal.SIGTERM)
+    with pytest.raises(SystemExit) as error, cancellation_scope(Toolkit()):
+        signal.getsignal(signal.SIGTERM)(signal.SIGTERM, None)
+    assert error.value.code == 128 + signal.SIGTERM
+    assert events[0] == "cancel" and events[-1] == "close"
+    assert signal.getsignal(signal.SIGTERM) is previous
+
+
+def test_go2_exception_cleans_up_and_restores_signal_handler():
+    import signal
+
+    from agents.rpent.navigation.go2 import cancellation_scope
+
+    events = []
+
+    class Toolkit:
+        def cancel_active_and_wait(self):
+            events.append("cancel")
+
+        def close(self):
+            events.append("close")
+
+    previous = signal.getsignal(signal.SIGINT)
+    with pytest.raises(RuntimeError, match="planner error"), cancellation_scope(Toolkit()):
+        raise RuntimeError("planner error")
+    assert events == ["cancel", "close"]
+    assert signal.getsignal(signal.SIGINT) is previous

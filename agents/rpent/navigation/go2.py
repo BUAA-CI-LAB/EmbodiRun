@@ -6,6 +6,8 @@ import argparse
 import io
 import json
 import os
+import signal
+from contextlib import contextmanager
 from dataclasses import replace
 from pathlib import Path
 
@@ -17,6 +19,34 @@ from embodirun.robots.unitree.go2.camera import Go2CameraClient
 from embodirun.robots.unitree.go2.client import Go2ControlClient
 
 from .skill import Feedback, NavigationSkill
+
+
+@contextmanager
+def cancellation_scope(toolkit):
+    """Cancel at a complete-chunk boundary before releasing planner resources."""
+    previous = {sig: signal.getsignal(sig) for sig in (signal.SIGINT, signal.SIGTERM)}
+
+    def interrupt(signum, _frame):
+        # The RPent tool runs in another thread. Interrupting only the main
+        # thread would otherwise leave that worker executing its remaining chunks.
+        for sig in previous:
+            signal.signal(sig, signal.SIG_IGN)
+        toolkit.cancel_active_and_wait()
+        raise SystemExit(128 + signum)
+
+    try:
+        for sig in previous:
+            signal.signal(sig, interrupt)
+        yield
+    finally:
+        try:
+            toolkit.cancel_active_and_wait()
+        finally:
+            try:
+                toolkit.close()
+            finally:
+                for sig, handler in previous.items():
+                    signal.signal(sig, handler)
 
 
 class Go2Backend:
@@ -105,7 +135,7 @@ def main():
         instruction += (
             "\nMotion is disabled. Observe and save a proposed plan, then finish failure (unexecuted). Do not navigate."
         )
-    try:
+    with cancellation_scope(toolkit):
         result = solve(toolkit, instruction, args.output, model=args.planner_model, timeout_s=args.max_runtime_s)
         summary = {
             "finish": toolkit.finish_result,
@@ -118,8 +148,6 @@ def main():
         (args.output / "result.json").write_text(json.dumps(summary, indent=2) + "\n")
         print(json.dumps(summary, ensure_ascii=False))
         return 1 if result.error else 0
-    finally:
-        toolkit.close()
 
 
 if __name__ == "__main__":
