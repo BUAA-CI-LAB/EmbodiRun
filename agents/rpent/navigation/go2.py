@@ -63,7 +63,7 @@ class Go2Backend:
         observation = self.reader.capture_idle("rpent-inspect")
         buffer = io.BytesIO()
         Image.open(io.BytesIO(observation.latest_rgb.data)).convert("RGB").save(buffer, format="PNG")
-        return Feedback(png=buffer.getvalue())
+        return Feedback(image=buffer.getvalue())
 
     def run(self, policy, instruction, episode_id, max_chunks, *, terminal_stop):
         if not self.execute:
@@ -97,6 +97,7 @@ def main():
     parser.add_argument("--execute", action="store_true", help="enable motion on an already armed Go2 owner")
     parser.add_argument("--max-tool-calls", type=int, default=80)
     parser.add_argument("--max-runtime-s", type=int, default=1800)
+    parser.add_argument("--profile", choices=("event", "legacy"), default="event")
     args = parser.parse_args()
     config = NavigationConfig.load(args.config)
     config.require_endpoints()
@@ -129,11 +130,11 @@ def main():
     from .planner import solve
     from .toolkit import NavigationToolkit
 
-    toolkit = NavigationToolkit(skill, args.output, max_tool_calls=args.max_tool_calls)
+    toolkit = NavigationToolkit(skill, args.output, max_tool_calls=args.max_tool_calls, profile=args.profile)
     instruction = args.instruction
     if not args.execute:
         instruction += (
-            "\nMotion is disabled. Observe and save a proposed plan, then finish failure (unexecuted). Do not navigate."
+            "\nMotion is disabled. Observe, then finish failure (unexecuted) with a proposed plan. Do not navigate."
         )
     with cancellation_scope(toolkit):
         result = solve(toolkit, instruction, args.output, model=args.planner_model, timeout_s=args.max_runtime_s)
@@ -144,6 +145,7 @@ def main():
             "model_calls": skill.model_calls,
             "subgoals": skill.subgoals,
             "motion_enabled": args.execute,
+            "profile": args.profile,
         }
         (args.output / "result.json").write_text(json.dumps(summary, indent=2) + "\n")
         print(json.dumps(summary, ensure_ascii=False))

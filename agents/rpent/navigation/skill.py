@@ -11,12 +11,15 @@ from typing import Protocol
 from embodirun.application.navigation.chunk_session import ChunkPolicy
 from embodirun.robots.mobile_base.request import NavigationRequest
 
+from .events import EventMonitor, EventPolicy
+
 
 @dataclass(frozen=True)
 class Feedback:
     """Agent-visible evidence. Simulator metrics deliberately have no field here."""
 
-    png: bytes
+    image: bytes
+    mime_type: str = "image/png"
     reason: str = "observation"
     actions: tuple[int, ...] = ()
     collisions: int | None = None
@@ -78,6 +81,32 @@ class NavigationSkill:
         self.finished = self.failed = False
         self._local_stopped = False
         self.feedback: Feedback | None = None
+
+    def navigate_until_event(self, instruction: str, *, restart: bool = False, event_policy=None) -> Feedback:
+        """Keep each policy chunk closed-loop locally; return only at an event or checkpoint."""
+        policy = event_policy or EventPolicy()
+        actions = []
+        collisions = None
+        try:
+            monitor = EventMonitor(self.backend.observe().image, policy)
+            for index in range(policy.max_chunks):
+                feedback = self.navigate(instruction, max_chunks=1, restart=restart and index == 0)
+                actions.extend(feedback.actions)
+                if feedback.collisions is not None:
+                    collisions = (collisions or 0) + feedback.collisions
+                if feedback.reason != "chunk_limit" or feedback.exhausted:
+                    break
+                event = monitor.update(feedback)
+                if event:
+                    feedback = replace(feedback, reason=event)
+                    break
+            else:
+                feedback = replace(feedback, reason="checkpoint")
+            self.feedback = replace(feedback, actions=tuple(actions), collisions=collisions)
+            return self.feedback
+        except BaseException:
+            self.failed = True
+            raise
 
     def observe(self) -> Feedback:
         self.feedback = self.backend.observe()

@@ -8,9 +8,20 @@ Habitat uses the same policy and skill lifecycle.
 | Tool | Behavior |
 | --- | --- |
 | `observe` | Fresh RGB and consumed execution budget |
-| `navigate` | 1–8 complete ActiveVLN chunks; returns RGB and execution feedback |
-| `update_plan` | Episode-local completed goals, remaining goals and observations |
-| `finish` | End the task; the planner's success claim remains unverified |
+| `navigate` | Run the local visual loop until an event or bounded checkpoint; optionally save the plan in the same call |
+| `finish` | Optionally save the plan and end the task; the success claim remains unverified |
+
+The default `event` profile returns on local STOP, repeated collisions, visually
+unchanged or repeating views, exhausted budget, or a checkpoint after at most
+32 chunks. ActiveVLN still receives a fresh full-resolution image before every
+chunk. Visual events are watchdog signals, not verified localization or semantic
+completion. The Go2 backend has no collision telemetry, so it uses visual events.
+Planner feedback alone is encoded as JPEG quality 80 at the original resolution;
+the remote executor compresses it before sending it over SSH. Plan updates are
+optional `plan={completed,remaining,observations}` arguments to `navigate`/`finish`.
+The first frame is attached directly to the task, avoiding an initial `observe`
+tool round. Its acquisition is timed separately and included in episode time.
+`--profile legacy` retains the four-tool, 1–8 chunk interface for comparison.
 
 Repeating the same subgoal preserves model history. Changing it, explicitly
 restarting, or continuing after a local STOP opens a new ActiveVLN session.
@@ -30,7 +41,7 @@ codex login status
 
 RPent is pinned to `7f403130`; the Codex Python SDK is pinned to `0.163.0`.
 The integration uses RPent's `CodexPlanner`, `Toolkit`, multimodal MCP transport
-and episode-local memory. It exposes the four navigation tools, with shell,
+and episode-local memory. It exposes only the selected navigation tools, with shell,
 web search and generic file tools disabled. Existing Codex credentials stay on
 the planner host. The validated CLI version is `0.164.0`.
 
@@ -49,5 +60,6 @@ scoped lease release. Endpoint/token environment variables and timing bounds
 come from `NavigationConfig`. This new planner layer has not been tested on a
 physical Go2. Its simulation comparison is documented in
 [`benchmarks/rpent-navigation`](../../../benchmarks/rpent-navigation/README.md).
+The optimized profile has a separate [comparison](../../../benchmarks/rpent-navigation/optimization.md).
 
 中文说明见 [RPent 导航集成](../../../docs/zh/rpent-navigation.md)。

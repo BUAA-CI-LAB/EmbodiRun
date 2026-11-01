@@ -91,7 +91,7 @@ class HabitatBackend:
         # Allowlist, never forward the worker dictionary (which contains goals,
         # geodesics and absolute positions) into an agent tool response.
         return Feedback(
-            png=base64.b64decode(self.private["png"]),
+            image=base64.b64decode(self.private["png"]),
             reason=reason,
             actions=tuple(step["action"] for step in trajectory),
             collisions=sum(bool(step["collision"]) for step in trajectory),

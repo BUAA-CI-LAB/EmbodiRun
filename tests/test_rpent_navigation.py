@@ -132,7 +132,7 @@ def test_simulator_metrics_are_not_agent_observations():
 
     backend = module.HabitatBackend(PrivateSimulator(), {}, "unused")
     public = backend.observe()
-    assert public.png == b"image" and public.primitive_steps == 4
+    assert public.image == b"image" and public.primitive_steps == 4
     for key in ("position", "goals", "distance_to_goal_m", "shortest_path_m", "success"):
         assert not hasattr(public, key)
 
@@ -142,7 +142,7 @@ def test_toolkit_records_finish_without_claiming_measured_success(tmp_path):
     from agents.rpent.navigation.toolkit import NavigationToolkit
 
     skill, backend, _ = make_skill()
-    toolkit = NavigationToolkit(skill, tmp_path)
+    toolkit = NavigationToolkit(skill, tmp_path, profile="legacy")
     assert {spec["name"] for spec in toolkit.get_tools_spec()} == {"observe", "navigate", "update_plan", "finish"}
     result = toolkit.execute_tool("finish", {"status": "success", "summary": "door visible"})
     assert result.is_finish and result.result["task_success"] == "unverified"
@@ -154,7 +154,7 @@ def test_tool_budget_aborts_without_false_stop_success(tmp_path):
     from agents.rpent.navigation.toolkit import NavigationToolkit
 
     skill, backend, _ = make_skill()
-    toolkit = NavigationToolkit(skill, tmp_path, max_tool_calls=1)
+    toolkit = NavigationToolkit(skill, tmp_path, max_tool_calls=1, profile="legacy")
     toolkit.execute_tool("observe", {})
     result = toolkit.execute_tool("navigate", {"instruction": "door"})
     assert result.is_finish and result.result["status"] == "stuck"

@@ -13,13 +13,15 @@ import tomllib
 from rpent.dashboard.events import NullDashboardEventSink
 from rpent.planner.codex import CodexPlanner
 
-from .toolkit import SYSTEM_PROMPT, NavigationToolkit
+from .toolkit import NavigationToolkit
 
 
 class NavigationPlanner(CodexPlanner):
     """Pin the RPent adapter contract and exclude local evaluator file access."""
 
-    def __init__(self, output: Path, *, model: str, timeout_s: int = 3600):
+    def __init__(self, output: Path, *, model: str, timeout_s: int = 3600, allowed_tools=(), initial_image=None):
+        self.allowed_tools = allowed_tools
+        self.initial_image = initial_image
         workspace = output / "workspace"
         workspace.mkdir(parents=True, exist_ok=True)
         super().__init__(
@@ -33,6 +35,13 @@ class NavigationPlanner(CodexPlanner):
         )
         self._thread_options.update(sandbox=openai_codex.Sandbox.read_only, ephemeral=True)
         self._turn_options["sandbox"] = openai_codex.Sandbox.read_only
+
+    def _run_session(self, prompt, *args, **kwargs):
+        # RPent's session driver passes this input through to the pinned SDK's
+        # thread.turn(), which accepts text and local-image input items.
+        if self.initial_image is not None:
+            prompt = [openai_codex.TextInput(prompt), openai_codex.LocalImageInput(str(self.initial_image))]
+        return super()._run_session(prompt, *args, **kwargs)
 
     def _build_config(self, mcp_url):
         config = super()._build_config(mcp_url)
@@ -55,7 +64,10 @@ class NavigationPlanner(CodexPlanner):
             )
         ]
         overrides += ['web_search="disabled"']
-        allowed_tools = ("observe", "navigate", "update_plan", "finish")
+        # The episode watchdog cancels motion at a chunk boundary. A shorter
+        # MCP timeout must not detach a still-running physical navigation tool.
+        overrides.append(f"mcp_servers.rpent.tool_timeout_sec={self._timeout_s + 30}")
+        allowed_tools = self.allowed_tools
         overrides.append(f"mcp_servers.rpent.enabled_tools={json.dumps(allowed_tools)}")
         for name in allowed_tools:
             overrides.append(f'mcp_servers.rpent.tools.{name}.approval_mode="approve"')
@@ -75,7 +87,17 @@ class NavigationPlanner(CodexPlanner):
 
 
 def solve(toolkit: NavigationToolkit, instruction: str, output: Path, *, model: str, timeout_s: int = 3600):
-    planner = NavigationPlanner(output, model=model, timeout_s=timeout_s)
+    initial_image = None
+    if toolkit.profile == "event":
+        initial_image, feedback = toolkit.initial_observation()
+        instruction += "\nInitial public feedback: " + json.dumps(feedback, ensure_ascii=False)
+    planner = NavigationPlanner(
+        output,
+        model=model,
+        timeout_s=timeout_s,
+        allowed_tools=tuple(spec["name"] for spec in toolkit.get_tools_spec()),
+        initial_image=initial_image,
+    )
     return planner.solve(
-        system_prompt=SYSTEM_PROMPT, user_message=instruction, toolkit=toolkit, max_turns=toolkit.max_tool_calls
+        system_prompt=toolkit.system_prompt, user_message=instruction, toolkit=toolkit, max_turns=toolkit.max_tool_calls
     )

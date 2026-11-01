@@ -11,9 +11,12 @@ import base64
 import hashlib
 import json
 import sys
+import time
 from dataclasses import asdict
 from pathlib import Path
 
+from agents.rpent.navigation.events import EventPolicy
+from agents.rpent.navigation.images import planner_image
 from agents.rpent.navigation.skill import NavigationSkill
 from simulator import HabitatBackend, SimulatorProcess
 
@@ -36,6 +39,7 @@ def main():
     )
     skill = backend = None
     timings = []
+    profile = "legacy"
     root = Path(__file__).resolve().parents[2]
     sources = [*Path(__file__).parent.glob("*.py"), *(root / "agents/rpent/navigation").glob("*.py")]
     fingerprints = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}
@@ -43,12 +47,17 @@ def main():
         for line in sys.stdin:
             command = json.loads(line)
             op = command.pop("op")
+            started = time.perf_counter()
+            transport = {}
             try:
                 if op == "close":
                     break
                 if op == "reset":
                     if skill is not None:
                         skill.close()
+                    profile = command.get("profile", "legacy")
+                    if profile not in ("event", "legacy"):
+                        raise ValueError("unsupported navigation profile")
                     backend = HabitatBackend(simulator, command["episode"], command["scenes"])
                     timings = []
                     skill = NavigationSkill(
@@ -61,10 +70,22 @@ def main():
                     result = {"ready": True, "source_sha256": fingerprints}
                 elif skill is None:
                     raise RuntimeError("reset an episode before using it")
-                elif op in ("observe", "navigate"):
-                    feedback = skill.observe() if op == "observe" else skill.navigate(**command)
+                elif op in ("observe", "navigate", "navigate_event"):
+                    if op == "navigate_event":
+                        command["event_policy"] = EventPolicy(**command["event_policy"])
+                        feedback = skill.navigate_until_event(**command)
+                    else:
+                        feedback = skill.observe() if op == "observe" else skill.navigate(**command)
+                    transport["source_image_bytes"] = len(feedback.image)
+                    encoding_started = time.perf_counter()
+                    if profile == "event":
+                        feedback = planner_image(feedback)
+                    transport.update(
+                        image_encode_ms=(time.perf_counter() - encoding_started) * 1000,
+                        image_bytes=len(feedback.image),
+                    )
                     result = asdict(feedback)
-                    result["png"] = base64.b64encode(feedback.png).decode()
+                    result["image"] = base64.b64encode(feedback.image).decode()
                 elif op == "finish":
                     skill.finish(**command)
                     result = {"finished": True}
@@ -77,6 +98,8 @@ def main():
                     raise ValueError("unknown executor command")
                 if skill is not None:
                     result.update(model_calls=skill.model_calls, subgoals=skill.subgoals, finished=skill.finished)
+                transport["executor_ms"] = (time.perf_counter() - started) * 1000
+                result["transport"] = transport
                 print(json.dumps(result, allow_nan=False), flush=True)
             except Exception as error:
                 print(json.dumps({"error": f"{type(error).__name__}: {error}"}), flush=True)

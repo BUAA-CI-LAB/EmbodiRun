@@ -3,23 +3,34 @@
 from __future__ import annotations
 
 import base64
+import time
+from dataclasses import asdict
 
 from agents.rpent.navigation.skill import Feedback
 
 
 class RemoteSkill:
-    def __init__(self, executor, episode, scenes, *, max_runtime_s, expected_sources):
+    def __init__(self, executor, episode, scenes, *, max_runtime_s, expected_sources, profile="event"):
         self.executor = executor
         self.check_cancelled = lambda: None
         self.model_calls = self.subgoals = 0
         self.finished = False
         self.trajectory = self.timings = []
-        reset = self._request("reset", episode=episode, scenes=scenes, max_runtime_s=max_runtime_s)
+        self.transport_timings = []
+        reset = self._request("reset", episode=episode, scenes=scenes, max_runtime_s=max_runtime_s, profile=profile)
         if reset.get("source_sha256") != expected_sources:
             raise ValueError("remote execution source differs from the evaluator's frozen protocol")
 
     def _request(self, op, **values):
+        started = time.perf_counter()
         response = self.executor.request({"op": op, **values})
+        self.transport_timings.append(
+            {
+                "op": op,
+                "round_trip_ms": (time.perf_counter() - started) * 1000,
+                **response.get("transport", {}),
+            }
+        )
         if "error" in response:
             raise RuntimeError(response["error"])
         self.model_calls = response.get("model_calls", self.model_calls)
@@ -30,7 +41,8 @@ class RemoteSkill:
     @staticmethod
     def _feedback(response):
         return Feedback(
-            png=base64.b64decode(response["png"]),
+            image=base64.b64decode(response["image"]),
+            mime_type=response["mime_type"],
             reason=response["reason"],
             actions=tuple(response["actions"]),
             collisions=response["collisions"],
@@ -46,6 +58,17 @@ class RemoteSkill:
         return self._feedback(
             self._request(
                 "navigate", instruction=instruction, max_chunks=max_chunks, restart=restart, terminal_stop=terminal_stop
+            )
+        )
+
+    def navigate_until_event(self, instruction, *, restart=False, event_policy):
+        self.check_cancelled()
+        return self._feedback(
+            self._request(
+                "navigate_event",
+                instruction=instruction,
+                restart=restart,
+                event_policy=asdict(event_policy),
             )
         )
 

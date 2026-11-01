@@ -7,8 +7,11 @@ import hashlib
 import json
 import os
 import time
+from dataclasses import asdict
 from pathlib import Path
 
+from agents.rpent.navigation.events import EventPolicy
+from agents.rpent.navigation.images import JPEG_QUALITY
 from agents.rpent.navigation.skill import NavigationSkill
 from simulator import HabitatBackend, SimulatorProcess
 
@@ -78,7 +81,10 @@ def main():
     parser.add_argument("--planner-model", required=True)
     parser.add_argument("--planner-timeout-s", type=int, default=3600)
     parser.add_argument("--max-tool-calls", type=int, default=80)
+    parser.add_argument("--profile", choices=("event", "legacy"), default="event")
+    parser.add_argument("--event-max-chunks", type=int, default=32)
     args = parser.parse_args()
+    event_policy = EventPolicy(max_chunks=args.event_max_chunks)
     if args.count < 1 or args.offset < 0 or len(set(args.arms)) != len(args.arms):
         parser.error("invalid selection or duplicate arm")
     episodes = json.loads(args.manifest.read_text())["episodes"][args.offset : args.offset + args.count]
@@ -106,6 +112,12 @@ def main():
         "local_stop": "counts as one primitive step; only baseline local STOP terminates the episode",
         "planner_model": args.planner_model,
         "planner_reasoning": "low",
+        "profile": args.profile,
+        "initial_observation_attached": args.profile == "event",
+        "event_policy": asdict(event_policy) if args.profile == "event" else None,
+        "planner_images": {"format": "jpeg", "quality": JPEG_QUALITY, "resize": False}
+        if args.profile == "event"
+        else {"format": "png", "resize": False},
         "planner_timeout_s": args.planner_timeout_s,
         "max_tool_calls": args.max_tool_calls,
         "memory": "isolated per episode; no cross-episode transfer",
@@ -156,6 +168,7 @@ def main():
                         args.scenes,
                         max_runtime_s=args.planner_timeout_s,
                         expected_sources=protocol["source_sha256"],
+                        profile=args.profile if arm == "rpent" else "legacy",
                     )
                 else:
                     backend = HabitatBackend(simulator, episode, args.scenes)
@@ -178,7 +191,13 @@ def main():
                         from agents.rpent.navigation.planner import solve
                         from agents.rpent.navigation.toolkit import NavigationToolkit
 
-                        toolkit = NavigationToolkit(skill, output / "agent", max_tool_calls=args.max_tool_calls)
+                        toolkit = NavigationToolkit(
+                            skill,
+                            output / "agent",
+                            max_tool_calls=args.max_tool_calls,
+                            profile=args.profile,
+                            event_policy=event_policy,
+                        )
                         planner = solve(
                             toolkit,
                             instruction,
@@ -215,6 +234,8 @@ def main():
                 save(output / "result.json", result)
                 save(output / "trajectory.json", backend.trajectory)
                 save(output / "model-timings.json", backend.timings if args.remote_executor else timings)
+                if args.remote_executor:
+                    save(output / "transport-timings.json", backend.transport_timings)
                 print(json.dumps(summarize(args.output, episodes, args.arms)), flush=True)
         save(args.output / "state.json", {"status": "complete"})
     finally:

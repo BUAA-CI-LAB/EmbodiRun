@@ -7,9 +7,19 @@ HTTP sessions and bounded execution.
 | Tool | Behavior |
 | --- | --- |
 | `observe` | Fresh RGB and consumed execution budget |
-| `navigate` | 1–8 complete ActiveVLN chunks, followed by fresh RGB and feedback |
-| `update_plan` | Episode-local completed goals, remaining goals and observations |
-| `finish` | End the task; planner success is not evaluator success |
+| `navigate` | Local visual control until an event or bounded checkpoint; optional plan update in the same call |
+| `finish` | Save an optional plan and end the task; planner success is not evaluator success |
+
+The default `event` profile yields on local STOP, repeated collisions, visual
+stall/repetition, budget exhaustion, or at most 32 chunks. ActiveVLN observes a
+fresh image before every chunk. Visual events flag possible stalls or loops;
+they do not certify location or semantic progress. Go2 uses visual feedback
+because this backend does not expose collision telemetry. `navigate` and
+`finish` accept `plan={completed,remaining,observations}` without another tool
+round. Only planner feedback uses JPEG quality 80, without resizing; policy
+images are unchanged. The remote executor compresses before SSH transfer.
+The initial frame is attached to the task without an `observe` tool round.
+`--profile legacy` retains the four-tool, 1–8 chunk interface.
 
 Repeating a subgoal preserves model history. A changed goal, explicit restart or
 continuation after local STOP resets ActiveVLN while RPent retains task progress.

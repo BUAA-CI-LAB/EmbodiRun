@@ -6,9 +6,17 @@ ActiveVLN 负责执行局部导航技能；EmbodiRun 负责观测、HTTP 会话�
 | 工具 | 行为 |
 | --- | --- |
 | `observe` | 读取新图像和已消耗的执行预算 |
-| `navigate` | 执行 1–8 个完整 ActiveVLN chunk，返回图像和执行反馈 |
-| `update_plan` | 保存本集已完成目标、剩余目标和观测记录 |
-| `finish` | 结束长任务；规划器的成功判断不直接计为评测成功 |
+| `navigate` | 本地视觉闭环执行到事件或定期检查点，可在同一次调用中保存计划 |
+| `finish` | 可同时保存计划并结束任务；规划器判断不直接计为评测成功 |
+
+默认 `event` 配置在局部 STOP、连续碰撞、画面停滞/重复、预算耗尽或至多 32 个 chunk
+后交回 RPent。ActiveVLN 每个 chunk 前仍读取新图像。视觉事件只提示可能卡住或循环，
+不证明定位或语义进度；Go2 后端没有碰撞遥测，因此使用视觉事件。
+`navigate` 和 `finish` 的 `plan={completed,remaining,observations}` 参数保存本集进度，
+无需单独调用更新计划工具。仅上层反馈图使用 JPEG quality 80，保持原分辨率，
+远端执行器在 SSH 回传前压缩；ActiveVLN 输入保持不变。
+首帧直接随任务传入，省去开场的 `observe` 工具往返，采集耗时仍计入整集耗时。
+`--profile legacy` 保留原四工具、1–8 chunk 接口用于对比。
 
 相同子目标继续使用原模型会话；切换目标、明确重启或局部 STOP 后再次执行时，
 重置 ActiveVLN 的历史。RPent 保留本集任务进度。局部 STOP 不结束整个任务。
