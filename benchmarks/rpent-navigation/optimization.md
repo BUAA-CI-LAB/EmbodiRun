@@ -13,11 +13,12 @@ Development episode 1711 (manifest offset 128, outside the formal first 128):
 | RPent + ActiveVLN profile | Success | SPL | Episode time (s) | Planner tool calls | ActiveVLN calls |
 | --- | --- | --- | --- | --- | --- |
 | Legacy, contemporaneous control | Yes | 1.0000 | 66.58 | 10 | 10 |
-| Event, initial image attached | Yes | 0.8932 | 45.89 | 2 | 11 |
+| Event, initial image attached | Yes | 0.8932 | 45.89 | 2 | 12 |
 
 This single episode is 1.45× faster, with lower SPL. It does not establish an
-aggregate success rate or stable speedup. Baseline action sequences matched in
-the two runs. Original development attempts are retained outside Git.
+aggregate success rate or stable speedup. Baseline action sequences also varied
+between runs despite the same initial pose and frozen weights. Original
+development attempts are retained outside Git.
 
 <!-- formal-event-results -->
 
