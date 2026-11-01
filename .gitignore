@@ -5,6 +5,7 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 .venv/
+.venv-rpent/
 .go2-nav-runtime/
 .navila-navigation-runtime/
 .embodiinfer-activevln-runtime/

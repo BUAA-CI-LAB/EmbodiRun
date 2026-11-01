@@ -1,5 +1,8 @@
 # RPent integration
 
+For Go2 / ActiveVLN bounded navigation skills and their simulation comparison,
+see [RPent navigation](rpent-navigation.md).
+
 RPent plans tasks and selects skills; EmbodiRun deploys services and executes
 actions. The integration connects them through the Control HTTP API.
 

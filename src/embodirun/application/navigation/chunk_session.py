@@ -146,6 +146,12 @@ class ChunkNavigationSession:
         if self.event_sink is not None:
             self.event_sink({"event": event, "monotonic_s": self.clock(), **values})
 
+    def capture_idle(self, episode_id: str, *, reset: bool = False) -> NavigationObservation:
+        """Read a fresh frame while idle, without planning or acquiring control."""
+        if self._running:
+            raise RuntimeError("cannot inspect during chunk execution")
+        return self._capture(episode_id, reset, -1)
+
     def _capture(self, episode_id: str, reset: bool, previous: int) -> NavigationObservation:
         state = self.base.state()
         if state.active_velocity_lease_id is not None:

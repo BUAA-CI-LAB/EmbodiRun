@@ -1,5 +1,7 @@
 # 接入 RPent 任务规划器
 
+Go2 / ActiveVLN 的有界导航技能与仿真对比见 [RPent 导航集成](rpent-navigation.md)。
+
 RPent 负责任务规划与技能选择；EmbodiRun 负责部署服务并执行
 动作。该集成通过 Control HTTP API 将二者连接起来。
 
