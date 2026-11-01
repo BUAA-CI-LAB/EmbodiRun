@@ -1,5 +1,8 @@
 # RPent integration and session entrypoint
 
+For Go2 / ActiveVLN subgoal planning and paired Habitat evaluation, use the
+optional [navigation entrypoint](navigation/README.md).
+
 RPent remains the owner of task planning, skill selection, and business success.
 This package provides a small public-client session adapter for that caller; it
 does not port the old robot runtime or become a second device owner.
@@ -8,9 +11,11 @@ does not port the old robot runtime or become a second device owner.
 resolves robots from its own top-level `robots/<name>/` packages (each exporting
 `get_robot_spec` and `get_toolkit`), so the RPent-side `RobotSpec`/`Toolkit`
 registration belongs to the RPent project or to the deployment owner. This
-package is the integration contract and reference implementation that
-RPent-side code consumes; it never imports RPent modules and never owns a
-device. The `PublicCooperativeSession` ordering, the Astra decision seam, and
+generic Control bridge is the integration contract and reference implementation
+that RPent-side code consumes; it never imports RPent modules or owns a device.
+The optional `navigation` package runs RPent's planner and toolkit above the
+existing navigation clients; hardware execution stays with EmbodiRun.
+The `PublicCooperativeSession` ordering, the Astra decision seam, and
 the SO-101 correction mapper can be reused directly by the RPent-side adapter.
 
 **Reference adapter.** The maintained RPent-side integration lives in the
