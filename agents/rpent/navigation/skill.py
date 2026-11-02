@@ -50,6 +50,10 @@ class RecurrentPolicy:
         observation = replace(request.observation, reset=self.calls == 0)
         chunk = self.policy.plan(NavigationRequest(request.instruction, observation))
         self.calls += 1
+        # Cancellation or the episode deadline may have arrived while the
+        # shared model was busy. Count the completed inference, but never hand
+        # a late action chunk to the execution backend.
+        self.check_cancelled()
         return chunk
 
     def close(self) -> None:
@@ -81,6 +85,11 @@ class NavigationSkill:
         self.finished = self.failed = False
         self._local_stopped = False
         self.feedback: Feedback | None = None
+
+    def _check_navigation_active(self) -> None:
+        self.check_cancelled()
+        if time.monotonic() - self.started >= self.max_runtime_s:
+            raise TimeoutError("navigation inference exceeded the episode deadline")
 
     def navigate_until_event(self, instruction: str, *, restart: bool = False, event_policy=None) -> Feedback:
         """Keep each policy chunk closed-loop locally; return only at an event or checkpoint."""
@@ -133,7 +142,7 @@ class NavigationSkill:
         reset = restart or instruction != self.instruction or self._local_stopped
         if self.policy is None or reset:
             self.close()
-            self.policy = RecurrentPolicy(self.policy_factory(), self.check_cancelled)
+            self.policy = RecurrentPolicy(self.policy_factory(), self._check_navigation_active)
             self.instruction = instruction
             self.episode_id = "subgoal-" + uuid.uuid4().hex
             self.subgoals += 1
@@ -159,6 +168,8 @@ class NavigationSkill:
 
     def finish(self, *, success: bool) -> None:
         if not self.finished:
+            if success:
+                self._check_navigation_active()
             self.backend.finish(success=success)
             self.finished = True
         self.close()

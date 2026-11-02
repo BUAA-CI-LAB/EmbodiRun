@@ -20,6 +20,7 @@ class RemoteSkill:
         reset = self._request("reset", episode=episode, scenes=scenes, max_runtime_s=max_runtime_s, profile=profile)
         if reset.get("source_sha256") != expected_sources:
             raise ValueError("remote execution source differs from the evaluator's frozen protocol")
+        self.model_capabilities = reset.get("model_capabilities", {})
 
     def _request(self, op, **values):
         started = time.perf_counter()

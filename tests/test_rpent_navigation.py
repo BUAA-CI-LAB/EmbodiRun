@@ -111,6 +111,54 @@ def test_cancel_before_inference_prevents_motion_and_poisoned_retry():
     skill.close()
 
 
+def test_cancellation_during_inference_discards_returned_chunk():
+    cancelled = False
+
+    def check_cancelled():
+        if cancelled:
+            raise InterruptedError("cancelled during inference")
+
+    class CancellingPolicy(Policy):
+        def plan(self, request):
+            nonlocal cancelled
+            chunk = super().plan(request)
+            cancelled = True
+            return chunk
+
+    backend = Backend()
+    policy = CancellingPolicy()
+    skill = NavigationSkill(backend, lambda: policy, check_cancelled=check_cancelled)
+    with pytest.raises(InterruptedError, match="during inference"):
+        skill.navigate("door", max_chunks=3)
+    assert backend.executions == 0 and skill.model_calls == 1 and skill.failed
+    with pytest.raises(RuntimeError, match="failed execution"):
+        skill.navigate("retry")
+    skill.close()
+    assert policy.closed
+
+
+def test_deadline_expiring_inside_bounded_tool_discards_late_chunk(monkeypatch):
+    clock = [100.0]
+    monkeypatch.setattr("agents.rpent.navigation.skill.time.monotonic", lambda: clock[0])
+
+    class SlowPolicy(Policy):
+        def plan(self, request):
+            chunk = super().plan(request)
+            clock[0] += 0.6
+            return chunk
+
+    backend = Backend()
+    skill = NavigationSkill(backend, SlowPolicy, max_runtime_s=1.0)
+    with pytest.raises(TimeoutError, match="episode deadline"):
+        skill.navigate("door", max_chunks=3)
+    assert backend.executions == 1 and skill.model_calls == 2 and skill.failed
+    with pytest.raises(TimeoutError, match="episode deadline"):
+        skill.finish(success=True)
+    assert not backend.stops and not skill.finished
+    skill.finish(success=False)
+    assert backend.stops == [False] and skill.finished
+
+
 def test_simulator_metrics_are_not_agent_observations():
     path = Path(__file__).resolve().parents[1] / "benchmarks/rpent-navigation/simulator.py"
     spec = importlib.util.spec_from_file_location("rpent_habitat_test", path)

@@ -42,6 +42,12 @@ def summarize(output, episodes, arms):
             "sr": sum(row["success"] for row in valid) / len(valid) if valid else None,
             "spl": sum(row["spl"] for row in valid) / len(valid) if valid else None,
             "elapsed_s": sum(row["elapsed_s"] for row in rows),
+            "task_elapsed_s": sum(row["task_elapsed_s"] for row in valid)
+            if valid and all("task_elapsed_s" in row for row in valid)
+            else None,
+            "episode_setup_s": sum(row["episode_setup_s"] for row in valid)
+            if valid and all("episode_setup_s" in row for row in valid)
+            else None,
         }
     if set(arms) == {"baseline", "rpent"}:
         indexed = {
@@ -78,12 +84,44 @@ def main():
     parser.add_argument("--count", type=int, default=128)
     parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--arms", nargs="+", choices=("baseline", "rpent"), default=["baseline", "rpent"])
-    parser.add_argument("--planner-model", required=True)
+    parser.add_argument("--planner-model")
+    parser.add_argument("--planner-backend", choices=("codex", "shared-model"), default="codex")
+    parser.add_argument("--shared-tool-examples", action="store_true", help="include fixed tool-format examples")
+    parser.add_argument(
+        "--shared-plan-tools", action="store_true", help="enable model-selected advancement of saved ordered goals"
+    )
+    parser.add_argument(
+        "--shared-source-tools", action="store_true", help="enable literal task-span plans and current-goal references"
+    )
+    parser.add_argument(
+        "--shared-tools",
+        nargs="+",
+        choices=("observe", "navigate", "navigate_task", "advance_goal", "finish", "plan_task", "continue_goal"),
+        default=["observe", "navigate", "finish"],
+    )
     parser.add_argument("--planner-timeout-s", type=int, default=3600)
     parser.add_argument("--max-tool-calls", type=int, default=80)
     parser.add_argument("--profile", choices=("event", "legacy"), default="event")
     parser.add_argument("--event-max-chunks", type=int, default=32)
     args = parser.parse_args()
+    if "rpent" in args.arms and args.planner_backend == "codex" and not args.planner_model:
+        parser.error("--planner-model is required for the Codex backend")
+    if args.planner_backend == "shared-model" and (not args.endpoint or args.profile != "event"):
+        parser.error("shared-model requires --endpoint and --profile event")
+    if args.planner_backend == "shared-model" and args.planner_model:
+        parser.error("shared-model uses the navigation checkpoint; omit --planner-model")
+    if args.shared_tool_examples and (
+        args.planner_backend != "shared-model" or not {"navigate", "finish"} <= set(args.shared_tools)
+    ):
+        parser.error("--shared-tool-examples requires shared-model with navigate and finish")
+    if args.shared_plan_tools and (args.planner_backend != "shared-model" or args.profile != "event"):
+        parser.error("--shared-plan-tools requires shared-model and the event profile")
+    if "advance_goal" in args.shared_tools and not args.shared_plan_tools:
+        parser.error("advance_goal requires --shared-plan-tools")
+    if args.shared_source_tools and (args.planner_backend != "shared-model" or args.profile != "event"):
+        parser.error("--shared-source-tools requires shared-model and the event profile")
+    if {"plan_task", "continue_goal"} & set(args.shared_tools) and not args.shared_source_tools:
+        parser.error("plan_task and continue_goal require --shared-source-tools")
     event_policy = EventPolicy(max_chunks=args.event_max_chunks)
     if args.count < 1 or args.offset < 0 or len(set(args.arms)) != len(args.arms):
         parser.error("invalid selection or duplicate arm")
@@ -111,7 +149,12 @@ def main():
         "success": "final STOP and geodesic < 3m; planner claims never count as ground truth",
         "local_stop": "counts as one primitive step; only baseline local STOP terminates the episode",
         "planner_model": args.planner_model,
-        "planner_reasoning": "low",
+        "planner_backend": args.planner_backend,
+        "shared_tools": args.shared_tools if args.planner_backend == "shared-model" else None,
+        "shared_tool_examples": args.shared_tool_examples,
+        "shared_plan_tools": args.shared_plan_tools,
+        "shared_source_tools": args.shared_source_tools,
+        "planner_reasoning": "low" if args.planner_backend == "codex" else None,
         "profile": args.profile,
         "initial_observation_attached": args.profile == "event",
         "event_policy": asdict(event_policy) if args.profile == "event" else None,
@@ -121,6 +164,12 @@ def main():
         "planner_timeout_s": args.planner_timeout_s,
         "max_tool_calls": args.max_tool_calls,
         "memory": "isolated per episode; no cross-episode transfer",
+        "timing": {
+            "planner_import_s": "once per evaluator start, before episodes; retained in startup.jsonl",
+            "episode_setup_s": "executor initialization and simulator episode reset",
+            "task_elapsed_s": "after reset through policy/planner execution and final metric read",
+            "elapsed_s": "setup plus task; excludes final artifact writes and session cleanup",
+        },
         "arms": args.arms,
         "observations": "RGB, executed discrete actions, collision count, consumed step count; no map, coordinates or evaluation metrics",
     }
@@ -128,6 +177,25 @@ def main():
     if protocol_path.exists() and json.loads(protocol_path.read_text()) != protocol:
         raise ValueError("protocol/source changed: use a new output directory")
     save(protocol_path, protocol)
+    planner_import_started = time.monotonic()
+    if "rpent" in args.arms:
+        from agents.rpent.navigation.toolkit import NavigationToolkit, shared_tool_examples
+
+        if args.planner_backend == "shared-model":
+            from agents.rpent.navigation.shared_model import SharedModelHttpClient, SharedModelPlanner
+        else:
+            from agents.rpent.navigation.planner import solve
+    with (args.output / "startup.jsonl").open("a") as stream:
+        stream.write(
+            json.dumps(
+                {
+                    "pid": os.getpid(),
+                    "planner_import_s": time.monotonic() - planner_import_started,
+                    "planner_backend": args.planner_backend if "rpent" in args.arms else None,
+                }
+            )
+            + "\n"
+        )
     client = None
     if not args.remote_executor:
         if not args.endpoint:
@@ -179,7 +247,12 @@ def main():
                         ),
                         max_runtime_s=args.planner_timeout_s,
                     )
-                result = {"episode_id": str(episode["episode_id"]), "arm": arm}
+                task_started = time.monotonic()
+                result = {
+                    "episode_id": str(episode["episode_id"]),
+                    "arm": arm,
+                    "episode_setup_s": task_started - started,
+                }
                 try:
                     instruction = episode["instruction"]
                     if isinstance(instruction, dict):
@@ -188,32 +261,72 @@ def main():
                         feedback = skill.navigate(instruction, max_chunks=500, terminal_stop=True)
                         result["termination"] = feedback.reason
                     else:
-                        from agents.rpent.navigation.planner import solve
-                        from agents.rpent.navigation.toolkit import NavigationToolkit
-
                         toolkit = NavigationToolkit(
                             skill,
                             output / "agent",
                             max_tool_calls=args.max_tool_calls,
                             profile=args.profile,
                             event_policy=event_policy,
+                            initial_task=instruction,
+                            plan_tools=args.shared_plan_tools,
+                            source_tools=args.shared_source_tools,
                         )
-                        planner = solve(
-                            toolkit,
-                            instruction,
-                            output / "agent",
-                            model=args.planner_model,
-                            timeout_s=args.planner_timeout_s,
-                        )
+                        if args.planner_backend == "shared-model":
+                            capabilities = (
+                                backend.model_capabilities if args.remote_executor else check_capabilities(client)
+                            )
+                            identity = capabilities.get("shared_text", {}).get("model_instance")
+                            if not isinstance(identity, str) or not identity:
+                                raise RuntimeError("navigation executor did not attest its shared model identity")
+                            transport = SharedModelHttpClient(
+                                args.endpoint, os.environ.get(args.token_env), expected_model_instance=identity
+                            )
+                            try:
+                                initial_image, feedback = toolkit.initial_observation()
+                                planner = SharedModelPlanner(
+                                    transport,
+                                    initial_image=initial_image.read_bytes(),
+                                    initial_feedback=feedback,
+                                    timeout_s=args.planner_timeout_s,
+                                    check_cancelled=toolkit.raise_if_cancelled,
+                                    allowed_tools=tuple(args.shared_tools),
+                                    examples=shared_tool_examples(plan_tools="advance_goal" in args.shared_tools)
+                                    if args.shared_tool_examples
+                                    else (),
+                                ).solve(
+                                    system_prompt=toolkit.system_prompt,
+                                    user_message=instruction,
+                                    toolkit=toolkit,
+                                    max_turns=args.max_tool_calls,
+                                )
+                            finally:
+                                transport.close()
+                            save(
+                                output / "agent" / "planner.json",
+                                {"messages": planner.messages, "stats": planner.stats},
+                            )
+                        else:
+                            planner = solve(
+                                toolkit,
+                                instruction,
+                                output / "agent",
+                                model=args.planner_model,
+                                timeout_s=args.planner_timeout_s,
+                            )
                         result.update(
                             planner_stats=planner.stats,
                             planner_error=planner.error,
                             planner_finish=toolkit.finish_result,
                             tool_calls=toolkit.tool_calls,
                         )
-                        if planner.error:
+                        algorithm_failure = args.planner_backend == "shared-model" and planner.stats.get(
+                            "failure_kind"
+                        ) in {"invalid_tool_call", "turn_budget", "episode_deadline"}
+                        if planner.error and not algorithm_failure:
                             raise RuntimeError(planner.error)
-                        if toolkit.finish_result is None:
+                        if algorithm_failure:
+                            result["termination"] = planner.stats["failure_kind"]
+                        elif toolkit.finish_result is None:
                             result["termination"] = "planner_returned_without_finish"
                         else:
                             result["termination"] = toolkit.finish_result["status"]
@@ -222,11 +335,28 @@ def main():
                         **backend.metrics(),
                         model_calls=skill.model_calls,
                         subgoals=skill.subgoals,
-                        elapsed_s=time.monotonic() - started,
                     )
+                    finished = time.monotonic()
+                    result.update(elapsed_s=finished - started, task_elapsed_s=finished - task_started)
                 except BaseException as error:
-                    result.update(status="error", error=repr(error), elapsed_s=time.monotonic() - started)
+                    finished = time.monotonic()
+                    result.update(
+                        status="error",
+                        error=repr(error),
+                        elapsed_s=finished - started,
+                        task_elapsed_s=finished - task_started,
+                    )
                     save(output / "result.json", result)
+                    save(
+                        args.output / "state.json",
+                        {
+                            "status": "error",
+                            "index": index,
+                            "episode_id": str(episode["episode_id"]),
+                            "arm": arm,
+                            "error": repr(error),
+                        },
+                    )
                     summarize(args.output, episodes, args.arms)
                     raise
                 finally:

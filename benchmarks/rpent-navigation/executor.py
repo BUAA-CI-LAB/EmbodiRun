@@ -67,7 +67,11 @@ def main():
                         ),
                         max_runtime_s=command["max_runtime_s"],
                     )
-                    result = {"ready": True, "source_sha256": fingerprints}
+                    result = {
+                        "ready": True,
+                        "source_sha256": fingerprints,
+                        "model_capabilities": check_capabilities(client),
+                    }
                 elif skill is None:
                     raise RuntimeError("reset an episode before using it")
                 elif op in ("observe", "navigate", "navigate_event"):

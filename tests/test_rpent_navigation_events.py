@@ -119,12 +119,9 @@ def test_event_loop_respects_global_budget_and_cancellation():
     skill, backend, _ = skill_for([20, 40, 60, 80], max_chunks=3)
     result = skill.navigate_until_event("Reach the door")
     assert result.exhausted and result.reason == "budget" and backend.executions == 3
-    calls = 0
 
     def cancel():
-        nonlocal calls
-        calls += 1
-        if calls == 3:
+        if backend.executions >= 2:
             raise InterruptedError("cancelled")
 
     skill, backend, _ = skill_for([20, 40, 60, 80], check_cancelled=cancel)
@@ -193,6 +190,83 @@ def test_event_tool_budget_reserves_the_terminal_call(tmp_path):
     assert result.is_finish and result.result["status"] == "stuck"
     assert toolkit.tool_calls == 2 and backend.executions == 0
     assert backend.finish_calls == [False]
+
+
+def test_model_selected_goal_advance_preserves_history_and_future_revisits(tmp_path):
+    pytest.importorskip("rpent")
+    from agents.rpent.navigation.toolkit import NavigationToolkit
+
+    skill, backend, policies = skill_for([20], stop_at=1)
+    toolkit = NavigationToolkit(skill, tmp_path, plan_tools=True)
+    toolkit.update_plan(completed=["foyer"], remaining=["kitchen", "study", "kitchen"], observations="")
+    result = toolkit.execute_tool(
+        "advance_goal", {"evidence": "At the kitchen counter.", "instruction": "Go through the door to the study."}
+    )
+    assert "error" not in result.result and not result.is_finish
+    assert toolkit.plan["completed"] == ["foyer", "kitchen"]
+    assert toolkit.plan["remaining"] == ["study", "kitchen"]
+    assert policies[0].requests[0].instruction == "Go through the door to the study."
+    assert backend.executions == 1 and not backend.finish_calls
+    assert result.result["plan"] == toolkit.plan
+
+
+def test_final_goal_advance_records_model_claim_and_requests_stop(tmp_path):
+    pytest.importorskip("rpent")
+    from agents.rpent.navigation.toolkit import NavigationToolkit
+
+    skill, backend, _ = skill_for([])
+    toolkit = NavigationToolkit(skill, tmp_path, plan_tools=True)
+    toolkit.update_plan(completed=["foyer", "kitchen"], remaining=["study"], observations="")
+    result = toolkit.execute_tool("advance_goal", {"evidence": "At the desk inside the study."})
+    assert result.is_finish and result.result["task_success"] == "unverified"
+    assert toolkit.plan["completed"] == ["foyer", "kitchen", "study"]
+    assert toolkit.plan["remaining"] == []
+    assert backend.finish_calls == [True] and backend.executions == 0
+
+
+def test_goal_advance_rejects_missing_plan_and_nonexistent_next_goal(tmp_path):
+    pytest.importorskip("rpent")
+    from agents.rpent.navigation.toolkit import NavigationToolkit
+
+    skill, backend, _ = skill_for([])
+    toolkit = NavigationToolkit(skill, tmp_path, plan_tools=True)
+    result = toolkit.execute_tool("advance_goal", {"evidence": "At a desk."})
+    assert "error" in result.result and toolkit.plan == {}
+    toolkit.update_plan(completed=[], remaining=["study"], observations="")
+    original = toolkit.plan.copy()
+    result = toolkit.execute_tool("advance_goal", {"evidence": "At the desk.", "instruction": "Go outside."})
+    assert "error" in result.result and toolkit.plan == original
+    assert not backend.finish_calls and backend.executions == 0
+
+
+@pytest.mark.parametrize("supply_plan", [True, False])
+def test_success_cannot_ignore_remaining_goals_or_request_stop(tmp_path, supply_plan):
+    pytest.importorskip("rpent")
+    from agents.rpent.navigation.toolkit import NavigationToolkit
+
+    skill, backend, _ = skill_for([])
+    toolkit = NavigationToolkit(skill, tmp_path)
+    toolkit.update_plan(completed=["kitchen"], remaining=["study"], observations="At the kitchen.")
+    original = (tmp_path / "memory/working.json").read_bytes()
+    arguments = {"status": "success", "summary": "All goals complete."}
+    if supply_plan:
+        arguments["plan"] = {"completed": ["kitchen"], "remaining": ["study"], "observations": ""}
+    result = toolkit.execute_tool("finish", arguments)
+    assert "error" in result.result and not result.is_finish
+    assert (tmp_path / "memory/working.json").read_bytes() == original
+    assert not backend.finish_calls and toolkit.finish_result is None
+    # A later explicit model update can finish; the harness still does not
+    # certify that the model's visual completion claim is true.
+    result = toolkit.execute_tool(
+        "finish",
+        {
+            "status": "success",
+            "summary": "At the study desk.",
+            "plan": {"completed": ["kitchen", "study"], "remaining": [], "observations": "At the desk."},
+        },
+    )
+    assert result.is_finish and result.result["task_success"] == "unverified"
+    assert backend.finish_calls == [True]
 
 
 def test_initial_frame_uses_native_image_input_without_a_tool_round(tmp_path, monkeypatch):
