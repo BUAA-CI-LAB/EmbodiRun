@@ -33,6 +33,8 @@
 | **SO-101 + π0.5：** 根据相机图像和关节状态，抓取方块并放入碗中。 | **MicroDuck + ActiveVLN：** 在 MuJoCo 场景中按语言指令导航。 | **移动底盘 + SO-101 双臂：** 结合录制路线、RPent/Astra 场景判断和 VLA 抓取，在操作员监督下完成零食递送。 |
 | [观看演示](docs/zh/demos/so101-grasping.md) · [Recipe](examples/so101_grasping.md) | [观看演示](docs/zh/demos/microduck-vln.md) · [Recipe](examples/microduck_vln/README.md) | [流程与架构](docs/zh/demos/xlerobot-snack-delivery.md) · [Recipe](examples/xlerobot_snack_delivery/README.md) |
 
+[Go2 真机演示：EmbodiRun + EmbodiInfer — chunk 与 RTC 执行，3 倍速](docs/zh/demos/go2-activevln.md)。
+
 [Recipe 索引](examples/README.md)提供多臂共享推理、其他推理后端及纯软件示例。
 机器人、仿真器与模型的支持情况见[支持矩阵](docs/zh/support-matrix.md)。
 Recipe 使用统一的 `embodirun example` 命令行入口；源码 checkout 仍可使用

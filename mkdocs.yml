@@ -74,6 +74,7 @@ nav:
   - Scenarios:
       - VLA — SO-101 grasping: demos/so101-grasping.md
       - VLN — MicroDuck navigation: demos/microduck-vln.md
+      - VLN — Go2 physical demo: demos/go2-activevln.md
       - Agent — XLeRobot delivery: demos/xlerobot-snack-delivery.md
       - Multi-robot Recipe: demos/multi-robot-serving.md
   - Project:
