@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "embodirun-go2-owner"
+version = "0.1.0"
+description = "Optional unified Go2 hardware owner with isolated SDK and camera dependencies"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.8"
+dependencies = []
+
+[project.optional-dependencies]
+camera = ["numpy>=1.24", "Pillow>=10", "pyrealsense2>=2.54,<3"]
+
+[project.scripts]
+embodirun-go2-owner = "embodirun_go2_owner.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

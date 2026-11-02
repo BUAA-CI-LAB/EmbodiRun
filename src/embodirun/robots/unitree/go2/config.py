@@ -8,7 +8,8 @@ from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urlsplit
 
-from .navigation.motion import PlanarVelocityLimits
+from embodirun.robots.mobile_base.motion import PlanarVelocityLimits
+
 from .profile import MAX_LINEAR_SPEED_MPS, MAX_YAW_RATE_RPS
 
 

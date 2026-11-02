@@ -1,8 +1,4 @@
-"""Canonical Unitree Go2 hardware bindings and robot-resident agent.
-
-The host-only bindings stay lazy because ``agent`` is deployed to the Go2's
-Python 3.8 environment and must be importable without the host task stack.
-"""
+"""Host-side Go2 adapters and clients; hardware ownership lives in integrations/go2_owner."""
 
 from __future__ import annotations
 

@@ -1,42 +1,12 @@
-"""Remote installation and lifecycle management for the Go2 edge agent."""
+"""StreamVLN policy-to-Go2 binding."""
 
 from __future__ import annotations
 
 from importlib import import_module
 from typing import Any
 
-__all__ = [
-    "BINDING_DEFINITION",
-    "CameraStartOptions",
-    "CommandResult",
-    "ControlStartOptions",
-    "Go2AgentDeployer",
-    "ParamikoTransport",
-    "RemoteCommandError",
-    "RemoteTransport",
-    "ServiceName",
-    "ServiceSelection",
-    "SshConnection",
-    "StartOptions",
-    "StreamVLNGo2Mapper",
-    "main",
-]
-
-_SYMBOL_MODULES = {
-    "main": ".cli",
-    "CameraStartOptions": ".options",
-    "ControlStartOptions": ".options",
-    "Go2AgentDeployer": ".deployer",
-    "ServiceName": ".options",
-    "ServiceSelection": ".options",
-    "StartOptions": ".options",
-    "CommandResult": ".transport",
-    "ParamikoTransport": ".transport",
-    "RemoteCommandError": ".transport",
-    "RemoteTransport": ".transport",
-    "SshConnection": ".transport",
-    "StreamVLNGo2Mapper": ".mapper",
-}
+__all__ = ["BINDING_DEFINITION", "StreamVLNGo2Mapper", "main"]
+_SYMBOL_MODULES = {"main": ".cli", "StreamVLNGo2Mapper": ".mapper"}
 
 
 def __getattr__(name: str) -> Any:
