@@ -76,6 +76,7 @@ nav:
   - 实验:
       - 概览: experiments.md
       - SO-101 推理引擎对比: demos/engine-e2e-contrast.md
+      - ActiveVLN 推理引擎对比: demos/activevln-engines.md
       - HTTP 与 WirelessComm 对比: inference-transport.md
       - 相机采集与断连恢复: camera-only-experiments.md
       - 传输与采集优化: transport-experiments.md

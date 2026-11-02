@@ -55,8 +55,8 @@ class SimulationServiceConfig:
             raise SimulationContractError("port must be between 1 and 65535")
         if self.inference_transport not in {"http", "wireless"}:
             raise SimulationContractError("inference transport must be http or wireless")
-        if self.inference_backend not in {"embodiinfer", "sglang"}:
-            raise SimulationContractError("inference backend must be embodiinfer or sglang")
+        if self.inference_backend not in {"embodiinfer", "sglang", "vllm"}:
+            raise SimulationContractError("inference backend must be embodiinfer, sglang or vllm")
         for name in ("inference_options", "simulator_options"):
             object.__setattr__(self, name, _mapping(getattr(self, name), name))
         object.__setattr__(self, "runtime_options", _mapping(self.runtime_options, "runtime_options"))

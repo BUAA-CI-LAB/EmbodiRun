@@ -7,6 +7,7 @@ from .backends.embodiinfer import (
     EmbodiInferWirelessError,
 )
 from .backends.sglang import SglangHttpClient, SglangHttpError
+from .backends.vllm import VllmHttpClient
 from .client import InferenceClient, PolicyClient
 from .contracts import (
     ImagePayload,
@@ -49,6 +50,7 @@ __all__ = [
     "Session",
     "SglangHttpClient",
     "SglangHttpError",
+    "VllmHttpClient",
     "UrllibHttpTransport",
     "EmbodiInferHttpClient",
     "EmbodiInferHttpError",

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "embodirun-vllm-activevln"
+version = "0.1.0"
+description = "Optional native vLLM ActiveVLN action service for EmbodiRun"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+dependencies = [
+    "vllm==0.30.0",
+    "Pillow>=10,<13",
+    "embodiinfer @ git+https://github.com/BUAA-CI-LAB/EmbodiInfer.git@2a3f05377106161dfb2d4084591dcb50ac2644e8",
+]
+
+[project.scripts]
+embodirun-vllm-activevln-serve = "embodirun_vllm_activevln.service:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

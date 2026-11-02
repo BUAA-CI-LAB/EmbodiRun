@@ -1,0 +1,33 @@
+# Copy to *.local.yaml and replace dataset/scene paths before starting Habitat.
+metadata:
+  name: activevln-vllm-habitat
+  deploy-commit: main
+nodes:
+  simulator:
+    type: workstation
+    connection: {type: local}
+simulators:
+  habitat:
+    type: habitat
+    node: simulator
+    dataset: /REPLACE_R2R_DATASET.json.gz
+    scenes_dir: /REPLACE_SCENE_DATASETS
+    episode_id: '17'
+    max_episode_steps: 500
+    success_distance_m: 3.0
+    width: 640
+    height: 480
+    gpu_device_id: 0
+models:
+  navigator:
+    provider: vllm
+    transport: http
+    type: activevln
+    service: external
+    endpoint: http://127.0.0.1:8000
+runtimes:
+  navigation:
+    simulator: habitat
+    model: navigator
+    binding: simulated.navigation.activevln
+    server: {bind: 127.0.0.1, port: 8100}

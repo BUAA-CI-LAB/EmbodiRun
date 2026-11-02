@@ -40,6 +40,8 @@
 Recipe 使用统一的 `embodirun example` 命令行入口；源码 checkout 仍可使用
 兼容的 `examples/run.sh`。
 
+[ActiveVLN 仿真：EmbodiRun 统一接入 EmbodiInfer、SGLang 与 vLLM](docs/zh/demos/activevln-engines.md) · [vLLM 接入](integrations/vllm_activevln/README.md)。
+
 ## 为什么选择 EmbodiRun
 
 | 特点 | 使用方式 |

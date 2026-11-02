@@ -44,6 +44,8 @@ lists robot, simulator, and model integrations.
 Recipes use the shared `embodirun example` CLI; `examples/run.sh` remains a
 compatible entrypoint for source checkouts.
 
+[ActiveVLN simulation: EmbodiInfer, SGLang and vLLM inside EmbodiRun](docs/en/demos/activevln-engines.md) · [vLLM integration](integrations/vllm_activevln/README.md).
+
 ## Why EmbodiRun
 
 | Feature | What you can do |

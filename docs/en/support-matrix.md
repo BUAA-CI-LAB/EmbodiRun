@@ -248,3 +248,12 @@ Benchmark workloads and data requirements are described in the
 
 For the demo deployments, [the shared launcher](examples.md) handles setup,
 startup, and task execution. Node and GPU placement are set in the deployment YAML.
+
+## vLLM ActiveVLN
+
+`provider: vllm`, HTTP, Linux Python 3.12, vLLM 0.30.0 and ActiveVLN R2R BF16 are
+provided by a separately installed integration. The
+[demo](demos/activevln-engines.md) records a single RTX 4090 episode with the
+earlier experimental adapter; the packaged entrypoint is not yet GPU-validated.
+See the [service and exact launch command](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/integrations/vllm_activevln)
+and [Habitat configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/activevln_engines).
