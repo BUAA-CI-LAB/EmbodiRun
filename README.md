@@ -36,6 +36,8 @@ connect an external service, or build a task loop with the
 | **SO-101 + π0.5:** pick up a cube and place it in a bowl using camera images and joint state. | **MicroDuck + ActiveVLN:** follow a language instruction through a MuJoCo scene. | **Mobile base + SO-101 arms:** combine recorded routes, RPent/Astra scene review, and VLA grasping to deliver a snack under operator supervision. |
 | [Watch and learn](docs/en/demos/so101-grasping.md) · [Recipe](examples/so101_grasping.md) | [Watch and learn](docs/en/demos/microduck-vln.md) · [Recipe](examples/microduck_vln/README.md) | [Workflow and architecture](docs/en/demos/xlerobot-snack-delivery.md) · [Recipe](examples/xlerobot_snack_delivery/README.md) |
 
+[Go2 physical demo: EmbodiRun + EmbodiInfer — chunk and RTC execution, 3×](docs/en/demos/go2-activevln.md).
+
 Explore [Recipes](examples/README.md) for multiple arms, alternative inference
 backends, and software-only examples. The [support matrix](docs/en/support-matrix.md)
 lists robot, simulator, and model integrations.

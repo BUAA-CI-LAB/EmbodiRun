@@ -87,6 +87,7 @@ nav:
   - 场景:
       - VLA — SO-101 抓取: demos/so101-grasping.md
       - VLN — MicroDuck 导航: demos/microduck-vln.md
+      - VLN — Go2 真机演示: demos/go2-activevln.md
       - Agent — XLeRobot 递送: demos/xlerobot-snack-delivery.md
       - 多机器人 Recipe: demos/multi-robot-serving.md
   - 项目:
