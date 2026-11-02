@@ -69,6 +69,7 @@ nav:
       - 推理 API v1: http_api.md
       - Agent 执行流程: agent-workflow.md
       - RPent 集成: rpent-integration.md
+      - RPent 导航: rpent-navigation.md
       - π0.5 双臂控制: pi05-bi-so101.md
       - Go2 ActiveVLN 部署: go2-activevln.md
   - 系统设计:

@@ -38,7 +38,7 @@ cancellation and lets execution unwind at its next checked boundary before
 waiting for cleanup. This avoids waiting on the same thread's active tool;
 background MCP tools still finish their cancellation boundary before cleanup.
 
-See the [navigation entrypoint](https://github.com/yufoo1/EmbodiRun/tree/feat/activevln-go2-adaptation/agents/rpent/navigation)
+See the [navigation entrypoint](https://github.com/yufoo1/EmbodiRun/tree/feat/rpent-activevln-navigation/agents/rpent/navigation)
 for installation and commands. Without `--execute`, it only observes and plans.
 Motion requires an already armed owner supporting scoped lease release. The new
 planner layer has not been tested on a physical Go2.
@@ -53,7 +53,7 @@ unfulfilled goal; only subsequent model decisions change its semantic progress.
 R2R unseen-scene navigation does not establish
 general long-task capability on a physical robot.
 
-See the [simulation comparison](https://github.com/yufoo1/EmbodiRun/tree/feat/activevln-go2-adaptation/benchmarks/rpent-navigation)
+See the [simulation comparison](https://github.com/yufoo1/EmbodiRun/tree/feat/rpent-activevln-navigation/benchmarks/rpent-navigation)
 for results and reproduction.
 
 An experimental `shared-model` evaluator backend uses the same resident model
@@ -88,5 +88,5 @@ The model chooses ordered word ranges; the harness copies them exactly, retains
 completed history and starts the first goal. Continuing a saved goal preserves
 navigation history. These tools neither choose semantic boundaries nor judge
 completion, and require separate capability and closed-loop validation.
-See the [navigation integration](../../agents/rpent/navigation/README.md#experimental-shared-model-planner)
+See the [navigation integration](https://github.com/yufoo1/EmbodiRun/blob/feat/rpent-activevln-navigation/agents/rpent/navigation/README.md#experimental-shared-model-planner)
 for the required experimental endpoint and evaluator flags.

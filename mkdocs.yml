@@ -56,6 +56,7 @@ nav:
       - Inference API v1: http_api.md
       - Agent execution workflow: agent-workflow.md
       - RPent integration: rpent-integration.md
+      - RPent navigation: rpent-navigation.md
       - π0.5 with two SO-101: pi05-bi-so101.md
       - Go2 ActiveVLN deployment: go2-activevln.md
   - Concepts:

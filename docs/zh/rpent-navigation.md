@@ -29,7 +29,7 @@ Go2 使用已有相机、控制客户端和同步 chunk 执行器，在等待 RP
 共享模型工具在调用线程内执行时，退出信号先记录本集取消请求，让执行在下一检查边界
 退出后再等待清理，避免线程等待自己的工具结束。后台 MCP 工具仍在取消边界结束后清理。
 
-安装和 Go2 命令见[导航入口](https://github.com/yufoo1/EmbodiRun/tree/feat/activevln-go2-adaptation/agents/rpent/navigation)。
+安装和 Go2 命令见[导航入口](https://github.com/yufoo1/EmbodiRun/tree/feat/rpent-activevln-navigation/agents/rpent/navigation)。
 未加 `--execute` 时只观测和规划；运动要求已有 owner 处于 armed 状态并支持按租约释放。
 这个新增规划层尚未进行 Go2 真机验证。
 
@@ -39,7 +39,7 @@ RPent 只获得指令、RGB、动作记录、碰撞数量和已消耗步数；�
 初始记忆把完整原任务登记为一个尚未完成的目标，后续语义进度由模型决定。
 R2R 的未见场景导航结果不等同于通用真机长任务能力。
 
-数据和复现方式见[仿真对比](https://github.com/yufoo1/EmbodiRun/tree/feat/activevln-go2-adaptation/benchmarks/rpent-navigation)。
+数据和复现方式见[仿真对比](https://github.com/yufoo1/EmbodiRun/tree/feat/rpent-activevln-navigation/benchmarks/rpent-navigation)。
 
 实验性的 `shared-model` 评测后端让同一个驻留模型负责导航和 RPent 工具决策。
 它核对模型实例身份，在有界上下文中保留原始任务与本集记忆，并按实际 RPent schema
@@ -66,4 +66,4 @@ harness 原样提取对应子目标并保留完成历史。`continue_goal` 原�
 保留导航历史。工具不会代替模型拆解任务、判断完成或修补非法区间；其规划能力及
 闭环效果仍需单独验证。
 实验服务要求和评测参数见
-[导航集成说明](../../agents/rpent/navigation/README.md#experimental-shared-model-planner)。
+[导航集成说明](https://github.com/yufoo1/EmbodiRun/blob/feat/rpent-activevln-navigation/agents/rpent/navigation/README.md#experimental-shared-model-planner)。
