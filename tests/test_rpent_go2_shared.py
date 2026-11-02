@@ -7,6 +7,11 @@ import signal
 from types import SimpleNamespace
 
 import pytest
+
+pytest.importorskip("rpent")
+pytest.importorskip("httpx")
+pytest.importorskip("jsonschema")
+
 from agents.rpent.navigation import go2, shared_model
 from agents.rpent.navigation.skill import Feedback
 from PIL import Image
