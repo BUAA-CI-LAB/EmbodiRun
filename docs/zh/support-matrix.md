@@ -239,3 +239,11 @@ Linux ARM64 依赖与可选集成需在目标机器检查；仅有容器镜像�
 
 演示通过[统一启动脚本](examples.md)准备环境、启动服务和执行任务。
 服务使用的节点与 GPU 在部署 YAML 中指定。
+
+## vLLM ActiveVLN
+
+独立集成包提供 `provider: vllm`、HTTP、Linux Python 3.12、vLLM 0.30.0
+和 ActiveVLN R2R BF16。
+[演示](demos/activevln-engines.md)来自早期实验适配器在 RTX 4090 上的单次录制；
+封装入口尚未通过新的 GPU 验证。见[服务与启动命令](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/integrations/vllm_activevln)
+及 [Habitat 配置](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/examples/activevln_engines)。

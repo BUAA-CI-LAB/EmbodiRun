@@ -63,6 +63,7 @@ nav:
   - Experiments:
       - Overview: experiments.md
       - Inference engines on SO-101: demos/engine-e2e-contrast.md
+      - ActiveVLN inference engines: demos/activevln-engines.md
       - Inference transport: inference-transport.md
       - Camera-only capture: camera-only-experiments.md
       - Transport candidates: transport-experiments.md

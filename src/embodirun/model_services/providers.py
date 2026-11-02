@@ -175,6 +175,29 @@ def _register_builtins() -> None:
         return
     from .backends.embodiinfer import EmbodiInferHttpClient, EmbodiInferWirelessClient
     from .backends.sglang import SglangHttpClient
+    from .backends.vllm import VllmHttpClient
+
+    def vllm_builder(endpoint: str, options: Mapping[str, Any], timeout_s: float) -> InferenceClient:
+        token = options.get("token")
+        if token is not None and not isinstance(token, str):
+            raise ValueError("inference token must be a string")
+        return VllmHttpClient(endpoint, token=token, timeout_s=timeout_s)
+
+    def vllm_command(options: ManagedCommandOptions) -> tuple[str, ...]:
+        if options.policy != "activevln" or options.transport != "http":
+            raise ValueError("the packaged vLLM service supports ActiveVLN over HTTP")
+        argv = [
+            "embodirun-vllm-activevln-serve",
+            "--checkpoint",
+            options.checkpoint,
+            "--host",
+            options.bind,
+            "--port",
+            str(options.port),
+        ]
+        if options.device is not None:
+            argv.extend(("--device", options.device))
+        return tuple(argv)
 
     def embodiinfer_builder(endpoint: str, options: Mapping[str, Any], timeout_s: float) -> InferenceClient:
         token = options.get("token")
@@ -327,6 +350,23 @@ def _register_builtins() -> None:
                     "policy_kwargs",
                 }
             ),
+        )
+    )
+    register_provider(
+        InferenceProvider(
+            "vllm",
+            frozenset({"http"}),
+            True,
+            vllm_builder,
+            environment_group="vllm",
+            requires_environment_packages=True,
+            managed_command=vllm_command,
+            health_suffix="/healthz",
+            append_server_args=True,
+            source_project="deploy",
+            environment_packages_builder=lambda _: ("-e", ".", "-e", "integrations/vllm_activevln"),
+            allowed_options=frozenset({"source", "gpu", "server_args", "token"}),
+            default_python="3.12",
         )
     )
     register_provider(
