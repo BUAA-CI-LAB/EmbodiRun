@@ -53,7 +53,7 @@ service.
     **✓ Franka FR3** — adapter and π0.5 binding.
 
     **◐ ARX5** — DM0.5 binding.<br>
-    **◐ Unitree Go2** — StreamVLN navigation.<br>
+    **◐ Unitree Go2** — StreamVLN; ActiveVLN async/chunk CLI for onboard Orin NX (recorded physical execution).<br>
     **◐ XLeRobot** — external hardware owner; dual-arm π0.5 recipe.
 
     [Explore robot adapters](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/robots)
@@ -99,9 +99,15 @@ service.
     | Bi-SO-101 | π0.5, 12-dimensional dual-arm policy | [Dual-arm guide](pi05-bi-so101.md) |
     | Franka FR3 | π0.5 binding | [Adapter](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/robots/franka/fr3) |
     | ARX5 | DM0.5 binding | [Binding](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/bindings/arx/x5/dm05) |
-    | Unitree Go2 | StreamVLN navigation | [Robot integration](https://github.com/BUAA-CI-LAB/EmbodiRun/tree/main/src/embodirun/robots/unitree/go2) |
+    | Unitree Go2 | StreamVLN; ActiveVLN / Orin NX, RealSense, batch=1 | [CLI and configuration](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/examples/README.md#go2--onboard-orin-nx-activevln) |
     | XLeRobot | External hardware owner; `lerobot.xlerobot.pi05` for two arms | [Recipe](xlerobot-snack-delivery.md) / [owner package](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/integrations/xlerobot_owner/README.md) |
     | SO-101 (wired teleoperation) | Multi-leader UDP fan-out, follower-side episode collection | [Integration package](https://github.com/BUAA-CI-LAB/EmbodiRun/blob/main/integrations/so101_wired_teleop/README.md) |
+
+    The Go2 ActiveVLN CLI targets the frozen optimized R2R checkpoint service
+    (`Arvil/Qwen2.5-VL-3B_rl_r2r_4000`, revision `160987313e3e869705f42400d1b8f28177044518`).
+    `embodirun go2 activevln run --config LOCAL_CONFIG --instruction TEXT` is
+    observation/inference only; `--execute` enables the bounded motion path.
+    Python 3.10+; [recorded physical chunk/overlap execution](demos/go2-activevln.md) on JP5 Orin NX. See the linked recipe for service setup.
 
     SO-101 deployments need calibrated arms, camera mappings, and a checkpoint
     trained for the selected binding. FR3 needs its robot SDK; ARX5 needs the

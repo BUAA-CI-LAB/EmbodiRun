@@ -6,8 +6,8 @@ import math
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from embodirun.robots.unitree.go2.navigation.interfaces import MobileBaseError
-from embodirun.robots.unitree.go2.navigation.motion import MobileBaseState, PlanarVelocityCommand
+from embodirun.robots.mobile_base.interfaces import MobileBaseError
+from embodirun.robots.mobile_base.motion import MobileBaseState, PlanarVelocityCommand
 from embodirun.utils import HttpClientError, JsonHttpClient, Pose2D
 
 
@@ -102,7 +102,7 @@ class Go2ControlClient:
         payload = self._request("GET", "/v1/state")
         return self._state_from_payload(payload, require_fresh=require_fresh)
 
-    def preflight(self) -> MobileBaseState:
+    def preflight(self, *, require_renewal: bool = False, require_release: bool = False) -> MobileBaseState:
         """Require an idle, explicitly armed live control service.
 
         This check is read-only.  The control API independently rechecks the
@@ -111,6 +111,16 @@ class Go2ControlClient:
         """
 
         payload = self._request("GET", "/v1/state")
+        if (
+            require_renewal
+            and _object(payload.get("capabilities", {}), "capabilities").get("stream_lease_renewal") is not True
+        ):
+            raise Go2ClientError("async navigation requires stream_lease_renewal; update the control agent")
+        if (
+            require_release
+            and _object(payload.get("capabilities", {}), "capabilities").get("stream_lease_release") is not True
+        ):
+            raise Go2ClientError("interactive navigation requires stream_lease_release; update the Go2 owner")
         state = self._state_from_payload(payload, require_fresh=True)
         if payload.get("closing") is True:
             raise Go2ClientError("control service is closing")
@@ -137,7 +147,10 @@ class Go2ControlClient:
             raise Go2ClientError("control service did not return an action_id")
         return action_id
 
-    def update_velocity_lease(self, action_id: str, command: PlanarVelocityCommand) -> None:
+    def update_velocity_lease(
+        self, action_id: str, command: PlanarVelocityCommand, *, remaining_s: float | None = None
+    ) -> None:
+        """Update velocity; optionally renew a stream lease's bounded remaining horizon."""
         result = self._request(
             "POST",
             "/v1/actions",
@@ -147,10 +160,22 @@ class Go2ControlClient:
                 "vx": command.vx_mps,
                 "vy": command.vy_mps,
                 "yaw_rate": command.yaw_rate_rps,
+                **({"remaining_s": remaining_s} if remaining_s is not None else {}),
             },
         )
         if result.get("accepted") is not True:
             raise Go2ClientError("velocity update was not accepted")
+
+    def release_velocity_lease(self, lease_id: str) -> None:
+        """Stop only our stream lease; never restore revoked operator readiness."""
+        result = self._request("POST", "/v1/actions", {"action": "release_move", "action_id": lease_id})
+        if (
+            result.get("accepted") is not True
+            or result.get("stopped") is not True
+            or result.get("action_id") != lease_id
+            or result.get("operator_motion_ready") is not True
+        ):
+            raise Go2ClientError("control service did not confirm safe lease release; check operator readiness")
 
     def stop(self) -> None:
         result = self._request("POST", "/v1/stop", {})

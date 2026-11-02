@@ -69,7 +69,9 @@ nav:
       - 推理 API v1: http_api.md
       - Agent 执行流程: agent-workflow.md
       - RPent 集成: rpent-integration.md
+      - RPent 导航: rpent-navigation.md
       - π0.5 双臂控制: pi05-bi-so101.md
+      - Go2 ActiveVLN 部署: go2-activevln.md
   - 系统设计:
       - 系统架构: architecture.md
       - Runtime 职责与成本: runtime-value.md
@@ -87,6 +89,7 @@ nav:
   - 场景:
       - VLA — SO-101 抓取: demos/so101-grasping.md
       - VLN — MicroDuck 导航: demos/microduck-vln.md
+      - VLN — Go2 真机导航: demos/go2-activevln.md
       - Agent — XLeRobot 递送: demos/xlerobot-snack-delivery.md
       - 多机器人 Recipe: demos/multi-robot-serving.md
   - 项目:

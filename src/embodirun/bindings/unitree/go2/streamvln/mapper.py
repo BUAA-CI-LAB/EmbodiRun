@@ -12,11 +12,11 @@ from embodirun.model_services import (
     PolicyResult,
 )
 from embodirun.robots import RobotAction, RobotObservation
-from embodirun.robots.sensors.cameras import CameraFrame
-from embodirun.robots.unitree.go2.navigation.discrete import (
+from embodirun.robots.mobile_base.discrete import (
     NavigationCommand,
     NavigationCommandKind,
 )
+from embodirun.robots.sensors.cameras import CameraFrame
 
 POLICY_ACTION_SPACE = "streamvln.action_chunk.v1"
 

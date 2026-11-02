@@ -42,6 +42,8 @@ lists robot, simulator, and model integrations.
 Recipes use the shared `embodirun example` CLI; `examples/run.sh` remains a
 compatible entrypoint for source checkouts.
 
+[Go2 + ActiveVLN: single-chunk, continuous and RTC execution](docs/en/demos/go2-activevln.md) · [Deployment](docs/en/go2-activevln.md).
+
 ## Why EmbodiRun
 
 | Feature | What you can do |
