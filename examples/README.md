@@ -191,6 +191,76 @@ Recipe lock; the software container already has its environment. See the
 commands, and the [installation guide](../docs/en/installation.md) for opt-in
 hardware/GPU profiles. Building an image does not enable robot motion.
 
+## Go2 / onboard Orin NX ActiveVLN
+
+For checkpoint preparation, transfer, vendor Python entrypoints and environment
+requirements, see the [deployment guide](../docs/en/go2-activevln.md)
+([中文](../docs/zh/go2-activevln.md)). Preparation has a separate CPU-only uv
+environment; it does not install the model service or alter the Host environment.
+
+`embodirun go2 activevln` connects the unified Go2 hardware owner to the
+optimized batch-one ActiveVLN HTTP service on onboard Orin NX. Copy
+[go2-orin-nx.json](../configs/activevln/go2-orin-nx.json), fill the two blank
+service URLs, and export the tokens named in the config. Camera/control normally
+share `robot_url` on port 8080; inference on the same NX can use `http://127.0.0.1:18767`.
+
+```bash
+CONFIG=/path/to/go2-orin-nx.local.json
+embodirun go2 activevln plan --config "$CONFIG"
+embodirun go2 activevln check --config "$CONFIG"
+embodirun go2 activevln run --config "$CONFIG" --instruction "Go to the door and stop."
+embodirun go2 activevln run --config "$CONFIG" --instruction "Go to the door and stop." \
+  --execute --output-jsonl artifacts/go2-demo.jsonl
+```
+
+`plan` is offline. `check` reads services without a model step or motion.
+`run` without `--execute` infers once without control writes; use it to warm new
+image/instruction shapes. Host Python is 3.10+; SDK/camera/model dependencies stay
+in their service environments. No driver or system changes are needed.
+
+Start inference using the updated
+[Orin NX BF16/INT8 launcher](https://github.com/yufoo1/EmbodiInfer/tree/fix/activevln-resident-kv/benchmarks/activevln-benchmark/orin-nx).
+Use that branch's updated source as well as its launcher: overlap requires the
+`activevln.execution_prefix.v1` capability. Keep batch=1 and existing optimization
+switches. The launcher needs its warmup assets/selection file, but no Habitat
+process. Export its `service-token` as `ACTIVEVLN_BENCHMARK_TOKEN`. Both current
+and frozen pre-rename v1 HTTP namespaces are supported.
+
+The config selects `overlap`: one background worker captures and infers during
+the current chunk's tail, while the control thread continues its heartbeat. The
+request describes the actions still committed at capture; the model is prompted
+to generate only their continuation, and the server acknowledges that context.
+A ready continuation reuses the motion lease without an intermediate zero command.
+If late, the base stops at the known chunk end and waits. STOP finishes after the
+committed tail; cancellation/failure stops immediately. Only one model step is in
+flight, and shutdown drains it before closing the recurrent session. The JSONL
+records capture/inference time, observation age, boundary readiness and waiting time.
+
+This borrows RTC's committed-prefix scheduling idea, **not** its flow-model
+numerical guidance. Prompt conditioning and moving observations change the policy
+inputs; navigation accuracy and smoothness still need Go2 + NX validation. Timed
+motion and camera exposure/encoding delay need hardware calibration; depth is not
+an obstacle controller. Set `mode` to `chunk` for the synchronous full-chunk baseline.
+
+The optional [Go2 owner](../integrations/go2_owner/README.md) owns control and
+capture with one configuration and endpoint. ActiveVLN reads RGB only; depth is
+optional for this policy. Generate the owner configuration with the vendor Python
+as described in the deployment guide, then install/start from the Mac:
+
+```bash
+embodirun go2 edge --host "$GO2_HOST" --username "$GO2_USER" --ask-password install
+embodirun go2 edge --host "$GO2_HOST" --username "$GO2_USER" --ask-password start \
+  --config /path/to/go2-owner.local.json --python "$EDGE_PYTHON" \
+  --supervisor-python "$HOST_PYTHON" --operator-ready
+```
+
+Both Python paths are remote: the owner uses the SDK environment (3.8+), while
+supervision needs 3.10+. Add `--sdk-pythonpath` if the vendor SDK is not installed.
+`status` and `stop` manage the single `go2` service and accept `--supervisor-python`.
+Motion completion disarms control; stop/restart the owner with `--operator-ready`
+for the next live run. Camera remains readable until owner shutdown. Inference
+runs independently. Software tests do not establish real-robot navigation quality.
+
 ## Smaller software examples
 
 - [Simulated device and public Control API](shared-device-fake.md)

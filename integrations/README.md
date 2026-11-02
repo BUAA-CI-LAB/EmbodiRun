@@ -5,6 +5,7 @@ Deploy's core does not install model runtimes, camera libraries, or robot SDKs.
 
 | Package | Responsibility | Core boundary |
 | --- | --- | --- |
+| [go2_owner](go2_owner/README.md) | Unified Go2 SDK2 control and camera owner | Authenticated hardware HTTP API |
 | [sglang_pi05](sglang_pi05/README.md) | SGLang-backed policy service | Versioned inference API through a model provider |
 | [xlerobot_owner](xlerobot_owner/README.md) | XLeRobot hardware owner, teleoperation and collection | Robot owner HTTP API through the XLeRobot adapter |
 | [microduck_vln](microduck_vln/README.md) | Optional MicroDuck simulation SDK and ActiveVLN service process | Existing EmbodiRun HTTP client; episode loop in `examples/microduck_vln` |

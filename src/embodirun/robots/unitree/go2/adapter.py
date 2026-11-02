@@ -6,10 +6,11 @@ import time
 from collections.abc import Mapping
 from typing import Any
 
+from embodirun.robots.mobile_base.motion import MobileBaseState, PlanarVelocityCommand
+
 from ...adapter import RobotAction, RobotAdapter, RobotObservation
 from .client import Go2ClientError, Go2ControlClient
 from .config import Go2Config
-from .navigation.motion import MobileBaseState, PlanarVelocityCommand
 
 GO2_ACTION_SPACE = "unitree.go2.planar_velocity.v1"
 

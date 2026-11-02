@@ -1,0 +1,26 @@
+{
+  "inference_url": "http://127.0.0.1:18767",
+  "robot_id": "go2",
+  "mode": "chunk",
+  "overlap": {
+    "lead_s": 1.5,
+    "max_capture_uncertainty_s": 0.15
+  },
+  "inference_token_env": "ACTIVEVLN_BENCHMARK_TOKEN",
+  "inference_timeout_s": 300.0,
+  "camera_timeout_s": 5.0,
+  "control_timeout_s": 0.5,
+  "session": {
+    "linear_speed_mps": 0.25,
+    "yaw_rate_rps": 0.5,
+    "control_hz": 10.0,
+    "max_chunk_s": 9.0,
+    "max_runtime_s": 120.0,
+    "max_chunks": 100,
+    "capture_timeout_s": 3.0,
+    "max_plan_age_s": 5.0,
+    "max_control_gap_s": 0.5
+  },
+  "robot_url": "http://127.0.0.1:8080",
+  "robot_token_env": "GO2_API_TOKEN"
+}

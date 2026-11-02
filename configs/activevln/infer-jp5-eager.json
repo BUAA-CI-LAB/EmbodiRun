@@ -1,0 +1,9 @@
+{
+  "policy_kwargs": {
+    "attention": "eager",
+    "do_sample": false,
+    "max_new_tokens": 512,
+    "max_context": 32768,
+    "repetition_penalty": 1.05
+  }
+}

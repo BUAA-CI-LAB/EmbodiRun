@@ -12,7 +12,7 @@ from embodirun.deployment.environment import EnvironmentError
 from embodirun.deployment.executor import Executor, executor_for
 from embodirun.deployment.plan import ServiceError, build_plan
 
-from .command import control, down, example, init, probe, run, sync, up, validate
+from .command import control, down, example, go2, init, probe, run, sync, up, validate
 from .context import CommandContext, state_path
 from .progress import ConsoleProgressReporter
 
@@ -27,6 +27,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     commands = parser.add_subparsers(dest="command", required=True)
     example.register(commands)
+    go2.register(commands)
     validate.register(commands)
     probe.register(commands)
     init.register(commands)
@@ -43,11 +44,14 @@ def main(
     *,
     executor_factory: Callable[[NodeConfig], Executor] = executor_for,
 ) -> int:
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if len(arguments) >= 2 and arguments[0] == "go2" and arguments[1] in {"activevln", "edge"}:
+        return go2.run(argparse.Namespace(binding=arguments[1], binding_args=arguments[2:]))
     parser = build_parser()
-    args = parser.parse_args(argv)
-    if args.command == "example":
+    args = parser.parse_args(arguments)
+    if args.command in {"example", "go2"}:
         try:
-            return example.run(args)
+            return (example if args.command == "example" else go2).run(args)
         except (OSError, RuntimeError, ValueError) as error:
             print(f"embodirun: error: {error}", file=sys.stderr)
             return 2

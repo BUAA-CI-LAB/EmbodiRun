@@ -57,6 +57,7 @@ nav:
       - Agent execution workflow: agent-workflow.md
       - RPent integration: rpent-integration.md
       - π0.5 with two SO-101: pi05-bi-so101.md
+      - Go2 ActiveVLN deployment: go2-activevln.md
   - Concepts:
       - Architecture: architecture.md
       - Runtime responsibilities and costs: runtime-value.md
@@ -74,6 +75,7 @@ nav:
   - Scenarios:
       - VLA — SO-101 grasping: demos/so101-grasping.md
       - VLN — MicroDuck navigation: demos/microduck-vln.md
+      - VLN — Go2 ActiveVLN: demos/go2-activevln.md
       - Agent — XLeRobot delivery: demos/xlerobot-snack-delivery.md
       - Multi-robot Recipe: demos/multi-robot-serving.md
   - Project:

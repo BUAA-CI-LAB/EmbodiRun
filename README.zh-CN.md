@@ -38,6 +38,8 @@
 Recipe 使用统一的 `embodirun example` 命令行入口；源码 checkout 仍可使用
 兼容的 `examples/run.sh`。
 
+[Go2 + ActiveVLN：单轮、连续与 RTC 真机执行](docs/zh/demos/go2-activevln.md) · [部署指南](docs/zh/go2-activevln.md)。
+
 ## 为什么选择 EmbodiRun
 
 | 特点 | 使用方式 |
