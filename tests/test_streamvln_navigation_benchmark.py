@@ -191,3 +191,53 @@ def test_batch_summary_counts_shared_latency_once_and_rejects_incomplete_batches
     rows[2]["timing"]["e2e_ms"] = 101
     with pytest.raises(ValueError, match="disagree"):
         timed(rows)
+
+
+def test_resume_summary_separates_restarted_service_batch_indices(metrics, tmp_path, monkeypatch):
+    """Restarted services may reuse batch zero without merging their elapsed times."""
+    monkeypatch.setitem(sys.modules, "metrics", metrics)
+    functions = runpy.run_path(str(Path(__file__).parents[1] / "benchmarks/streamvln-navigation/summarize.py"))
+    rows = []
+    (tmp_path / "r2r").mkdir()
+    for service_index, elapsed in enumerate((10.0, 20.0)):
+        episode = dict(
+            episode_id=str(service_index),
+            model_service_index=service_index,
+            status="complete",
+            stopped=True,
+            distance_to_goal_m=0.0,
+            shortest_path_m=1.0,
+            path_length_m=1.0,
+            success=True,
+            spl=1.0,
+            steps=1,
+            trace=[
+                dict(
+                    primitive_step=0,
+                    model=dict(
+                        stream_step_id=0,
+                        tensor_batch=dict(index=0, observations=1, capacity=1),
+                        cuda_peak_allocated_mib=1.0,
+                        graph_stats={},
+                    ),
+                    timing=dict(e2e_ms=elapsed),
+                    http_roundtrip_ms=elapsed + 1.0,
+                )
+            ],
+        )
+        (tmp_path / "r2r" / f"episode-{service_index}.json").write_text(json.dumps(episode))
+        rows.append({key: value for key, value in episode.items() if key != "trace"})
+    report = dict(
+        status="complete",
+        dataset="R2R",
+        expected_episodes=2,
+        episodes=rows,
+        model_service=dict(environment={}, config={}),
+    )
+    report_path = tmp_path / "r2r.json"
+    report_path.write_text(json.dumps(report))
+    _, _, summary = functions["load_complete"](report_path)
+    assert summary["calls"] == summary["model_invocations"] == 2
+    assert summary["mean_batch_occupancy"] == 1
+    assert summary["inference_seconds"] == pytest.approx(0.03)
+    assert summary["latency_ms"]["e2e_ms"]["mean"] == 15.0

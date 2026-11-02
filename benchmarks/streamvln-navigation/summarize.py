@@ -79,7 +79,11 @@ def load_complete(path: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str,
         if any(turn["primitive_step"] != turn["model"]["stream_step_id"] for turn in raw["trace"]):
             raise ValueError("model and simulator primitive history differ")
         traces[episode_id] = raw
-    calls = [turn for episode in traces.values() for turn in episode["trace"]]
+    calls = [
+        dict(turn, model_service_index=episode.get("model_service_index", 0))
+        for episode in traces.values()
+        for turn in episode["trace"]
+    ]
     invocations = timed_invocations(calls)
     timing_names = ("e2e_ms", "prefill_ms", "decode_ms", "gpu_inference_ms", "pure_inference_ms")
     if "tensor_batch" in invocations[0]["model"]:
