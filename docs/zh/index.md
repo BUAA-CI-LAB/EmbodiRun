@@ -4,7 +4,7 @@
   <img src="https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/logo.png" alt="EmbodiRun" class="hero-logo">
 </h1>
 
-**具身智能，开箱即跑。**
+**一键部署案例、Recipe 与具身部署框架。**
 
 用一份配置连接模型、计算节点与机器人或仿真器，跑通观测、推理和动作执行。
 
@@ -14,9 +14,19 @@
 
 </div>
 
-EmbodiRun 部署服务，将机器人观测送入推理服务，并协调动作执行。
-你可以使用 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer)、外部模型服务，
-或由 Agent 编排任务循环。
+从 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer) 选择模型与推理配置，
+再通过 EmbodiRun 的 Recipe 部署服务、接入机器人或仿真器、执行动作并录制会话。
+也可接入外部模型服务，或由 Agent 编排任务循环。
+
+## 演示与对比
+
+| 演示 | 条件与结果 |
+|---|---|
+| VLA · SO-101 真机 | [三引擎 / 四配置录像与完整 chunk 耗时](demos/engine-e2e-contrast.md) |
+| VLN · Habitat / ActiveVLN | [EmbodiInfer、SGLang、vLLM 原速闭环对比](demos/activevln-engines.md) |
+| VLN · Go2 真机 | [chunk / RTC 录像，3× 播放](demos/go2-activevln.md)；适配代码待合入 |
+| 模型推理性能 | [EmbodiInfer 的 VLA / VLN 基准](https://github.com/BUAA-CI-LAB/EmbodiInfer/blob/main/docs/zh/benchmark.md) |
+| 部署组合与后续计划 | [支持矩阵与路线图](support-matrix.md) · [全部 Recipe](examples.md) |
 
 ## 三个场景
 

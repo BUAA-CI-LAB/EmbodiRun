@@ -13,6 +13,12 @@ machine-readable results. For robot and simulator task setup, use
 | [StreamVLN navigation](streamvln-navigation/benchmark.py) | Habitat closed-loop R2R; serialized B1 or explicit tensor batches 1/2/4/8 | Per-episode SR/SPL evidence, primitive-frame history, actions, token traces and model/transport timing |
 | [ActiveVLN navigation](activevln-navigation/benchmark.py) | Habitat R2R/RxR with the checkpoint's action grammar; tensor batches 1/2/4/8 | Per-episode SR/SPL, executed trajectories, batch identity and timing |
 
+The [ActiveVLN three-engine film](../docs/en/demos/activevln-engines.md) adds a
+recorded single-episode comparison with EmbodiInfer, SGLang and vLLM. Its task
+timings are separate from the dataset-level SR/SPL benchmarks above; the packaged
+vLLM entrypoint remains pending GPU validation.
+中文：[录像、计时与验证范围](../docs/zh/demos/activevln-engines.md)。
+
 Model-only benchmarks are maintained in
 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer/tree/main/benchmarks).
 中文结果：[引擎对比](../docs/zh/demos/engine-e2e-contrast.md) ·
