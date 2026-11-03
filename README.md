@@ -165,7 +165,7 @@ loading and warmup. All runs STOP within the 3 m success threshold.
 This is one demo episode; SGLang outputs vary across service startups,
 and the reusable vLLM entrypoint still needs GPU validation.
 [Full conditions and recording](docs/en/demos/activevln-engines.md).
-For batch performance across 128 first frames, see [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer/#performance).
+For batch performance across 128 first frames, see [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer/blob/main/benchmarks/activevln-benchmark/rtx-4090/README.md).
 
 ## Quick start and Recipes
 

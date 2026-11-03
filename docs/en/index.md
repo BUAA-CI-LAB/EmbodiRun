@@ -27,7 +27,7 @@ agent-managed task loops are also supported.
 | VLA · SO-101 hardware | [Three engines / four configurations and full-chunk timings](demos/engine-e2e-contrast.md) |
 | VLN · Habitat / ActiveVLN | [Original-speed EmbodiInfer, SGLang and vLLM closed loop](demos/activevln-engines.md) |
 | VLN · Go2 hardware | [Chunk / RTC footage, 3× playback](demos/go2-activevln.md); adaptation pending merge |
-| Model inference measurements | [EmbodiInfer VLA / VLN benchmarks](https://github.com/BUAA-CI-LAB/EmbodiInfer#performance) |
+| Model inference measurements | [EmbodiInfer VLA / VLN benchmarks](https://github.com/BUAA-CI-LAB/EmbodiInfer/blob/main/docs/en/benchmark.md) |
 | Deployment coverage and future work | [Support matrix and roadmap](support-matrix.md) · [All Recipes](examples.md) |
 
 ## Three scenarios

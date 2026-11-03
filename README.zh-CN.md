@@ -151,7 +151,7 @@ RTX 4090、ActiveVLN R2R 权重 `1609873`、BF16、B=1、贪心解码，
 包含 HTTP、推理与仿真，不含启动、加载与预热。三组均在 3 m 成功阈值内 STOP。
 这是单集演示；SGLang 跨启动输出存在变化，可复用 vLLM 封装入口尚待 GPU 验证。
 [完整条件与记录](docs/zh/demos/activevln-engines.md)。
-128 首帧的批量性能对比见 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer/#performance)。
+128 首帧的批量性能对比见 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer/blob/main/benchmarks/activevln-benchmark/rtx-4090/README.md)。
 
 ## 快速开始与 Recipe
 

@@ -25,7 +25,7 @@
 | VLA · SO-101 真机 | [三引擎 / 四配置录像与完整 chunk 耗时](demos/engine-e2e-contrast.md) |
 | VLN · Habitat / ActiveVLN | [EmbodiInfer、SGLang、vLLM 原速闭环对比](demos/activevln-engines.md) |
 | VLN · Go2 真机 | [chunk / RTC 录像，3× 播放](demos/go2-activevln.md)；适配代码待合入 |
-| 模型推理性能 | [EmbodiInfer 的 VLA / VLN 基准](https://github.com/BUAA-CI-LAB/EmbodiInfer#performance) |
+| 模型推理性能 | [EmbodiInfer 的 VLA / VLN 基准](https://github.com/BUAA-CI-LAB/EmbodiInfer/blob/main/docs/zh/benchmark.md) |
 | 部署组合与后续计划 | [支持矩阵与路线图](support-matrix.md) · [全部 Recipe](examples.md) |
 
 ## 三个场景
