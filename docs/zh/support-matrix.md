@@ -12,7 +12,7 @@
 | 场景 | 入门 | 相关配置 |
 |---|---|---|
 | VLA | [SO-101 抓取](demos/so101-grasping.md) | [多臂共享推理](demos/multi-robot-serving.md)、[引擎变体](demos/engine-e2e-contrast.md)、[Bi-SO-101](pi05-bi-so101.md) |
-| VLN | [MuJoCo 中的 MicroDuck / ActiveVLN](demos/microduck-vln.md) | 下方的仿真器与机器人配置 |
+| VLN | [MuJoCo / MicroDuck](demos/microduck-vln.md) | [Habitat 三引擎](demos/activevln-engines.md) · [Go2 真机录像（适配待合入）](demos/go2-activevln.md) |
 | Agent | [XLeRobot 零食递送](demos/xlerobot-snack-delivery.md) | [Agent 工作流](agent-workflow.md)、[RPent 集成](rpent-integration.md) |
 
 完整任务步骤见 [Recipe 索引](examples.md)。下方目录说明适配器支持状态，
@@ -20,6 +20,10 @@
 
 π0.5 HTTP 与 WirelessComm 服务通过 `--max-batch` 支持跨会话批处理，默认值为 1。
 DM0.5 与 StreamVLN 当前逐请求执行。MicroDuck 使用其专用集成中的 ActiveVLN HTTP 服务。
+
+Go2 的 ActiveVLN 录像与 StreamVLN 适配分别记录；ActiveVLN 适配仍在
+[PR #13](https://github.com/BUAA-CI-LAB/EmbodiRun/pull/13)，不计入 main 的已合入能力。
+Habitat 的三引擎录像来自实验服务；可复用 vLLM 封装入口的 GPU 验证待完成。
 
 ## 当前支持
 

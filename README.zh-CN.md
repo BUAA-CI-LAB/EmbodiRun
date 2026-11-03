@@ -6,7 +6,8 @@
 <p align="center">
   <a href="https://embodirun.readthedocs.io/zh-cn/latest/">文档</a> ·
   <a href="#快速开始与-recipe">快速开始</a> ·
-  <a href="#三个场景">场景</a> ·
+  <a href="#vla-与-vln-演示">演示</a> ·
+  <a href="#部署覆盖矩阵">部署矩阵</a> ·
   <a href="#性能">性能</a> ·
   <a href="docs/zh/support-matrix.md">支持矩阵</a> ·
   <a href="README.md">English</a>
@@ -18,29 +19,72 @@
   <a href="https://embodirun.readthedocs.io/"><img src="https://readthedocs.org/projects/embodirun/badge/?version=latest" alt="Documentation"></a>
 </p>
 
-**EmbodiRun 是面向具身智能的部署与执行运行时。** 它将机器人观测送入模型或 Agent，
-执行返回的动作，并记录会话。用 YAML 描述设备、推理服务与计算节点，即可将控制进程放在机器人侧，
-将推理服务部署到 GPU 主机。
+**EmbodiRun 提供一键部署案例、Recipe 与具身部署框架。**
+从 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer/blob/main/README.zh-CN.md) 选择模型与优化配置，
+再用 EmbodiRun 将机器人或仿真器观测送入推理服务、执行动作并记录会话。
+一份 YAML 描述设备、服务与计算节点，支持机器人侧控制和 GPU 主机推理，
+也可接入其他模型服务或 [Agent 客户端](agents/CLIENT.md)。
 
-使用 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer) 运行模型推理，
-接入外部服务，或通过 [Agent 客户端](agents/CLIENT.md)编排任务。
+| 从哪里开始 | 内容 |
+|---|---|
+| [**EmbodiInfer · 主要入口**](https://github.com/BUAA-CI-LAB/EmbodiInfer/blob/main/README.zh-CN.md) | 模型、推理性能、Python / 服务接口与优化配置。 |
+| **EmbodiRun · 部署入口** | 一键案例、Recipe、跨机部署、机器人 / 仿真器接入、动作执行与录制。 |
+
+## VLA 与 VLN 演示
+
+### VLA · SO-101 真机 / π0.5
+
+[![SO-101 上 EmbodiInfer、SGLang 与 LeRobot 的闭环对比](docs/assets/demos/so101-engines.webp)](docs/zh/demos/engine-e2e-contrast.md)
+
+Jetson AGX Thor 推理、Raspberry Pi 控制，同一 SO-101、双相机与检查点。
+**1× 原速**预览前 8 秒；[完整 29 秒视频与条件](docs/zh/demos/engine-e2e-contrast.md)。
+各组独立运行并手动重置物体；完整 chunk 与推理延迟见下方性能表。
+原录像的 `vvla-wireless` / `vvla` 是 EmbodiInfer 的旧标签，分别对应 WirelessComm / HTTP。
+
+### VLN · Habitat / ActiveVLN 三引擎
+
+[![EmbodiRun 中 EmbodiInfer、SGLang 与 vLLM 的 ActiveVLN 原速对比](docs/assets/demos/activevln-engines.webp)](docs/zh/demos/activevln-engines.md)
+
+EmbodiRun 使用同一套观测与执行循环，分别接入 EmbodiInfer、SGLang 和 vLLM；
+RTX 4090、BF16、B=1、相同初始状态，**1× 原速**。
+这是单个 R2R episode 的录像；[配置、计时与封装验证状态](docs/zh/demos/activevln-engines.md)。
+
+<details>
+<summary>VLN · Go2 真机 / chunk 与 RTC（3× 播放）</summary>
+
+[![Go2 上的 ActiveVLN chunk 与 RTC 执行演示](docs/assets/demos/go2-activevln.webp)](docs/zh/demos/go2-activevln.md)
+
+机载 Orin NX、D435I、BF16，三个执行模式来自不同回合，用于展示行为。
+**3× 播放**；[录像说明](docs/zh/demos/go2-activevln.md)。
+适配实现仍在 [PR #13](https://github.com/BUAA-CI-LAB/EmbodiRun/pull/13)，尚未进入 main。
+
+</details>
 
 ## 三个场景
 
 | VLA · 机械臂抓取 | VLN · 语言导航 | Agent · 移动与抓取 |
 |---|---|---|
 | [![SO-101 抓取](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/multi_robot_serving.jpg)](docs/zh/demos/so101-grasping.md) | [![MuJoCo 中的 MicroDuck](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/microduck_simulation_one_click_demo.jpg)](docs/zh/demos/microduck-vln.md) | [![XLeRobot 零食递送](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/xlerobot_snack_delivery/xlerobot_snack_delivery_overview.jpg)](docs/zh/demos/xlerobot-snack-delivery.md) |
-| **SO-101 + π0.5：** 根据相机图像和关节状态，抓取方块并放入碗中。 | **MicroDuck + ActiveVLN：** 在 MuJoCo 场景中按语言指令导航。 | **移动底盘 + SO-101 双臂：** 结合录制路线、RPent/Astra 场景判断和 VLA 抓取，在操作员监督下完成零食递送。 |
-| [观看演示](docs/zh/demos/so101-grasping.md) · [Recipe](examples/so101_grasping.md) | [观看演示](docs/zh/demos/microduck-vln.md) · [Recipe](examples/microduck_vln/README.md) | [流程与架构](docs/zh/demos/xlerobot-snack-delivery.md) · [Recipe](examples/xlerobot_snack_delivery/README.md) |
+| **SO-101 + π0.5：** 根据相机图像和关节状态，抓取方块并放入碗中。 | **MicroDuck + ActiveVLN：** 在 MuJoCo 场景中按语言指令导航。 | **移动底盘 + SO-101 双臂：** 结合录制路线、RPent/Astra 场景判断和 VLA 抓取，在操作员监督下递送零食。 |
+| [抓取 Recipe](examples/so101_grasping.md) | [导航 Recipe](examples/microduck_vln/README.md) | [移动抓取 Recipe](examples/xlerobot_snack_delivery/README.md) |
 
-[Go2 真机演示：EmbodiRun + EmbodiInfer — chunk 与 RTC 执行，3 倍速](docs/zh/demos/go2-activevln.md)。
+## 部署覆盖矩阵
 
-[Recipe 索引](examples/README.md)提供多臂共享推理、其他推理后端及纯软件示例。
-机器人、仿真器与模型的支持情况见[支持矩阵](docs/zh/support-matrix.md)。
-Recipe 使用统一的 `embodirun example` 命令行入口；源码 checkout 仍可使用
-兼容的 `examples/run.sh`。
+| 场景 / 平台 | 模型与后端 | 部署 / Recipe 入口 | 当前证据与状态 |
+|---|---|---|---|
+| SO-101 真机 | π0.5 · EmbodiInfer / SGLang / LeRobot | [抓取](examples/so101_grasping.md) · [后端变体](examples/engine_comparison/README.md) | 真机录像与逐 chunk 汇总；原生 LeRobot 为对照服务。 |
+| 多 SO-101 / Bi-SO-101 | π0.5 · 共享推理 / 双臂绑定 | [多臂演示](docs/zh/demos/multi-robot-serving.md) · [双臂配置](docs/zh/pi05-bi-so101.md) | 多臂录像；绑定有软件测试，完整独立 Recipe 待补。 |
+| LIBERO / VLABench | π0.5 · EmbodiInfer；LIBERO 另有 SGLang | [仿真配置](configs/simulation/) | 已有配置；VLABench 为实验性接入。 |
+| MicroDuck / MuJoCo | ActiveVLN · 专用 HTTP 集成 | [完整 Recipe](examples/microduck_vln/README.md) | 已有录像；需独立依赖、场景、行走模型及 GPU。 |
+| Habitat | ActiveVLN · EmbodiInfer / SGLang / vLLM | [对比示例](examples/activevln_engines/) · [录像](docs/zh/demos/activevln-engines.md) | 实验服务录像；可复用 vLLM 入口的 GPU 验证待完成。 |
+| Habitat / Isaac Sim / Go2 | StreamVLN · EmbodiInfer | [配置与适配器](docs/zh/support-matrix.md) | 实验性；完整部署 Recipe 待补。 |
+| Go2 真机 | ActiveVLN · EmbodiInfer | [演示](docs/zh/demos/go2-activevln.md) · [PR #13](https://github.com/BUAA-CI-LAB/EmbodiRun/pull/13) | 已有录像；适配代码待合入。 |
+| FR3 / ARX5 | π0.5 / DM0.5 | [硬件接入矩阵](docs/zh/support-matrix.md) | 已有绑定 / 适配器；SDK、标定与任务 Recipe 按平台准备。 |
+| XLeRobot | π0.5 + RPent / Astra | [完整 Recipe](examples/xlerobot_snack_delivery/README.md) | 软件演练与监督下硬件流程。 |
 
-[ActiveVLN 仿真：EmbodiRun 统一接入 EmbodiInfer、SGLang 与 vLLM](docs/zh/demos/activevln-engines.md) · [vLLM 接入](integrations/vllm_activevln/README.md)。
+完整平台状态、依赖与后续规划见[支持矩阵](docs/zh/support-matrix.md)。
+Recipe 统一使用 `embodirun example`；先准备所需模型、资源和设备，再执行案例命令。
+[全部 Recipe](examples/README.md) · [vLLM 接入](integrations/vllm_activevln/README.md)。
 
 ## 为什么选择 EmbodiRun
 
@@ -70,6 +114,8 @@ Recipe 使用统一的 `embodirun example` 命令行入口；源码 checkout 仍
 
 ## 性能
 
+### VLA · SO-101 真机完整 chunk
+
 ![SO-101 推理与完整 chunk 延迟](docs/assets/performance/so101-engine-comparison.svg)
 
 | 引擎 | 传输 | 推理延迟 | 完整 chunk 时间 |
@@ -92,9 +138,22 @@ SGLang 使用上游默认设置，LeRobot 使用 eager 执行。
 [HTTP / WirelessComm 测量](docs/zh/inference-transport.md) ·
 [模型推理基准](https://github.com/BUAA-CI-LAB/EmbodiInfer#performance)
 
-## 快速开始与 Recipe
+### VLN · 单集闭环执行
 
-验证尚未合并的 PR 时，请先切换到该 PR 的 head 分支再安装；默认 `main` 不包含该 PR 的改动。
+| 推理引擎 | 任务耗时 | 最终距目标 | 原子动作步数 / 推理次数 |
+|---|---:|---:|---:|
+| **EmbodiInfer** | **1.979 s** | 0.673 m | 49 / 11 |
+| SGLang | 2.736 s | 0.673 m | 49 / 11 |
+| vLLM | 2.682 s | 0.673 m | 49 / 11 |
+
+RTX 4090、ActiveVLN R2R 权重 `1609873`、BF16、B=1、贪心解码，
+同一 R2R val-unseen episode 17。计时从 session 创建后到实际 STOP，
+包含 HTTP、推理与仿真，不含启动、加载与预热。三组均在 3 m 成功阈值内 STOP。
+这是单集演示；SGLang 跨启动输出存在变化，可复用 vLLM 封装入口尚待 GPU 验证。
+[完整条件与记录](docs/zh/demos/activevln-engines.md)。
+128 首帧的批量性能对比见 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer/#performance)。
+
+## 快速开始与 Recipe
 
 ### 运行本地示例
 
@@ -165,6 +224,22 @@ Native setup 和 Docker 共用该 Recipe 的独立依赖锁。setup/check 默认
 开发与检查流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。问题与建议请提交
 [GitHub issue](https://github.com/BUAA-CI-LAB/EmbodiRun/issues)，漏洞请按 [SECURITY.md](SECURITY.md) 私下报告。
 社区遵循[行为准则](CODE_OF_CONDUCT.md)。
+
+## 致谢
+
+感谢 [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer)、
+[OpenPI](https://github.com/Physical-Intelligence/openpi)、
+[LeRobot](https://github.com/huggingface/lerobot)、
+[FlashRT](https://github.com/flashrt-project/FlashRT)、
+[APXinf](https://github.com/infinigence/ApxInf)、
+[Embodied.cpp](https://github.com/SEU-PAISys/Embodied.cpp)、
+[SGLang](https://github.com/sgl-project/sglang)、[vLLM](https://github.com/vllm-project/vllm)、
+[LIBERO](https://github.com/Lifelong-Robot-Learning/LIBERO)、
+[Habitat](https://github.com/facebookresearch/habitat-lab) 与上游机器人及模型作者构建开源生态。
+模型量化方法包括 [SmoothQuant（ICML 2023）](https://proceedings.mlr.press/v202/xiao23c.html)；
+其在 EmbodiInfer 中的用途见[推理项目致谢](https://github.com/BUAA-CI-LAB/EmbodiInfer#acknowledgments-and-references)。
+部署侧使用 [WirelessComm](https://github.com/BUAA-CI-LAB/WirelessComm) 等可选组件；
+具体派生代码与许可见[第三方声明](THIRD_PARTY_NOTICES.md)。
 
 ## 许可证
 

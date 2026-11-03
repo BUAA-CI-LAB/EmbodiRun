@@ -6,7 +6,8 @@
 <p align="center">
   <a href="https://embodirun.readthedocs.io/">Documentation</a> ·
   <a href="#quick-start-and-recipes">Quick start</a> ·
-  <a href="#three-scenarios">Scenarios</a> ·
+  <a href="#vla-and-vln-demos">Demos</a> ·
+  <a href="#deployment-coverage">Deployment matrix</a> ·
   <a href="#performance">Performance</a> ·
   <a href="docs/en/support-matrix.md">Support matrix</a> ·
   <a href="README.zh-CN.md">简体中文</a>
@@ -18,33 +19,79 @@
   <a href="https://embodirun.readthedocs.io/"><img src="https://readthedocs.org/projects/embodirun/badge/?version=latest" alt="Documentation"></a>
 </p>
 
-**EmbodiRun is a deployment and execution runtime for embodied AI.** Connect
-robot observations to a model or agent, execute its actions, and record the
-session. A YAML configuration describes the devices, inference services, and
-compute nodes, so control can run beside the robot while inference runs on a
-GPU host.
+**EmbodiRun provides one-command deployment examples, Recipes and an embodied deployment framework.**
+Start with [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer/) to choose a model and inference profile,
+then use EmbodiRun to connect robot or simulator observations, execute actions
+and record sessions. A YAML file describes devices, services and compute nodes,
+so control can run beside the robot while inference runs on a GPU host.
+External model services and the [Agent client](agents/CLIENT.md) are also supported.
 
-Use [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer) for model inference,
-connect an external service, or build a task loop with the
-[Agent client](agents/CLIENT.md).
+| Where to start | What it provides |
+|---|---|
+| [**EmbodiInfer · Main entry point**](https://github.com/BUAA-CI-LAB/EmbodiInfer/) | Models, inference measurements, Python / serving interfaces and optimization profiles. |
+| **EmbodiRun · Deployment entry** | One-command examples, Recipes, cross-machine deployment, robot / simulator integration, execution and recording. |
+
+## VLA and VLN demos
+
+### VLA · SO-101 hardware / π0.5
+
+[![Closed-loop comparison of EmbodiInfer, SGLang and LeRobot on SO-101](docs/assets/demos/so101-engines.webp)](docs/en/demos/engine-e2e-contrast.md)
+
+Jetson AGX Thor inference, Raspberry Pi control, the same SO-101, two cameras
+and checkpoint. **1× playback**, previewing the first 8 seconds;
+[full 29-second film and conditions](docs/en/demos/engine-e2e-contrast.md).
+Runs are independent with manual object resets. Inference and full-chunk
+timings appear in the performance table below. The original film's `vvla-wireless`
+and `vvla` labels refer to EmbodiInfer over WirelessComm and HTTP respectively.
+
+### VLN · Habitat / ActiveVLN across three engines
+
+[![Original-speed ActiveVLN comparison of EmbodiInfer, SGLang and vLLM inside EmbodiRun](docs/assets/demos/activevln-engines.webp)](docs/en/demos/activevln-engines.md)
+
+EmbodiRun owns the same observation and execution loop for EmbodiInfer, SGLang
+and vLLM. RTX 4090, BF16, B=1, the same initial state, **1× playback**.
+This records one R2R episode.
+[Configuration, timing and packaged integration status](docs/en/demos/activevln-engines.md).
+
+<details>
+<summary>VLN · Go2 hardware / chunk and RTC execution (3× playback)</summary>
+
+[![ActiveVLN chunk and RTC execution on Go2](docs/assets/demos/go2-activevln.webp)](docs/en/demos/go2-activevln.md)
+
+Onboard Orin NX, D435I and BF16. Different recorded takes illustrate three
+execution modes at **3× playback**.
+[Recording notes](docs/en/demos/go2-activevln.md).
+Adaptation remains in [PR #13](https://github.com/BUAA-CI-LAB/EmbodiRun/pull/13)
+and is not included in main.
+
+</details>
 
 ## Three scenarios
 
 | VLA · Manipulation | VLN · Navigation | Agent · Mobile manipulation |
 |---|---|---|
 | [![SO-101 grasping](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/multi_robot_serving.jpg)](docs/en/demos/so101-grasping.md) | [![MicroDuck in MuJoCo](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/microduck_simulation_one_click_demo.jpg)](docs/en/demos/microduck-vln.md) | [![XLeRobot snack delivery](https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/v0.1/xlerobot_snack_delivery/xlerobot_snack_delivery_overview.jpg)](docs/en/demos/xlerobot-snack-delivery.md) |
-| **SO-101 + π0.5:** pick up a cube and place it in a bowl using camera images and joint state. | **MicroDuck + ActiveVLN:** follow a language instruction through a MuJoCo scene. | **Mobile base + SO-101 arms:** combine recorded routes, RPent/Astra scene review, and VLA grasping to deliver a snack under operator supervision. |
-| [Watch and learn](docs/en/demos/so101-grasping.md) · [Recipe](examples/so101_grasping.md) | [Watch and learn](docs/en/demos/microduck-vln.md) · [Recipe](examples/microduck_vln/README.md) | [Workflow and architecture](docs/en/demos/xlerobot-snack-delivery.md) · [Recipe](examples/xlerobot_snack_delivery/README.md) |
+| **SO-101 + π0.5:** use camera images and joint state to place a cube in a bowl. | **MicroDuck + ActiveVLN:** follow a language instruction in MuJoCo. | **Mobile base + SO-101 arms:** combine recorded routes, RPent/Astra review and VLA grasping for supervised delivery. |
+| [Grasping Recipe](examples/so101_grasping.md) | [Navigation Recipe](examples/microduck_vln/README.md) | [Mobile manipulation Recipe](examples/xlerobot_snack_delivery/README.md) |
 
-[Go2 physical demo: EmbodiRun + EmbodiInfer — chunk and RTC execution, 3×](docs/en/demos/go2-activevln.md).
+## Deployment coverage
 
-Explore [Recipes](examples/README.md) for multiple arms, alternative inference
-backends, and software-only examples. The [support matrix](docs/en/support-matrix.md)
-lists robot, simulator, and model integrations.
-Recipes use the shared `embodirun example` CLI; `examples/run.sh` remains a
-compatible entrypoint for source checkouts.
+| Scenario / platform | Model and backend | Deployment / Recipe entry | Evidence and status |
+|---|---|---|---|
+| SO-101 hardware | π0.5 · EmbodiInfer / SGLang / LeRobot | [Grasping](examples/so101_grasping.md) · [Backend variants](examples/engine_comparison/README.md) | Hardware footage and per-chunk summaries; native LeRobot is a reference service. |
+| Multiple SO-101 / Bi-SO-101 | π0.5 · shared inference / dual-arm binding | [Multi-arm demo](docs/en/demos/multi-robot-serving.md) · [Dual-arm setup](docs/en/pi05-bi-so101.md) | Multi-arm footage; software-tested bindings, dedicated Recipes pending. |
+| LIBERO / VLABench | π0.5 · EmbodiInfer; SGLang also available for LIBERO | [Simulation configurations](configs/simulation/) | Configurations available; VLABench is experimental. |
+| MicroDuck / MuJoCo | ActiveVLN · dedicated HTTP integration | [Full Recipe](examples/microduck_vln/README.md) | Footage available; separate dependencies, scenes, walking model and GPU required. |
+| Habitat | ActiveVLN · EmbodiInfer / SGLang / vLLM | [Comparison example](examples/activevln_engines/) · [Film](docs/en/demos/activevln-engines.md) | Experimental service footage; GPU validation of the reusable vLLM entrypoint pending. |
+| Habitat / Isaac Sim / Go2 | StreamVLN · EmbodiInfer | [Configurations and adapters](docs/en/support-matrix.md) | Experimental; full deployment Recipes pending. |
+| Go2 hardware | ActiveVLN · EmbodiInfer | [Demo](docs/en/demos/go2-activevln.md) · [PR #13](https://github.com/BUAA-CI-LAB/EmbodiRun/pull/13) | Footage available; adaptation pending merge. |
+| FR3 / ARX5 | π0.5 / DM0.5 | [Hardware matrix](docs/en/support-matrix.md) | Bindings / adapters available; prepare platform SDKs, calibration and task Recipes. |
+| XLeRobot | π0.5 + RPent / Astra | [Full Recipe](examples/xlerobot_snack_delivery/README.md) | Software rehearsal and supervised hardware workflow. |
 
-[ActiveVLN simulation: EmbodiInfer, SGLang and vLLM inside EmbodiRun](docs/en/demos/activevln-engines.md) · [vLLM integration](integrations/vllm_activevln/README.md).
+See the [support matrix](docs/en/support-matrix.md) for full platform status,
+dependencies and the roadmap. Recipes share the `embodirun example` CLI;
+prepare their models, assets and devices before launching.
+[All Recipes](examples/README.md) · [vLLM integration](integrations/vllm_activevln/README.md).
 
 ## Why EmbodiRun
 
@@ -78,6 +125,8 @@ scope with LeRobot and ROS 2 and identifies the deployment measurements still ne
 
 ## Performance
 
+### VLA · Full SO-101 hardware chunks
+
 ![SO-101 inference and full-chunk latency](docs/assets/performance/so101-engine-comparison.svg)
 
 | Engine | Transport | Inference latency | Full chunk time |
@@ -101,10 +150,24 @@ about 2.45 seconds of each chunk.
 [HTTP / WirelessComm measurements](docs/en/inference-transport.md) ·
 [Model inference benchmarks](https://github.com/BUAA-CI-LAB/EmbodiInfer#performance)
 
-## Quick start and Recipes
+### VLN · One closed-loop episode
 
-When testing an unmerged PR, check out its head branch before installing;
-the default `main` checkout does not include that PR's changes.
+| Inference engine | Task time | Final distance | Primitive steps / calls |
+|---|---:|---:|---:|
+| **EmbodiInfer** | **1.979 s** | 0.673 m | 49 / 11 |
+| SGLang | 2.736 s | 0.673 m | 49 / 11 |
+| vLLM | 2.682 s | 0.673 m | 49 / 11 |
+
+RTX 4090, ActiveVLN R2R weights `1609873`, BF16, B=1, greedy decoding,
+the same R2R val-unseen episode 17. Timing runs from after session creation
+to actual STOP, including HTTP, inference and simulation; it excludes startup,
+loading and warmup. All runs STOP within the 3 m success threshold.
+This is one demo episode; SGLang outputs vary across service startups,
+and the reusable vLLM entrypoint still needs GPU validation.
+[Full conditions and recording](docs/en/demos/activevln-engines.md).
+For batch performance across 128 first frames, see [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer/#performance).
+
+## Quick start and Recipes
 
 ### Run a local example
 
@@ -184,6 +247,25 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and checks.
 Use [GitHub issues](https://github.com/BUAA-CI-LAB/EmbodiRun/issues) for bugs and
 feature requests, and follow [SECURITY.md](SECURITY.md) for private vulnerability
 reports. Community participation follows our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Acknowledgments
+
+We thank [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer),
+[OpenPI](https://github.com/Physical-Intelligence/openpi),
+[LeRobot](https://github.com/huggingface/lerobot),
+[FlashRT](https://github.com/flashrt-project/FlashRT),
+[APXinf](https://github.com/infinigence/ApxInf),
+[Embodied.cpp](https://github.com/SEU-PAISys/Embodied.cpp),
+[SGLang](https://github.com/sgl-project/sglang), [vLLM](https://github.com/vllm-project/vllm),
+[LIBERO](https://github.com/Lifelong-Robot-Learning/LIBERO),
+[Habitat](https://github.com/facebookresearch/habitat-lab), and the upstream robot
+and model authors for the open ecosystem. Quantization methods include
+[SmoothQuant (ICML 2023)](https://proceedings.mlr.press/v202/xiao23c.html);
+its use in EmbodiInfer is described in the
+[inference project's acknowledgments](https://github.com/BUAA-CI-LAB/EmbodiInfer#acknowledgments-and-references).
+Deployment also uses optional components such as
+[WirelessComm](https://github.com/BUAA-CI-LAB/WirelessComm).
+See [third-party notices](THIRD_PARTY_NOTICES.md) for derived code and licenses.
 
 ## License
 

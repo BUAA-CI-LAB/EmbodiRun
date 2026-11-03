@@ -4,7 +4,7 @@
   <img src="https://raw.githubusercontent.com/BUAA-CI-LAB/misc/main/embodirun/logo.png" alt="EmbodiRun" class="hero-logo">
 </h1>
 
-**Embodied AI, Ready to Run.**
+**One-command examples, Recipes and an embodied deployment framework.**
 
 Configure a model, a compute node, and a robot or simulator — then run the whole
 loop from one file.
@@ -15,10 +15,20 @@ loop from one file.
 
 </div>
 
-EmbodiRun deploys services, connects robot observations to inference, and
-coordinates action execution. Pair it with
-[EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer), an external model
-service, or an agent that manages its own task loop.
+Start with [EmbodiInfer](https://github.com/BUAA-CI-LAB/EmbodiInfer) for models and
+inference profiles. Use EmbodiRun Recipes to deploy services, connect robots or
+simulators, execute actions and record sessions. External model services and
+agent-managed task loops are also supported.
+
+## Demos and comparisons
+
+| Demo | Conditions and results |
+|---|---|
+| VLA · SO-101 hardware | [Three engines / four configurations and full-chunk timings](demos/engine-e2e-contrast.md) |
+| VLN · Habitat / ActiveVLN | [Original-speed EmbodiInfer, SGLang and vLLM closed loop](demos/activevln-engines.md) |
+| VLN · Go2 hardware | [Chunk / RTC footage, 3× playback](demos/go2-activevln.md); adaptation pending merge |
+| Model inference measurements | [EmbodiInfer VLA / VLN benchmarks](https://github.com/BUAA-CI-LAB/EmbodiInfer#performance) |
+| Deployment coverage and future work | [Support matrix and roadmap](support-matrix.md) · [All Recipes](examples.md) |
 
 ## Three scenarios
 
