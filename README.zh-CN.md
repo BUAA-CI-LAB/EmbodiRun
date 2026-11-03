@@ -217,7 +217,15 @@ Native setup 和 Docker 共用该 Recipe 的独立依赖锁。setup/check 默认
 | 测量与结果 | [benchmarks/](benchmarks/README.md) · [Runtime 成本](docs/zh/runtime-value.md) |
 | 已支持与计划支持的集成 | [支持矩阵与路线图](docs/zh/support-matrix.md) |
 
-后续规划包括更多机器人 Recipe、自动数据采集流程、SmolVLA 与 OpenVLA 接入，以及部署和扩展性基准。
+| 后续工作 | 当前状态 |
+|---|---|
+| Bi-SO-101 / FR3 / ARX5 / 更多仿真器 Recipe | 已有适配器或配置；独立完整任务 Recipe 待补。 |
+| Go2 / ActiveVLN、Habitat 与其他 VLN Recipe | 有录像或配置；Go2 适配待合入，可复用 vLLM 入口的 GPU 验证待完成。 |
+| 自动采集、更多移动抓取 Agent | 任务重置、数据导出与案例待完善。 |
+| SmolVLA / OpenVLA 基础模型 | 推理适配与部署绑定待实现。 |
+| 部署成本与扩展性 | 已有 [Thor 软件启动与故障恢复样本](benchmarks/deployment-runtime/results/2026-10-08-thor-software/report.md)；完整同模型 LeRobot 部署对照、多客户端 / 多节点曲线待测。 |
+
+[逐项路线图](docs/zh/support-matrix.md) · [测量计划](benchmarks/README.md#planned-benchmarks)。
 
 ## 参与贡献
 

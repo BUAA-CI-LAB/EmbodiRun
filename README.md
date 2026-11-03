@@ -238,8 +238,15 @@ configuration. Before enabling robot motion, complete calibration and read the
 | Measurements and results | [benchmarks/](benchmarks/README.md) · [Runtime costs](docs/en/runtime-value.md) |
 | Supported and planned integrations | [Support matrix and roadmap](docs/en/support-matrix.md) |
 
-The roadmap covers additional robot Recipes, an automatic data-collection
-workflow, SmolVLA and OpenVLA integration, and deployment and scaling benchmarks.
+| Next work | Current status |
+|---|---|
+| Bi-SO-101 / FR3 / ARX5 / more simulator Recipes | Adapters or configurations exist; dedicated complete task Recipes remain pending. |
+| Go2 / ActiveVLN, Habitat and other VLN Recipes | Footage or configurations exist; Go2 adaptation is pending merge, and the reusable vLLM entrypoint needs GPU validation. |
+| Automatic collection and more mobile-manipulation agents | Task reset, dataset export and additional examples remain to be completed. |
+| SmolVLA / base OpenVLA | Inference adapters and deployment bindings pending. |
+| Deployment costs and scaling | [Thor software startup and fault-recovery samples](benchmarks/deployment-runtime/results/2026-10-08-thor-software/report.md) exist; full same-model LeRobot deployment comparisons and client / node scaling remain unmeasured. |
+
+[Itemized roadmap](docs/en/support-matrix.md) · [Measurement plan](benchmarks/README.md#planned-benchmarks).
 
 ## Contributing
 

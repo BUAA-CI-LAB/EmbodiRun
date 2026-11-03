@@ -27,6 +27,18 @@ and [configuration template](../configs/pi05/bi-so101-embodiinfer.yaml).
 Prepare the scene assets, model checkpoint, and optional simulation environment
 as described in the Recipe.
 
+### Experimental VLN comparison and hardware footage
+
+| Entry | Launch path | Status |
+|---|---|---|
+| [Habitat / ActiveVLN engine comparison](activevln_engines/README.md) | [vLLM deployment configuration](activevln_engines/habitat-vllm.yaml); direct `embodirun --config` lifecycle commands | Experimental. The film uses the recorded services; the reusable vLLM entrypoint still needs GPU validation. |
+| [Go2 physical recording](../docs/en/demos/go2-activevln.md) | Implementation and deployment remain in [PR #13](https://github.com/BUAA-CI-LAB/EmbodiRun/pull/13) | Footage available; adaptation pending merge. |
+
+The Habitat comparison uses the deployment CLI described by its guide; it is
+separate from the unified `embodirun example` Recipe launcher above.
+中文：[三引擎录像与条件](../docs/zh/demos/activevln-engines.md) ·
+[Go2 真机录像](../docs/zh/demos/go2-activevln.md)。
+
 ## Agent · Mobile manipulation
 
 | Recipe | Configuration | Purpose |
